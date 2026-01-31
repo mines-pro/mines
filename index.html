@@ -73,58 +73,6 @@
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
         }
 
-        .stats-container {
-            display: flex;
-            justify-content: space-around;
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .stat-box {
-            text-align: center;
-            background: rgba(255, 255, 255, 0.1);
-            padding: 15px 25px;
-            border-radius: 10px;
-            flex: 1;
-        }
-
-        .stat-icon {
-            font-size: 40px;
-            margin-bottom: 5px;
-        }
-
-        .stat-label {
-            font-size: 14px;
-            color: #ccc;
-            margin-bottom: 5px;
-        }
-
-        .stat-value {
-            font-size: 20px;
-            color: #FFD700;
-            font-weight: bold;
-        }
-
-        .multiplier-bar {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 20px;
-            padding: 10px;
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 10px;
-            overflow-x: auto;
-        }
-
-        .multiplier {
-            color: #87CEEB;
-            font-size: 18px;
-            font-weight: bold;
-            padding: 5px 15px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 5px;
-            white-space: nowrap;
-        }
-
         .game-grid {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
@@ -145,7 +93,9 @@
         }
 
         .tile.coin {
-            background: linear-gradient(135deg, #B8860B, #DAA520);
+            background: transparent;
+            border: none;
+            position: relative;
         }
 
         .tile.bomb {
@@ -153,7 +103,9 @@
         }
 
         .tile.treasure {
-            background: linear-gradient(135deg, #DC143C, #8B0000);
+            background: transparent;
+            border: none;
+            position: relative;
         }
 
         .tile.unrevealed {
@@ -382,29 +334,6 @@
             <button class="withdraw-btn" onclick="openWithdrawModal()">💸 WITHDRAW</button>
         </div>
 
-        <div class="stats-container">
-            <div class="stat-box">
-                <div class="stat-icon">🏆</div>
-                <div class="stat-label">Total Won</div>
-                <div class="stat-value">Rs <span id="totalWon">0</span></div>
-            </div>
-            <div class="stat-box">
-                <div class="stat-icon">💔</div>
-                <div class="stat-label">Total Lost</div>
-                <div class="stat-value">Rs <span id="totalLost">0</span></div>
-            </div>
-        </div>
-
-        <div class="multiplier-bar">
-            <div class="multiplier">1.1x</div>
-            <div class="multiplier">1.26x</div>
-            <div class="multiplier">1.45x</div>
-            <div class="multiplier">1.68x</div>
-            <div class="multiplier">1.96x</div>
-            <div class="multiplier">2.3x</div>
-            <div class="multiplier">2.7x</div>
-        </div>
-
         <div class="message" id="message"></div>
 
         <div class="game-grid" id="gameGrid"></div>
@@ -530,6 +459,77 @@
             }
         }
 
+        function createSilverCoin() {
+            return `
+                <svg viewBox="0 0 100 100" style="width: 100%; height: 100%;">
+                    <!-- Outer decorative circle -->
+                    <circle cx="50" cy="50" r="48" fill="url(#silverGrad)" stroke="#999" stroke-width="1"/>
+                    
+                    <!-- Decorative pattern border -->
+                    <circle cx="50" cy="50" r="42" fill="none" stroke="#AAA" stroke-width="0.5"/>
+                    <circle cx="50" cy="50" r="38" fill="none" stroke="#CCC" stroke-width="1"/>
+                    
+                    <!-- Inner circle -->
+                    <circle cx="50" cy="50" r="35" fill="url(#silverInner)" stroke="#999" stroke-width="1"/>
+                    
+                    <!-- Dollar symbol -->
+                    <text x="50" y="62" font-size="36" font-weight="bold" fill="#777" text-anchor="middle" style="font-family: Arial, sans-serif;">$</text>
+                    
+                    <!-- Gradients -->
+                    <defs>
+                        <radialGradient id="silverGrad">
+                            <stop offset="0%" style="stop-color:#F0F0F0;stop-opacity:1" />
+                            <stop offset="50%" style="stop-color:#C0C0C0;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#A0A0A0;stop-opacity:1" />
+                        </radialGradient>
+                        <radialGradient id="silverInner">
+                            <stop offset="0%" style="stop-color:#E8E8E8;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#B8B8B8;stop-opacity:1" />
+                        </radialGradient>
+                    </defs>
+                </svg>
+            `;
+        }
+
+        function createGoldCoin() {
+            return `
+                <svg viewBox="0 0 100 100" style="width: 100%; height: 100%;">
+                    <!-- Outer decorative circle -->
+                    <circle cx="50" cy="50" r="48" fill="url(#goldGrad)" stroke="#B8860B" stroke-width="1"/>
+                    
+                    <!-- Decorative pattern border -->
+                    <circle cx="50" cy="50" r="42" fill="none" stroke="#DAA520" stroke-width="0.5"/>
+                    <circle cx="50" cy="50" r="38" fill="none" stroke="#FFD700" stroke-width="1"/>
+                    
+                    <!-- Inner circle -->
+                    <circle cx="50" cy="50" r="35" fill="url(#goldInner)" stroke="#B8860B" stroke-width="1"/>
+                    
+                    <!-- Dollar symbol -->
+                    <text x="50" y="62" font-size="36" font-weight="bold" fill="#8B6914" text-anchor="middle" style="font-family: Arial, sans-serif;">$</text>
+                    
+                    <!-- Gradients -->
+                    <defs>
+                        <radialGradient id="goldGrad">
+                            <stop offset="0%" style="stop-color:#FFE55C;stop-opacity:1" />
+                            <stop offset="50%" style="stop-color:#FFD700;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#DAA520;stop-opacity:1" />
+                        </radialGradient>
+                        <radialGradient id="goldInner">
+                            <stop offset="0%" style="stop-color:#FFEB3B;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#FFA500;stop-opacity:1" />
+                        </radialGradient>
+                        <filter id="goldGlow">
+                            <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                            <feMerge>
+                                <feMergeNode in="coloredBlur"/>
+                                <feMergeNode in="SourceGraphic"/>
+                            </feMerge>
+                        </filter>
+                    </defs>
+                </svg>
+            `;
+        }
+
         function revealTile(index) {
             if (!gameState.gameActive) {
                 if (gameState.balance < gameState.currentBet) {
@@ -553,22 +553,39 @@
                 tile.textContent = '💣';
                 gameOver(false);
             } else if (index === gameState.treasurePosition) {
-                // Hit treasure
+                // Hit treasure - gold coin
                 tile.classList.add('treasure');
-                tile.textContent = '🎁';
-                gameState.currentWin = gameState.currentBet * 5;
-                showMessage('TREASURE! 5x Multiplier!', 'success');
+                tile.innerHTML = createGoldCoin();
+                
+                // Calculate win based on mines count
+                let winAmount = 0;
+                if (gameState.minesCount === 1) winAmount = 5;
+                else if (gameState.minesCount === 2) winAmount = 15;
+                else if (gameState.minesCount === 3) winAmount = 30;
+                else if (gameState.minesCount === 4) winAmount = 50;
+                else if (gameState.minesCount === 5) winAmount = 75;
+                else winAmount = gameState.minesCount * 15;
+                
+                gameState.currentWin += winAmount;
+                showMessage(`+Rs ${winAmount}!`, 'success');
                 updateDisplay();
                 document.getElementById('cashoutBtn').disabled = false;
             } else {
-                // Safe tile
+                // Safe tile - silver coin
                 tile.classList.add('coin');
-                tile.textContent = '🪙';
+                tile.innerHTML = createSilverCoin();
                 gameState.revealedTiles++;
                 
-                // Calculate win based on revealed tiles
-                const multiplier = 1 + (gameState.revealedTiles * 0.2);
-                gameState.currentWin = Math.floor(gameState.currentBet * multiplier);
+                // Calculate win based on mines count
+                let winAmount = 0;
+                if (gameState.minesCount === 1) winAmount = 5;
+                else if (gameState.minesCount === 2) winAmount = 15;
+                else if (gameState.minesCount === 3) winAmount = 30;
+                else if (gameState.minesCount === 4) winAmount = 50;
+                else if (gameState.minesCount === 5) winAmount = 75;
+                else winAmount = gameState.minesCount * 15;
+                
+                gameState.currentWin += winAmount;
                 updateDisplay();
                 document.getElementById('cashoutBtn').disabled = false;
             }
@@ -645,10 +662,10 @@
                         tile.textContent = '💣';
                     } else if (index === gameState.treasurePosition) {
                         tile.classList.add('treasure');
-                        tile.textContent = '🎁';
+                        tile.innerHTML = createGoldCoin();
                     } else {
                         tile.classList.add('coin');
-                        tile.textContent = '🪙';
+                        tile.innerHTML = createSilverCoin();
                     }
                 }
             });
@@ -670,8 +687,6 @@
         function updateDisplay() {
             document.getElementById('balance').textContent = gameState.balance.toFixed(0);
             document.getElementById('currentWin').textContent = gameState.currentWin.toFixed(0);
-            document.getElementById('totalWon').textContent = gameState.totalWon.toFixed(0);
-            document.getElementById('totalLost').textContent = gameState.totalLost.toFixed(0);
             document.getElementById('currentBet').textContent = gameState.currentBet;
             document.getElementById('minesCount').textContent = gameState.minesCount;
         }
