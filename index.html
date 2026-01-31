@@ -90,32 +90,16 @@
             transition: transform 0.2s, box-shadow 0.2s;
             font-size: 40px;
             position: relative;
-        }
-
-        .tile.coin {
             background: transparent;
-            border: none;
-            position: relative;
-        }
-
-        .tile.bomb {
-            background: linear-gradient(135deg, #4B0082, #8B008B);
-        }
-
-        .tile.treasure {
-            background: transparent;
-            border: none;
-            position: relative;
         }
 
         .tile.unrevealed {
-            background: linear-gradient(135deg, #B8860B, #DAA520);
             cursor: pointer;
         }
-
+        
         .tile.unrevealed:hover {
             transform: scale(1.05);
-            box-shadow: 0 5px 20px rgba(255, 215, 0, 0.5);
+            filter: brightness(1.1);
         }
 
         .tile.revealed {
@@ -401,7 +385,7 @@
             <h2>💰 Set Bet Amount</h2>
             <div class="input-group">
                 <label>Bet Amount (Rs)</label>
-                <input type="number" id="betAmount" placeholder="Enter bet amount" min="10" max="10000" step="10" value="100">
+                <input type="number" id="betAmount" placeholder="Enter bet amount" min="100" max="10000" step="10" value="100">
             </div>
             <div class="modal-buttons">
                 <button class="modal-btn confirm-btn" onclick="confirmBet()">Confirm</button>
@@ -436,9 +420,239 @@
             currentWin: 0,
             gameActive: false,
             revealedTiles: 0,
-            minePositions: [],
-            treasurePosition: -1
+            minePositions: []
         };
+
+        // Create professional silver coin SVG - realistic iron/steel metal texture
+        function createSilverCoin() {
+            return `
+                <svg viewBox="0 0 100 100" style="width: 100%; height: 100%;">
+                    <!-- Deep bottom shadow for 3D depth -->
+                    <ellipse cx="50" cy="55" rx="46" ry="9" fill="rgba(0,0,0,0.5)" opacity="0.7"/>
+                    
+                    <!-- Outer coin edge with beveled look -->
+                    <circle cx="50" cy="50" r="47" fill="url(#silverEdgeBevel)" stroke="#5A5A5A" stroke-width="1"/>
+                    
+                    <!-- Side thickness of coin (3D effect) -->
+                    <circle cx="50" cy="50" r="45" fill="url(#silverSideThickness)"/>
+                    
+                    <!-- Main coin face with hammered metal texture -->
+                    <circle cx="50" cy="50" r="43" fill="url(#silverMainFace)" stroke="#888888" stroke-width="0.8"/>
+                    
+                    <!-- Outer decorative ridge -->
+                    <circle cx="50" cy="50" r="41" fill="none" stroke="url(#silverRidge1)" stroke-width="2" opacity="0.8"/>
+                    
+                    <!-- Middle decorative band -->
+                    <circle cx="50" cy="50" r="38" fill="none" stroke="url(#silverRidge2)" stroke-width="1.5"/>
+                    
+                    <!-- Inner raised platform for text -->
+                    <circle cx="50" cy="50" r="35" fill="url(#silverInnerPlatform)"/>
+                    
+                    <!-- Subtle radial lines for texture -->
+                    <g opacity="0.15">
+                        <line x1="50" y1="15" x2="50" y2="20" stroke="#000" stroke-width="0.5"/>
+                        <line x1="65" y1="20" x2="63" y2="25" stroke="#000" stroke-width="0.5"/>
+                        <line x1="75" y1="35" x2="72" y2="38" stroke="#000" stroke-width="0.5"/>
+                        <line x1="80" y1="50" x2="75" y2="50" stroke="#000" stroke-width="0.5"/>
+                        <line x1="75" y1="65" x2="72" y2="62" stroke="#000" stroke-width="0.5"/>
+                        <line x1="65" y1="80" x2="63" y2="75" stroke="#000" stroke-width="0.5"/>
+                        <line x1="50" y1="85" x2="50" y2="80" stroke="#000" stroke-width="0.5"/>
+                        <line x1="35" y1="80" x2="37" y2="75" stroke="#000" stroke-width="0.5"/>
+                        <line x1="25" y1="65" x2="28" y2="62" stroke="#000" stroke-width="0.5"/>
+                        <line x1="20" y1="50" x2="25" y2="50" stroke="#000" stroke-width="0.5"/>
+                        <line x1="25" y1="35" x2="28" y2="38" stroke="#000" stroke-width="0.5"/>
+                        <line x1="35" y1="20" x2="37" y2="25" stroke="#000" stroke-width="0.5"/>
+                    </g>
+                    
+                    <!-- Rs symbol with deep engraved effect -->
+                    <text x="50" y="68" font-size="36" font-weight="bold" fill="#4A4A4A" text-anchor="middle" 
+                          style="font-family: 'Times New Roman', serif; 
+                                 paint-order: stroke; 
+                                 stroke: rgba(0,0,0,0.4); 
+                                 stroke-width: 0.8px;
+                                 filter: url(#emboss);">Rs</text>
+                    
+                    <!-- Light reflection on top (polished metal effect) -->
+                    <ellipse cx="50" cy="23" rx="24" ry="10" fill="rgba(255,255,255,0.6)" opacity="0.7"/>
+                    <ellipse cx="35" cy="32" rx="10" ry="6" fill="rgba(255,255,255,0.4)" opacity="0.5"/>
+                    <circle cx="68" cy="30" r="3" fill="rgba(255,255,255,0.5)" opacity="0.6"/>
+                    
+                    <!-- Bottom shadow on face for depth -->
+                    <ellipse cx="50" cy="77" rx="24" ry="8" fill="rgba(0,0,0,0.15)" opacity="0.4"/>
+                    
+                    <defs>
+                        <!-- Edge bevel gradient -->
+                        <linearGradient id="silverEdgeBevel" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" style="stop-color:#A8A8A8;stop-opacity:1" />
+                            <stop offset="50%" style="stop-color:#C8C8C8;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#888888;stop-opacity:1" />
+                        </linearGradient>
+                        
+                        <!-- Side thickness gradient -->
+                        <linearGradient id="silverSideThickness" x1="30%" y1="30%" x2="70%" y2="70%">
+                            <stop offset="0%" style="stop-color:#B8B8B8;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#909090;stop-opacity:1" />
+                        </linearGradient>
+                        
+                        <!-- Main face with hammered texture -->
+                        <radialGradient id="silverMainFace">
+                            <stop offset="0%" style="stop-color:#F5F5F5;stop-opacity:1" />
+                            <stop offset="40%" style="stop-color:#E0E0E0;stop-opacity:1" />
+                            <stop offset="70%" style="stop-color:#D0D0D0;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#B8B8B8;stop-opacity:1" />
+                        </radialGradient>
+                        
+                        <!-- Ridge gradients for decorative bands -->
+                        <linearGradient id="silverRidge1" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#A0A0A0;stop-opacity:1" />
+                            <stop offset="50%" style="stop-color:#D8D8D8;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#989898;stop-opacity:1" />
+                        </linearGradient>
+                        
+                        <linearGradient id="silverRidge2" x1="100%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" style="stop-color:#B8B8B8;stop-opacity:1" />
+                            <stop offset="50%" style="stop-color:#E8E8E8;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#A8A8A8;stop-opacity:1" />
+                        </linearGradient>
+                        
+                        <!-- Inner platform gradient -->
+                        <radialGradient id="silverInnerPlatform">
+                            <stop offset="0%" style="stop-color:#E8E8E8;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#C8C8C8;stop-opacity:1" />
+                        </radialGradient>
+                        
+                        <!-- Emboss filter for text -->
+                        <filter id="emboss">
+                            <feGaussianBlur in="SourceAlpha" stdDeviation="1" result="blur"/>
+                            <feOffset in="blur" dx="1" dy="1" result="offsetBlur"/>
+                            <feSpecularLighting in="blur" surfaceScale="3" specularConstant="0.8" specularExponent="20" lighting-color="white" result="specOut">
+                                <fePointLight x="-5000" y="-10000" z="20000"/>
+                            </feSpecularLighting>
+                            <feComposite in="specOut" in2="SourceAlpha" operator="in" result="specOut"/>
+                            <feComposite in="SourceGraphic" in2="specOut" operator="arithmetic" k1="0" k2="1" k3="1" k4="0"/>
+                        </filter>
+                    </defs>
+                </svg>
+            `;
+        }
+
+        // Create professional gold coin SVG - realistic gold metal texture
+        function createGoldCoin() {
+            return `
+                <svg viewBox="0 0 100 100" style="width: 100%; height: 100%;">
+                    <!-- Deep bottom shadow for 3D depth -->
+                    <ellipse cx="50" cy="55" rx="46" ry="9" fill="rgba(0,0,0,0.6)" opacity="0.7"/>
+                    
+                    <!-- Outer coin edge with beveled look -->
+                    <circle cx="50" cy="50" r="47" fill="url(#goldEdgeBevel)" stroke="#8B6914" stroke-width="1"/>
+                    
+                    <!-- Side thickness of coin (3D effect) -->
+                    <circle cx="50" cy="50" r="45" fill="url(#goldSideThickness)"/>
+                    
+                    <!-- Main coin face with polished metal texture -->
+                    <circle cx="50" cy="50" r="43" fill="url(#goldMainFace)" stroke="#B8860B" stroke-width="0.8"/>
+                    
+                    <!-- Outer decorative ridge -->
+                    <circle cx="50" cy="50" r="41" fill="none" stroke="url(#goldRidge1)" stroke-width="2" opacity="0.9"/>
+                    
+                    <!-- Middle decorative band -->
+                    <circle cx="50" cy="50" r="38" fill="none" stroke="url(#goldRidge2)" stroke-width="1.5"/>
+                    
+                    <!-- Inner raised platform for text -->
+                    <circle cx="50" cy="50" r="35" fill="url(#goldInnerPlatform)"/>
+                    
+                    <!-- Subtle radial lines for texture -->
+                    <g opacity="0.2">
+                        <line x1="50" y1="15" x2="50" y2="20" stroke="#8B6914" stroke-width="0.5"/>
+                        <line x1="65" y1="20" x2="63" y2="25" stroke="#8B6914" stroke-width="0.5"/>
+                        <line x1="75" y1="35" x2="72" y2="38" stroke="#8B6914" stroke-width="0.5"/>
+                        <line x1="80" y1="50" x2="75" y2="50" stroke="#8B6914" stroke-width="0.5"/>
+                        <line x1="75" y1="65" x2="72" y2="62" stroke="#8B6914" stroke-width="0.5"/>
+                        <line x1="65" y1="80" x2="63" y2="75" stroke="#8B6914" stroke-width="0.5"/>
+                        <line x1="50" y1="85" x2="50" y2="80" stroke="#8B6914" stroke-width="0.5"/>
+                        <line x1="35" y1="80" x2="37" y2="75" stroke="#8B6914" stroke-width="0.5"/>
+                        <line x1="25" y1="65" x2="28" y2="62" stroke="#8B6914" stroke-width="0.5"/>
+                        <line x1="20" y1="50" x2="25" y2="50" stroke="#8B6914" stroke-width="0.5"/>
+                        <line x1="25" y1="35" x2="28" y2="38" stroke="#8B6914" stroke-width="0.5"/>
+                        <line x1="35" y1="20" x2="37" y2="25" stroke="#8B6914" stroke-width="0.5"/>
+                    </g>
+                    
+                    <!-- Rs symbol with raised embossed effect -->
+                    <text x="50" y="68" font-size="36" font-weight="bold" fill="#8B6914" text-anchor="middle" 
+                          style="font-family: 'Times New Roman', serif; 
+                                 paint-order: stroke; 
+                                 stroke: rgba(255,215,0,0.5); 
+                                 stroke-width: 0.8px;
+                                 filter: url(#goldEmboss);">Rs</text>
+                    
+                    <!-- Light reflection on top (polished gold effect) -->
+                    <ellipse cx="50" cy="23" rx="24" ry="10" fill="rgba(255,255,255,0.7)" opacity="0.8"/>
+                    <ellipse cx="35" cy="32" rx="10" ry="6" fill="rgba(255,255,255,0.5)" opacity="0.6"/>
+                    <circle cx="68" cy="30" r="3" fill="rgba(255,255,255,0.6)" opacity="0.7"/>
+                    
+                    <!-- Gold sparkle effects -->
+                    <circle cx="70" cy="28" r="1.5" fill="rgba(255,255,255,0.9)" opacity="0.9"/>
+                    <circle cx="75" cy="42" r="1" fill="rgba(255,255,255,0.8)" opacity="0.8"/>
+                    <circle cx="28" cy="38" r="1.2" fill="rgba(255,255,255,0.85)" opacity="0.85"/>
+                    
+                    <!-- Bottom shadow on face for depth -->
+                    <ellipse cx="50" cy="77" rx="24" ry="8" fill="rgba(139,105,20,0.2)" opacity="0.5"/>
+                    
+                    <defs>
+                        <!-- Edge bevel gradient -->
+                        <linearGradient id="goldEdgeBevel" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" style="stop-color:#DAA520;stop-opacity:1" />
+                            <stop offset="50%" style="stop-color:#FFD700;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#B8860B;stop-opacity:1" />
+                        </linearGradient>
+                        
+                        <!-- Side thickness gradient -->
+                        <linearGradient id="goldSideThickness" x1="30%" y1="30%" x2="70%" y2="70%">
+                            <stop offset="0%" style="stop-color:#F4C430;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#DAA520;stop-opacity:1" />
+                        </linearGradient>
+                        
+                        <!-- Main face with polished texture -->
+                        <radialGradient id="goldMainFace">
+                            <stop offset="0%" style="stop-color:#FFF8DC;stop-opacity:1" />
+                            <stop offset="30%" style="stop-color:#FFEC8B;stop-opacity:1" />
+                            <stop offset="60%" style="stop-color:#FFD700;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#DAA520;stop-opacity:1" />
+                        </radialGradient>
+                        
+                        <!-- Ridge gradients for decorative bands -->
+                        <linearGradient id="goldRidge1" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#DAA520;stop-opacity:1" />
+                            <stop offset="50%" style="stop-color:#FFE55C;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#B8860B;stop-opacity:1" />
+                        </linearGradient>
+                        
+                        <linearGradient id="goldRidge2" x1="100%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" style="stop-color:#F4C430;stop-opacity:1" />
+                            <stop offset="50%" style="stop-color:#FFD700;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#DAA520;stop-opacity:1" />
+                        </linearGradient>
+                        
+                        <!-- Inner platform gradient -->
+                        <radialGradient id="goldInnerPlatform">
+                            <stop offset="0%" style="stop-color:#FFE873;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#F4C430;stop-opacity:1" />
+                        </radialGradient>
+                        
+                        <!-- Gold emboss filter for text -->
+                        <filter id="goldEmboss">
+                            <feGaussianBlur in="SourceAlpha" stdDeviation="1" result="blur"/>
+                            <feOffset in="blur" dx="1" dy="1" result="offsetBlur"/>
+                            <feSpecularLighting in="blur" surfaceScale="4" specularConstant="1" specularExponent="25" lighting-color="#FFD700" result="specOut">
+                                <fePointLight x="-5000" y="-10000" z="20000"/>
+                            </feSpecularLighting>
+                            <feComposite in="specOut" in2="SourceAlpha" operator="in" result="specOut"/>
+                            <feComposite in="SourceGraphic" in2="specOut" operator="arithmetic" k1="0" k2="1" k3="1" k4="0"/>
+                        </filter>
+                    </defs>
+                </svg>
+            `;
+        }
 
         // Initialize game
         function initGame() {
@@ -450,84 +664,15 @@
             const grid = document.getElementById('gameGrid');
             grid.innerHTML = '';
             
+            // Create all 25 tiles with silver coins
             for (let i = 0; i < 25; i++) {
                 const tile = document.createElement('div');
                 tile.className = 'tile unrevealed';
                 tile.dataset.index = i;
+                tile.innerHTML = createSilverCoin(); // All tiles start as silver coins
                 tile.onclick = () => revealTile(i);
                 grid.appendChild(tile);
             }
-        }
-
-        function createSilverCoin() {
-            return `
-                <svg viewBox="0 0 100 100" style="width: 100%; height: 100%;">
-                    <!-- Outer decorative circle -->
-                    <circle cx="50" cy="50" r="48" fill="url(#silverGrad)" stroke="#999" stroke-width="1"/>
-                    
-                    <!-- Decorative pattern border -->
-                    <circle cx="50" cy="50" r="42" fill="none" stroke="#AAA" stroke-width="0.5"/>
-                    <circle cx="50" cy="50" r="38" fill="none" stroke="#CCC" stroke-width="1"/>
-                    
-                    <!-- Inner circle -->
-                    <circle cx="50" cy="50" r="35" fill="url(#silverInner)" stroke="#999" stroke-width="1"/>
-                    
-                    <!-- Dollar symbol -->
-                    <text x="50" y="62" font-size="36" font-weight="bold" fill="#777" text-anchor="middle" style="font-family: Arial, sans-serif;">$</text>
-                    
-                    <!-- Gradients -->
-                    <defs>
-                        <radialGradient id="silverGrad">
-                            <stop offset="0%" style="stop-color:#F0F0F0;stop-opacity:1" />
-                            <stop offset="50%" style="stop-color:#C0C0C0;stop-opacity:1" />
-                            <stop offset="100%" style="stop-color:#A0A0A0;stop-opacity:1" />
-                        </radialGradient>
-                        <radialGradient id="silverInner">
-                            <stop offset="0%" style="stop-color:#E8E8E8;stop-opacity:1" />
-                            <stop offset="100%" style="stop-color:#B8B8B8;stop-opacity:1" />
-                        </radialGradient>
-                    </defs>
-                </svg>
-            `;
-        }
-
-        function createGoldCoin() {
-            return `
-                <svg viewBox="0 0 100 100" style="width: 100%; height: 100%;">
-                    <!-- Outer decorative circle -->
-                    <circle cx="50" cy="50" r="48" fill="url(#goldGrad)" stroke="#B8860B" stroke-width="1"/>
-                    
-                    <!-- Decorative pattern border -->
-                    <circle cx="50" cy="50" r="42" fill="none" stroke="#DAA520" stroke-width="0.5"/>
-                    <circle cx="50" cy="50" r="38" fill="none" stroke="#FFD700" stroke-width="1"/>
-                    
-                    <!-- Inner circle -->
-                    <circle cx="50" cy="50" r="35" fill="url(#goldInner)" stroke="#B8860B" stroke-width="1"/>
-                    
-                    <!-- Dollar symbol -->
-                    <text x="50" y="62" font-size="36" font-weight="bold" fill="#8B6914" text-anchor="middle" style="font-family: Arial, sans-serif;">$</text>
-                    
-                    <!-- Gradients -->
-                    <defs>
-                        <radialGradient id="goldGrad">
-                            <stop offset="0%" style="stop-color:#FFE55C;stop-opacity:1" />
-                            <stop offset="50%" style="stop-color:#FFD700;stop-opacity:1" />
-                            <stop offset="100%" style="stop-color:#DAA520;stop-opacity:1" />
-                        </radialGradient>
-                        <radialGradient id="goldInner">
-                            <stop offset="0%" style="stop-color:#FFEB3B;stop-opacity:1" />
-                            <stop offset="100%" style="stop-color:#FFA500;stop-opacity:1" />
-                        </radialGradient>
-                        <filter id="goldGlow">
-                            <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-                            <feMerge>
-                                <feMergeNode in="coloredBlur"/>
-                                <feMergeNode in="SourceGraphic"/>
-                            </feMerge>
-                        </filter>
-                    </defs>
-                </svg>
-            `;
         }
 
         function revealTile(index) {
@@ -548,42 +693,30 @@
             tile.classList.add('revealed');
 
             if (gameState.minePositions.includes(index)) {
-                // Hit a mine
-                tile.classList.add('bomb', 'exploded');
+                // Hit a mine - show bomb
+                tile.classList.add('exploded');
                 tile.textContent = '💣';
+                tile.style.background = 'linear-gradient(135deg, #4B0082, #8B008B)';
+                tile.style.fontSize = '40px';
                 gameOver(false);
-            } else if (index === gameState.treasurePosition) {
-                // Hit treasure - gold coin
-                tile.classList.add('treasure');
-                tile.innerHTML = createGoldCoin();
-                
-                // Calculate win based on mines count
-                let winAmount = 0;
-                if (gameState.minesCount === 1) winAmount = 5;
-                else if (gameState.minesCount === 2) winAmount = 15;
-                else if (gameState.minesCount === 3) winAmount = 30;
-                else if (gameState.minesCount === 4) winAmount = 50;
-                else if (gameState.minesCount === 5) winAmount = 75;
-                else winAmount = gameState.minesCount * 15;
-                
-                gameState.currentWin += winAmount;
-                showMessage(`+Rs ${winAmount}!`, 'success');
-                updateDisplay();
-                document.getElementById('cashoutBtn').disabled = false;
             } else {
-                // Safe tile - silver coin
-                tile.classList.add('coin');
-                tile.innerHTML = createSilverCoin();
+                // Safe tile - convert silver to gold
+                tile.innerHTML = createGoldCoin();
                 gameState.revealedTiles++;
                 
                 // Calculate win based on mines count
                 let winAmount = 0;
                 if (gameState.minesCount === 1) winAmount = 5;
-                else if (gameState.minesCount === 2) winAmount = 15;
-                else if (gameState.minesCount === 3) winAmount = 30;
-                else if (gameState.minesCount === 4) winAmount = 50;
-                else if (gameState.minesCount === 5) winAmount = 75;
-                else winAmount = gameState.minesCount * 15;
+                else if (gameState.minesCount === 2) winAmount = 10;
+                else if (gameState.minesCount === 3) winAmount = 20;
+                else if (gameState.minesCount === 4) winAmount = 40;
+                else if (gameState.minesCount === 5) winAmount = 50;
+                else if (gameState.minesCount === 6) winAmount = 60;
+                else if (gameState.minesCount === 7) winAmount = 70;
+                else if (gameState.minesCount === 8) winAmount = 80;
+                else if (gameState.minesCount === 9) winAmount = 90;
+                else if (gameState.minesCount === 10) winAmount = 100;
+                else winAmount = gameState.minesCount * 10;
                 
                 gameState.currentWin += winAmount;
                 updateDisplay();
@@ -610,11 +743,6 @@
                     gameState.minePositions.push(pos);
                 }
             }
-
-            // Place treasure randomly (not on mines)
-            do {
-                gameState.treasurePosition = Math.floor(Math.random() * 25);
-            } while (gameState.minePositions.includes(gameState.treasurePosition));
 
             updateDisplay();
             showMessage('Game started! Avoid the mines! 💣', 'info');
@@ -658,14 +786,13 @@
                     tile.classList.add('revealed');
                     
                     if (gameState.minePositions.includes(index)) {
-                        tile.classList.add('bomb');
+                        // Show bombs
                         tile.textContent = '💣';
-                    } else if (index === gameState.treasurePosition) {
-                        tile.classList.add('treasure');
-                        tile.innerHTML = createGoldCoin();
+                        tile.style.background = 'linear-gradient(135deg, #4B0082, #8B008B)';
+                        tile.style.fontSize = '40px';
                     } else {
-                        tile.classList.add('coin');
-                        tile.innerHTML = createSilverCoin();
+                        // All other tiles become gold coins
+                        tile.innerHTML = createGoldCoin();
                     }
                 }
             });
@@ -676,7 +803,6 @@
             gameState.revealedTiles = 0;
             gameState.currentWin = 0;
             gameState.minePositions = [];
-            gameState.treasurePosition = -1;
             
             createGrid();
             updateDisplay();
@@ -689,15 +815,6 @@
             document.getElementById('currentWin').textContent = gameState.currentWin.toFixed(0);
             document.getElementById('currentBet').textContent = gameState.currentBet;
             document.getElementById('minesCount').textContent = gameState.minesCount;
-        }
-
-        function animateJackpot() {
-            const jackpotElement = document.getElementById('jackpotAmount');
-            setInterval(() => {
-                const current = parseFloat(jackpotElement.textContent.replace(',', ''));
-                const newAmount = current + (Math.random() * 10);
-                jackpotElement.textContent = newAmount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-            }, 3000);
         }
 
         // Modal functions
@@ -767,8 +884,8 @@
 
         function confirmBet() {
             const amount = parseFloat(document.getElementById('betAmount').value);
-            if (isNaN(amount) || amount < 10) {
-                showMessage('Minimum bet is Rs 10', 'error');
+            if (isNaN(amount) || amount < 100) {
+                showMessage('Minimum bet is Rs 100', 'error');
                 return;
             }
 
