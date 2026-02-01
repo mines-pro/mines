@@ -1,1 +1,1 @@
-# mines-pro
+# mines
