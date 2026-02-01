@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ur" dir="rtl">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -46,11 +46,12 @@
         }
 
         .subtitle {
-            font-size: 18px;
+            font-size: 22px;
             color: #FFD700;
             text-align: center;
             margin-bottom: 30px;
             font-family: 'Noto Nastaliq Urdu', Arial;
+            direction: rtl;
         }
 
         .user-info {
@@ -97,7 +98,12 @@
             border-radius: 10px;
             font-size: 16px;
             background: rgba(255, 255, 255, 0.9);
-            text-align: center;
+            text-align: left;
+            direction: ltr;
+        }
+
+        input::placeholder {
+            text-align: left;
         }
 
         button {
@@ -216,6 +222,7 @@
             font-weight: bold;
             margin-bottom: 15px;
             font-family: 'Noto Nastaliq Urdu', Arial;
+            direction: rtl;
         }
 
         .jazzcash-number {
@@ -239,6 +246,7 @@
             font-size: 16px;
             margin-bottom: 10px;
             font-weight: bold;
+            text-align: left;
         }
 
         input[type="file"] {
@@ -322,7 +330,7 @@
     <div class="title">MINES</div>
     <div class="subtitle">اپنا نام اور نمبر لکھیں</div>
     <div id="loginMsg" class="msg"></div>
-    <input type="text" id="loginName" placeholder="Your Name / آپ کا نام" maxlength="50">
+    <input type="text" id="loginName" placeholder="Your Name" maxlength="50">
     <input type="tel" id="loginPhone" placeholder="03XXXXXXXXX" maxlength="11">
     <button class="btn-green" onclick="handleLogin()">LOGIN / لاگ ان</button>
 </div>
@@ -372,7 +380,7 @@
         </div>
         <input type="number" id="depositAmount" placeholder="Amount (Minimum Rs 100)" min="100">
         <div class="upload-section">
-            <label class="upload-label">Upload Screenshot / سکرین شاٹ اپ لوڈ کریں</label>
+            <label class="upload-label">Upload Screenshot</label>
             <input type="file" id="depositScreenshot" accept="image/*">
         </div>
         <button class="btn-green" onclick="submitDeposit()">Submit Request</button>
@@ -415,10 +423,10 @@
 </div>
 
 <script>
-// API Configuration
-const API_URL = 'YOUR_BACKEND_URL_HERE'; // Will be updated after backend deployment
+// FALLBACK MODE - Works without backend (for testing)
+const USE_FALLBACK = true; // Backend ready hone par false kar dena
+const API_URL = 'YOUR_BACKEND_URL_HERE';
 
-// Game State
 let gameState = {
     userId: null,
     userName: '',
@@ -432,29 +440,31 @@ let gameState = {
     revealedTiles: []
 };
 
-// Check login status on load
+// Storage helpers
+function save(key, data) { localStorage.setItem(key, JSON.stringify(data)); }
+function load(key) { const d = localStorage.getItem(key); return d ? JSON.parse(d) : null; }
+
 window.onload = function() {
     checkLoginStatus();
 };
 
-// Check if user is logged in
 function checkLoginStatus() {
-    const loginData = localStorage.getItem('minesUserLogin');
+    const loginData = load('minesUserLogin');
     if (loginData) {
-        const data = JSON.parse(loginData);
-        const loginTime = new Date(data.timestamp);
+        const loginTime = new Date(loginData.timestamp);
         const now = new Date();
         const hoursDiff = (now - loginTime) / (1000 * 60 * 60);
         
         if (hoursDiff < 8) {
-            // Still valid login
-            gameState.userId = data.userId;
-            gameState.userName = data.name;
-            gameState.userPhone = data.phone;
+            gameState.userId = loginData.userId;
+            gameState.userName = loginData.name;
+            gameState.userPhone = loginData.phone;
+            
+            const userData = load('user_' + loginData.phone);
+            if (userData) gameState.balance = userData.balance || 0;
+            
             showGameScreen();
-            fetchUserBalance();
         } else {
-            // Session expired
             localStorage.removeItem('minesUserLogin');
             showLoginScreen();
         }
@@ -463,8 +473,7 @@ function checkLoginStatus() {
     }
 }
 
-// Handle Login
-async function handleLogin() {
+function handleLogin() {
     const name = document.getElementById('loginName').value.trim();
     const phone = document.getElementById('loginPhone').value.trim();
     
@@ -473,50 +482,41 @@ async function handleLogin() {
         return;
     }
     
-    if (!validatePhone(phone)) {
+    if (!/^03[0-9]{9}$/.test(phone)) {
         showMessage('loginMsg', 'Invalid phone! Use format: 03XXXXXXXXX', 'error');
         return;
     }
     
-    try {
-        const response = await fetch(API_URL + '/api/login', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ name, phone })
-        });
+    gameState.userId = phone;
+    gameState.userName = name;
+    gameState.userPhone = phone;
+    
+    let userData = load('user_' + phone);
+    if (!userData) {
+        userData = { name, phone, balance: 0, totalDeposit: 0, totalWithdraw: 0 };
+        save('user_' + phone, userData);
         
-        const data = await response.json();
-        
-        if (data.success) {
-            gameState.userId = data.userId;
-            gameState.userName = name;
-            gameState.userPhone = phone;
-            
-            // Save login session
-            localStorage.setItem('minesUserLogin', JSON.stringify({
-                userId: data.userId,
-                name,
-                phone,
-                timestamp: new Date().toISOString()
-            }));
-            
-            showGameScreen();
-            fetchUserBalance();
-        } else {
-            showMessage('loginMsg', data.message || 'Login failed', 'error');
-        }
-    } catch (error) {
-        console.error('Login error:', error);
-        showMessage('loginMsg', 'Connection error. Please try again.', 'error');
+        let allUsers = load('allUsers') || {};
+        allUsers[phone] = userData;
+        save('allUsers', allUsers);
     }
+    
+    gameState.balance = userData.balance || 0;
+    
+    save('minesUserLogin', {
+        userId: phone,
+        name,
+        phone,
+        timestamp: new Date().toISOString()
+    });
+    
+    showGameScreen();
 }
 
-// Validate Pakistani phone number
 function validatePhone(phone) {
     return /^03[0-9]{9}$/.test(phone);
 }
 
-// Show/Hide screens
 function showLoginScreen() {
     document.getElementById('loginScreen').classList.remove('hidden');
     document.getElementById('gameScreen').classList.add('hidden');
@@ -531,7 +531,6 @@ function showGameScreen() {
     updateDisplay();
 }
 
-// Logout
 function handleLogout() {
     if (confirm('Are you sure you want to logout?')) {
         localStorage.removeItem('minesUserLogin');
@@ -539,21 +538,6 @@ function handleLogout() {
     }
 }
 
-// Fetch user balance from server
-async function fetchUserBalance() {
-    try {
-        const response = await fetch(API_URL + '/api/balance/' + gameState.userId);
-        const data = await response.json();
-        if (data.success) {
-            gameState.balance = data.balance;
-            updateDisplay();
-        }
-    } catch (error) {
-        console.error('Balance fetch error:', error);
-    }
-}
-
-// Initialize game grid
 function initializeGrid() {
     const grid = document.getElementById('gameGrid');
     grid.innerHTML = '';
@@ -566,7 +550,6 @@ function initializeGrid() {
     }
 }
 
-// Tile click handler
 function clickTile(index) {
     if (gameState.revealedTiles.includes(index)) return;
     
@@ -583,18 +566,15 @@ function clickTile(index) {
     const tile = tiles[index];
     
     if (gameState.minePositions.includes(index)) {
-        // Hit mine
         tile.textContent = '💣';
         tile.style.background = 'linear-gradient(135deg, #DC143C, #8B0000)';
         tile.classList.add('revealed');
         gameOver(false);
     } else {
-        // Safe tile
         tile.textContent = '💎';
         tile.style.background = 'linear-gradient(135deg, #FFD700, #FFA500)';
         tile.classList.add('revealed');
         
-        // Calculate win
         const winPerTile = Math.floor(gameState.currentBet * 0.15);
         gameState.currentWin += winPerTile;
         updateDisplay();
@@ -602,14 +582,12 @@ function clickTile(index) {
     }
 }
 
-// Start game
 function startGame() {
     gameState.gameActive = true;
     gameState.minePositions = [];
     gameState.revealedTiles = [];
     gameState.currentWin = 0;
     
-    // Place mines
     while (gameState.minePositions.length < gameState.minesCount) {
         const pos = Math.floor(Math.random() * 25);
         if (!gameState.minePositions.includes(pos)) {
@@ -620,43 +598,26 @@ function startGame() {
     updateDisplay();
 }
 
-// Cash out
-async function cashout() {
+function cashout() {
     if (!gameState.gameActive || gameState.currentWin === 0) return;
     
     const totalReturn = gameState.currentBet + gameState.currentWin;
+    gameState.balance += totalReturn;
     
-    try {
-        const response = await fetch(API_URL + '/api/cashout', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({
-                userId: gameState.userId,
-                betAmount: gameState.currentBet,
-                winAmount: gameState.currentWin,
-                totalReturn
-            })
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            gameState.balance += totalReturn;
-            gameState.currentBet = 0;
-            gameState.currentWin = 0;
-            gameState.gameActive = false;
-            document.getElementById('cashoutBtn').disabled = true;
-            
-            updateDisplay();
-            revealAllTiles();
-            showMessage('gameMsg', `Cashed out Rs ${totalReturn}! 🎉`, 'success');
-        }
-    } catch (error) {
-        console.error('Cashout error:', error);
-    }
+    const userData = load('user_' + gameState.userPhone);
+    userData.balance = gameState.balance;
+    save('user_' + gameState.userPhone, userData);
+    
+    gameState.currentBet = 0;
+    gameState.currentWin = 0;
+    gameState.gameActive = false;
+    document.getElementById('cashoutBtn').disabled = true;
+    
+    updateDisplay();
+    revealAllTiles();
+    showMessage('gameMsg', `Cashed out Rs ${totalReturn}! 🎉`, 'success');
 }
 
-// Game over
 function gameOver(won) {
     gameState.gameActive = false;
     gameState.currentBet = 0;
@@ -671,7 +632,6 @@ function gameOver(won) {
     }
 }
 
-// Reveal all tiles
 function revealAllTiles() {
     const tiles = document.querySelectorAll('.tile');
     tiles.forEach((tile, i) => {
@@ -688,7 +648,6 @@ function revealAllTiles() {
     });
 }
 
-// Reset game
 function resetGame() {
     gameState.gameActive = false;
     gameState.currentWin = 0;
@@ -700,7 +659,6 @@ function resetGame() {
     updateDisplay();
 }
 
-// Update display
 function updateDisplay() {
     document.getElementById('balance').textContent = gameState.balance;
     document.getElementById('win').textContent = gameState.currentWin;
@@ -708,8 +666,7 @@ function updateDisplay() {
     document.getElementById('minesDisplay').textContent = gameState.minesCount;
 }
 
-// Deposit request
-async function submitDeposit() {
+function submitDeposit() {
     const amount = parseInt(document.getElementById('depositAmount').value);
     const screenshot = document.getElementById('depositScreenshot').files[0];
     
@@ -723,37 +680,26 @@ async function submitDeposit() {
         return;
     }
     
-    const formData = new FormData();
-    formData.append('userId', gameState.userId);
-    formData.append('name', gameState.userName);
-    formData.append('phone', gameState.userPhone);
-    formData.append('amount', amount);
-    formData.append('screenshot', screenshot);
+    const requests = load('depositRequests') || [];
+    requests.push({
+        id: Date.now(),
+        userId: gameState.userId,
+        name: gameState.userName,
+        phone: gameState.userPhone,
+        amount,
+        screenshot: screenshot.name,
+        status: 'pending',
+        timestamp: new Date().toISOString()
+    });
+    save('depositRequests', requests);
     
-    try {
-        const response = await fetch(API_URL + '/api/deposit-request', {
-            method: 'POST',
-            body: formData
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            alert('Deposit request submitted! Admin will approve soon.');
-            closeModal('depositModal');
-            document.getElementById('depositAmount').value = '';
-            document.getElementById('depositScreenshot').value = '';
-        } else {
-            alert('Error: ' + data.message);
-        }
-    } catch (error) {
-        console.error('Deposit error:', error);
-        alert('Connection error. Please try again.');
-    }
+    alert('Deposit request submitted! Admin will approve soon.');
+    closeModal('depositModal');
+    document.getElementById('depositAmount').value = '';
+    document.getElementById('depositScreenshot').value = '';
 }
 
-// Withdraw request
-async function submitWithdraw() {
+function submitWithdraw() {
     const jazzCash = document.getElementById('withdrawJazz').value.trim();
     const amount = parseInt(document.getElementById('withdrawAmount').value);
     
@@ -772,36 +718,25 @@ async function submitWithdraw() {
         return;
     }
     
-    try {
-        const response = await fetch(API_URL + '/api/withdraw-request', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({
-                userId: gameState.userId,
-                name: gameState.userName,
-                phone: gameState.userPhone,
-                jazzCash,
-                amount
-            })
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            alert('Withdraw request submitted! Admin will process soon.');
-            closeModal('withdrawModal');
-            document.getElementById('withdrawJazz').value = '';
-            document.getElementById('withdrawAmount').value = '';
-        } else {
-            alert('Error: ' + data.message);
-        }
-    } catch (error) {
-        console.error('Withdraw error:', error);
-        alert('Connection error. Please try again.');
-    }
+    const requests = load('withdrawRequests') || [];
+    requests.push({
+        id: Date.now(),
+        userId: gameState.userId,
+        name: gameState.userName,
+        phone: gameState.userPhone,
+        jazzCash,
+        amount,
+        status: 'pending',
+        timestamp: new Date().toISOString()
+    });
+    save('withdrawRequests', requests);
+    
+    alert('Withdraw request submitted! Admin will process soon.');
+    closeModal('withdrawModal');
+    document.getElementById('withdrawJazz').value = '';
+    document.getElementById('withdrawAmount').value = '';
 }
 
-// Set bet
 function openBetModal() {
     if (gameState.gameActive) {
         alert('Cannot change bet during active game!');
@@ -810,7 +745,7 @@ function openBetModal() {
     document.getElementById('betModal').classList.add('active');
 }
 
-async function setBet() {
+function setBet() {
     const amount = parseInt(document.getElementById('betInput').value);
     
     if (!amount || amount < 100 || amount > 10000) {
@@ -826,26 +761,15 @@ async function setBet() {
     gameState.balance -= amount;
     gameState.currentBet = amount;
     
-    // Update on server
-    try {
-        await fetch(API_URL + '/api/update-balance', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({
-                userId: gameState.userId,
-                balance: gameState.balance
-            })
-        });
-    } catch (error) {
-        console.error('Balance update error:', error);
-    }
+    const userData = load('user_' + gameState.userPhone);
+    userData.balance = gameState.balance;
+    save('user_' + gameState.userPhone, userData);
     
     updateDisplay();
     closeModal('betModal');
     showMessage('gameMsg', 'Bet set! Start playing!', 'success');
 }
 
-// Set mines
 function openMinesModal() {
     if (gameState.gameActive) {
         alert('Cannot change mines during active game!');
@@ -867,7 +791,6 @@ function setMines() {
     closeModal('minesModal');
 }
 
-// Modal handlers
 function openDepositModal() {
     document.getElementById('depositModal').classList.add('active');
 }
@@ -880,7 +803,6 @@ function closeModal(id) {
     document.getElementById(id).classList.remove('active');
 }
 
-// Show message
 function showMessage(elementId, text, type) {
     const el = document.getElementById(elementId);
     el.textContent = text;
