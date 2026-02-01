@@ -66,7 +66,7 @@
             background: rgba(255, 255, 255, 0.9);
         }
 
-        .login-btn {
+        .login-btn, .otp-btn {
             width: 100%;
             padding: 15px;
             background: linear-gradient(135deg, #4CAF50, #45a049);
@@ -77,10 +77,49 @@
             font-weight: bold;
             cursor: pointer;
             transition: transform 0.2s;
+            margin-top: 10px;
         }
 
-        .login-btn:hover {
+        .login-btn:hover, .otp-btn:hover {
             transform: translateY(-2px);
+        }
+
+        .login-btn:disabled, .otp-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .otp-section {
+            display: none;
+            margin-top: 20px;
+        }
+
+        .otp-section.active {
+            display: block;
+        }
+
+        .otp-note {
+            background: rgba(255, 215, 0, 0.1);
+            border: 1px solid #FFD700;
+            padding: 10px;
+            border-radius: 5px;
+            color: #FFD700;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+
+        .game-container {
+            background: rgba(20, 40, 80, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 50px rgba(0, 0, 0, 0.5);
+            max-width: 600px;
+            width: 100%;
+            display: none;
+        }
+
+        .game-container.active {
+            display: block;
         }
 
         .user-info {
@@ -99,6 +138,11 @@
             font-size: 16px;
         }
 
+        .user-phone {
+            color: #aaa;
+            font-size: 12px;
+        }
+
         .logout-btn {
             background: linear-gradient(135deg, #DC143C, #8B0000);
             color: white;
@@ -112,20 +156,6 @@
 
         .logout-btn:hover {
             opacity: 0.9;
-        }
-
-        .game-container {
-            background: rgba(20, 40, 80, 0.95);
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 10px 50px rgba(0, 0, 0, 0.5);
-            max-width: 600px;
-            width: 100%;
-            display: none;
-        }
-
-        .game-container.active {
-            display: block;
         }
 
         .header {
@@ -290,6 +320,33 @@
             cursor: not-allowed;
         }
 
+        .message {
+            display: none;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .message.success {
+            background: rgba(76, 175, 80, 0.3);
+            border: 2px solid #4CAF50;
+            color: #4CAF50;
+        }
+
+        .message.error {
+            background: rgba(244, 67, 54, 0.3);
+            border: 2px solid #f44336;
+            color: #f44336;
+        }
+
+        .message.info {
+            background: rgba(33, 150, 243, 0.3);
+            border: 2px solid #2196F3;
+            color: #2196F3;
+        }
+
         .modal {
             display: none;
             position: fixed;
@@ -327,13 +384,18 @@
             margin-bottom: 5px;
         }
 
-        .input-group input {
+        .input-group input, .input-group textarea {
             width: 100%;
             padding: 10px;
             border: 2px solid #4169E1;
             border-radius: 5px;
             font-size: 16px;
             background: rgba(255, 255, 255, 0.9);
+        }
+
+        .input-group textarea {
+            resize: vertical;
+            min-height: 80px;
         }
 
         .modal-buttons {
@@ -358,53 +420,67 @@
         }
 
         .cancel-btn {
-            background: linear-gradient(135deg, #f44336, #d32f2f);
+            background: linear-gradient(135deg, #757575, #616161);
             color: white;
         }
 
-        .message {
-            text-align: center;
+        .jazzcash-info {
+            background: rgba(255, 215, 0, 0.1);
+            border: 2px solid #FFD700;
             padding: 15px;
-            margin-bottom: 20px;
             border-radius: 10px;
+            margin-bottom: 15px;
+        }
+
+        .jazzcash-info h3 {
+            color: #FFD700;
+            margin-bottom: 10px;
+        }
+
+        .jazzcash-info p {
+            color: #fff;
+            margin: 5px 0;
+        }
+
+        .jazzcash-number {
+            font-size: 24px;
             font-weight: bold;
-            display: none;
+            color: #FFD700;
+            text-align: center;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 5px;
+            margin: 10px 0;
         }
 
-        .message.success {
-            background: rgba(76, 175, 80, 0.3);
-            border: 2px solid #4CAF50;
+        .pending-status {
+            background: rgba(255, 152, 0, 0.2);
+            border: 1px solid #FF9800;
+            padding: 8px 12px;
+            border-radius: 5px;
+            color: #FF9800;
+            font-size: 12px;
+            display: inline-block;
+        }
+
+        .approved-status {
+            background: rgba(76, 175, 80, 0.2);
+            border: 1px solid #4CAF50;
+            padding: 8px 12px;
+            border-radius: 5px;
             color: #4CAF50;
+            font-size: 12px;
+            display: inline-block;
         }
 
-        .message.error {
-            background: rgba(244, 67, 54, 0.3);
-            border: 2px solid #f44336;
+        .rejected-status {
+            background: rgba(244, 67, 54, 0.2);
+            border: 1px solid #f44336;
+            padding: 8px 12px;
+            border-radius: 5px;
             color: #f44336;
-        }
-
-        .message.info {
-            background: rgba(33, 150, 243, 0.3);
-            border: 2px solid #2196F3;
-            color: #2196F3;
-        }
-
-        @media (max-width: 600px) {
-            .title {
-                font-size: 36px;
-            }
-
-            .game-grid {
-                gap: 5px;
-            }
-
-            .tile {
-                font-size: 30px;
-            }
-
-            .controls {
-                grid-template-columns: 1fr;
-            }
+            font-size: 12px;
+            display: inline-block;
         }
     </style>
 </head>
@@ -417,15 +493,30 @@
             <input type="text" id="loginName" placeholder="Enter your full name" />
         </div>
         <div class="login-input-group">
-            <label>Phone Number</label>
-            <input type="tel" id="loginPhone" placeholder="+92 300 1234567" />
+            <label>Phone Number (03XX-XXXXXXX)</label>
+            <input type="tel" id="loginPhone" placeholder="03001234567" maxlength="11" />
         </div>
-        <button class="login-btn" onclick="handleLogin()">LOGIN & START PLAYING</button>
+        <button class="login-btn" onclick="sendOTP()">Send OTP</button>
+        
+        <div class="otp-section" id="otpSection">
+            <div class="otp-note">
+                📱 OTP sent to your number! (Demo: Use 1234)
+            </div>
+            <div class="login-input-group">
+                <label>Enter OTP</label>
+                <input type="text" id="otpInput" placeholder="Enter 4-digit OTP" maxlength="4" />
+            </div>
+            <button class="otp-btn" onclick="verifyOTP()">Verify & Login</button>
+        </div>
     </div>
 
+    <!-- Game Container -->
     <div class="game-container" id="gameContainer">
         <div class="user-info">
-            <span class="user-name" id="userName"></span>
+            <div>
+                <div class="user-name" id="userName"></div>
+                <div class="user-phone" id="userPhoneDisplay"></div>
+            </div>
             <button class="logout-btn" onclick="handleLogout()">Logout</button>
         </div>
         <div class="header">
@@ -447,34 +538,48 @@
                 <div class="balance-label">Current Win</div>
                 <div class="balance-value">Rs <span id="currentWin">0</span></div>
             </div>
+            <div class="balance-item">
+                <div class="balance-label">Bet Amount</div>
+                <div class="balance-value">Rs <span id="currentBet">0</span></div>
+            </div>
+            <div class="balance-item">
+                <div class="balance-label">Mines</div>
+                <div class="balance-value"><span id="minesCount">3</span></div>
+            </div>
         </div>
 
         <div class="controls">
-            <button class="control-btn bet-btn" onclick="openBetModal()">
-                💰 Bet Rs<span id="currentBet">100</span>
-            </button>
-            <button class="control-btn mines-btn" onclick="openMinesModal()">
-                💣 Mines: <span id="minesCount">3</span>
-            </button>
-            <button class="control-btn cashout-btn" id="cashoutBtn" onclick="cashout()" disabled>
-                💵 Cash Out
-            </button>
-            <button class="control-btn reset-btn" onclick="resetGame()">
-                🔄 Reset
-            </button>
+            <button class="control-btn bet-btn" onclick="openBetModal()">💰 SET BET</button>
+            <button class="control-btn mines-btn" onclick="openMinesModal()">💣 SET MINES</button>
+            <button class="control-btn cashout-btn" id="cashoutBtn" onclick="cashout()" disabled>💵 CASH OUT</button>
+            <button class="control-btn reset-btn" onclick="resetGame()">🔄 RESET</button>
         </div>
     </div>
 
     <!-- Deposit Modal -->
     <div class="modal" id="depositModal">
         <div class="modal-content">
-            <h2>💰 Deposit Funds</h2>
+            <h2>💰 Deposit Request</h2>
+            <div class="jazzcash-info">
+                <h3>📱 Send Money to JazzCash:</h3>
+                <div class="jazzcash-number">03XX-XXXXXXX</div>
+                <p><strong>Account Name:</strong> Game Owner</p>
+                <p>⚠️ Send exact amount you want to deposit</p>
+            </div>
             <div class="input-group">
-                <label>Amount (Rs)</label>
-                <input type="number" id="depositAmount" placeholder="Enter amount" min="100" step="100">
+                <label>Amount to Deposit (Rs)</label>
+                <input type="number" id="depositAmount" placeholder="Enter amount (min 100)" min="100">
+            </div>
+            <div class="input-group">
+                <label>Transaction ID / Reference Number</label>
+                <input type="text" id="transactionId" placeholder="Enter JazzCash transaction ID">
+            </div>
+            <div class="input-group">
+                <label>Note (Optional)</label>
+                <textarea id="depositNote" placeholder="Any message for admin..."></textarea>
             </div>
             <div class="modal-buttons">
-                <button class="modal-btn confirm-btn" onclick="confirmDeposit()">Confirm</button>
+                <button class="modal-btn confirm-btn" onclick="submitDepositRequest()">Submit Request</button>
                 <button class="modal-btn cancel-btn" onclick="closeModal('depositModal')">Cancel</button>
             </div>
         </div>
@@ -483,13 +588,24 @@
     <!-- Withdraw Modal -->
     <div class="modal" id="withdrawModal">
         <div class="modal-content">
-            <h2>💸 Withdraw Funds</h2>
+            <h2>💸 Withdraw Request</h2>
             <div class="input-group">
-                <label>Amount (Rs)</label>
-                <input type="number" id="withdrawAmount" placeholder="Enter amount" min="100" step="100">
+                <label>Your JazzCash Number</label>
+                <input type="tel" id="withdrawJazzCash" placeholder="03001234567" maxlength="11">
             </div>
+            <div class="input-group">
+                <label>Amount to Withdraw (Rs)</label>
+                <input type="number" id="withdrawAmount" placeholder="Enter amount (min 100)" min="100">
+            </div>
+            <div class="input-group">
+                <label>Note (Optional)</label>
+                <textarea id="withdrawNote" placeholder="Any message for admin..."></textarea>
+            </div>
+            <p style="color: #FFD700; font-size: 14px; margin-top: 10px;">
+                ⏳ Your withdrawal will be processed by admin within 24 hours
+            </p>
             <div class="modal-buttons">
-                <button class="modal-btn confirm-btn" onclick="confirmWithdraw()">Confirm</button>
+                <button class="modal-btn confirm-btn" onclick="submitWithdrawRequest()">Submit Request</button>
                 <button class="modal-btn cancel-btn" onclick="closeModal('withdrawModal')">Cancel</button>
             </div>
         </div>
@@ -500,8 +616,8 @@
         <div class="modal-content">
             <h2>💰 Set Bet Amount</h2>
             <div class="input-group">
-                <label>Bet Amount (Rs)</label>
-                <input type="number" id="betAmount" placeholder="Enter bet amount" min="100" max="10000" step="10" value="100">
+                <label>Bet Amount (Rs 100 - Rs 10,000)</label>
+                <input type="number" id="betAmount" placeholder="Enter bet amount" min="100" max="10000" value="0">
             </div>
             <div class="modal-buttons">
                 <button class="modal-btn confirm-btn" onclick="confirmBet()">Confirm</button>
@@ -526,628 +642,8 @@
     </div>
 
     <script>
-        let gameState = {
-            userName: '',
-            userPhone: '',
-            balance: 0,
-            totalDeposit: 0,
-            totalWon: 0,
-            totalLost: 0,
-            currentBet: 0,
-            minesCount: 3,
-            currentWin: 0,
-            gameActive: false,
-            revealedTiles: 0,
-            minePositions: []
-        };
-
-        // Save game state to localStorage
-        function saveGameState() {
-            localStorage.setItem('minesGameState', JSON.stringify(gameState));
-        }
-
-        // Load game state from localStorage
-        function loadGameState() {
-            const saved = localStorage.getItem('minesGameState');
-            if (saved) {
-                const loadedState = JSON.parse(saved);
-                gameState = { ...gameState, ...loadedState };
-                // Don't restore active game state
-                gameState.gameActive = false;
-                gameState.currentWin = 0;
-                gameState.revealedTiles = 0;
-                gameState.minePositions = [];
-            }
-        }
-
-        // Handle login
-        function handleLogin() {
-            const name = document.getElementById('loginName').value.trim();
-            const phone = document.getElementById('loginPhone').value.trim();
-
-            if (!name || name.length < 3) {
-                alert('Please enter your complete name (minimum 3 characters)');
-                return;
-            }
-
-            if (!phone || phone.length < 10) {
-                alert('Please enter a valid phone number');
-                return;
-            }
-
-            // Validate phone number format
-            const phoneRegex = /^(\+92|0)?[0-9]{10}$/;
-            if (!phoneRegex.test(phone.replace(/[\s-]/g, ''))) {
-                alert('Please enter a valid Pakistani phone number');
-                return;
-            }
-
-            gameState.userName = name;
-            gameState.userPhone = phone;
-            
-            // Save user data
-            saveGameState();
-            
-            // Show game, hide login
-            document.getElementById('loginContainer').classList.remove('active');
-            document.getElementById('gameContainer').classList.add('active');
-            document.getElementById('userName').textContent = name;
-            
-            showMessage(`Welcome ${name}! 🎮`, 'success');
-        }
-
-        // Handle logout
-        function handleLogout() {
-            if (confirm('Are you sure you want to logout? Your balance will be saved.')) {
-                saveGameState();
-                document.getElementById('gameContainer').classList.remove('active');
-                document.getElementById('loginContainer').classList.add('active');
-                document.getElementById('loginName').value = '';
-                document.getElementById('loginPhone').value = '';
-            }
-        }
-
-        // Create professional silver coin SVG - realistic iron/steel metal texture
-        function createSilverCoin() {
-            return `
-                <svg viewBox="0 0 100 100" style="width: 100%; height: 100%;">
-                    <!-- Deep bottom shadow for 3D depth -->
-                    <ellipse cx="50" cy="55" rx="46" ry="9" fill="rgba(0,0,0,0.5)" opacity="0.7"/>
-                    
-                    <!-- Outer coin edge with beveled look -->
-                    <circle cx="50" cy="50" r="47" fill="url(#silverEdgeBevel)" stroke="#5A5A5A" stroke-width="1"/>
-                    
-                    <!-- Side thickness of coin (3D effect) -->
-                    <circle cx="50" cy="50" r="45" fill="url(#silverSideThickness)"/>
-                    
-                    <!-- Main coin face with hammered metal texture -->
-                    <circle cx="50" cy="50" r="43" fill="url(#silverMainFace)" stroke="#888888" stroke-width="0.8"/>
-                    
-                    <!-- Outer decorative ridge -->
-                    <circle cx="50" cy="50" r="41" fill="none" stroke="url(#silverRidge1)" stroke-width="2" opacity="0.8"/>
-                    
-                    <!-- Middle decorative band -->
-                    <circle cx="50" cy="50" r="38" fill="none" stroke="url(#silverRidge2)" stroke-width="1.5"/>
-                    
-                    <!-- Inner raised platform for text -->
-                    <circle cx="50" cy="50" r="35" fill="url(#silverInnerPlatform)"/>
-                    
-                    <!-- Subtle radial lines for texture -->
-                    <g opacity="0.15">
-                        <line x1="50" y1="15" x2="50" y2="20" stroke="#000" stroke-width="0.5"/>
-                        <line x1="65" y1="20" x2="63" y2="25" stroke="#000" stroke-width="0.5"/>
-                        <line x1="75" y1="35" x2="72" y2="38" stroke="#000" stroke-width="0.5"/>
-                        <line x1="80" y1="50" x2="75" y2="50" stroke="#000" stroke-width="0.5"/>
-                        <line x1="75" y1="65" x2="72" y2="62" stroke="#000" stroke-width="0.5"/>
-                        <line x1="65" y1="80" x2="63" y2="75" stroke="#000" stroke-width="0.5"/>
-                        <line x1="50" y1="85" x2="50" y2="80" stroke="#000" stroke-width="0.5"/>
-                        <line x1="35" y1="80" x2="37" y2="75" stroke="#000" stroke-width="0.5"/>
-                        <line x1="25" y1="65" x2="28" y2="62" stroke="#000" stroke-width="0.5"/>
-                        <line x1="20" y1="50" x2="25" y2="50" stroke="#000" stroke-width="0.5"/>
-                        <line x1="25" y1="35" x2="28" y2="38" stroke="#000" stroke-width="0.5"/>
-                        <line x1="35" y1="20" x2="37" y2="25" stroke="#000" stroke-width="0.5"/>
-                    </g>
-                    
-                    <!-- Rs symbol with deep engraved effect -->
-                    <text x="50" y="68" font-size="36" font-weight="bold" fill="#4A4A4A" text-anchor="middle" 
-                          style="font-family: 'Times New Roman', serif; 
-                                 paint-order: stroke; 
-                                 stroke: rgba(0,0,0,0.4); 
-                                 stroke-width: 0.8px;
-                                 filter: url(#emboss);">Rs</text>
-                    
-                    <!-- Light reflection on top (polished metal effect) -->
-                    <ellipse cx="50" cy="23" rx="24" ry="10" fill="rgba(255,255,255,0.6)" opacity="0.7"/>
-                    <ellipse cx="35" cy="32" rx="10" ry="6" fill="rgba(255,255,255,0.4)" opacity="0.5"/>
-                    <circle cx="68" cy="30" r="3" fill="rgba(255,255,255,0.5)" opacity="0.6"/>
-                    
-                    <!-- Bottom shadow on face for depth -->
-                    <ellipse cx="50" cy="77" rx="24" ry="8" fill="rgba(0,0,0,0.15)" opacity="0.4"/>
-                    
-                    <defs>
-                        <!-- Edge bevel gradient -->
-                        <linearGradient id="silverEdgeBevel" x1="0%" y1="0%" x2="0%" y2="100%">
-                            <stop offset="0%" style="stop-color:#A8A8A8;stop-opacity:1" />
-                            <stop offset="50%" style="stop-color:#C8C8C8;stop-opacity:1" />
-                            <stop offset="100%" style="stop-color:#888888;stop-opacity:1" />
-                        </linearGradient>
-                        
-                        <!-- Side thickness gradient -->
-                        <linearGradient id="silverSideThickness" x1="30%" y1="30%" x2="70%" y2="70%">
-                            <stop offset="0%" style="stop-color:#B8B8B8;stop-opacity:1" />
-                            <stop offset="100%" style="stop-color:#909090;stop-opacity:1" />
-                        </linearGradient>
-                        
-                        <!-- Main face with hammered texture -->
-                        <radialGradient id="silverMainFace">
-                            <stop offset="0%" style="stop-color:#F5F5F5;stop-opacity:1" />
-                            <stop offset="40%" style="stop-color:#E0E0E0;stop-opacity:1" />
-                            <stop offset="70%" style="stop-color:#D0D0D0;stop-opacity:1" />
-                            <stop offset="100%" style="stop-color:#B8B8B8;stop-opacity:1" />
-                        </radialGradient>
-                        
-                        <!-- Ridge gradients for decorative bands -->
-                        <linearGradient id="silverRidge1" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" style="stop-color:#A0A0A0;stop-opacity:1" />
-                            <stop offset="50%" style="stop-color:#D8D8D8;stop-opacity:1" />
-                            <stop offset="100%" style="stop-color:#989898;stop-opacity:1" />
-                        </linearGradient>
-                        
-                        <linearGradient id="silverRidge2" x1="100%" y1="0%" x2="0%" y2="100%">
-                            <stop offset="0%" style="stop-color:#B8B8B8;stop-opacity:1" />
-                            <stop offset="50%" style="stop-color:#E8E8E8;stop-opacity:1" />
-                            <stop offset="100%" style="stop-color:#A8A8A8;stop-opacity:1" />
-                        </linearGradient>
-                        
-                        <!-- Inner platform gradient -->
-                        <radialGradient id="silverInnerPlatform">
-                            <stop offset="0%" style="stop-color:#E8E8E8;stop-opacity:1" />
-                            <stop offset="100%" style="stop-color:#C8C8C8;stop-opacity:1" />
-                        </radialGradient>
-                        
-                        <!-- Emboss filter for text -->
-                        <filter id="emboss">
-                            <feGaussianBlur in="SourceAlpha" stdDeviation="1" result="blur"/>
-                            <feOffset in="blur" dx="1" dy="1" result="offsetBlur"/>
-                            <feSpecularLighting in="blur" surfaceScale="3" specularConstant="0.8" specularExponent="20" lighting-color="white" result="specOut">
-                                <fePointLight x="-5000" y="-10000" z="20000"/>
-                            </feSpecularLighting>
-                            <feComposite in="specOut" in2="SourceAlpha" operator="in" result="specOut"/>
-                            <feComposite in="SourceGraphic" in2="specOut" operator="arithmetic" k1="0" k2="1" k3="1" k4="0"/>
-                        </filter>
-                    </defs>
-                </svg>
-            `;
-        }
-
-        // Create professional gold coin SVG - realistic gold metal texture
-        function createGoldCoin() {
-            return `
-                <svg viewBox="0 0 100 100" style="width: 100%; height: 100%;">
-                    <!-- Deep bottom shadow for 3D depth -->
-                    <ellipse cx="50" cy="55" rx="46" ry="9" fill="rgba(0,0,0,0.6)" opacity="0.7"/>
-                    
-                    <!-- Outer coin edge with beveled look -->
-                    <circle cx="50" cy="50" r="47" fill="url(#goldEdgeBevel)" stroke="#8B6914" stroke-width="1"/>
-                    
-                    <!-- Side thickness of coin (3D effect) -->
-                    <circle cx="50" cy="50" r="45" fill="url(#goldSideThickness)"/>
-                    
-                    <!-- Main coin face with polished metal texture -->
-                    <circle cx="50" cy="50" r="43" fill="url(#goldMainFace)" stroke="#B8860B" stroke-width="0.8"/>
-                    
-                    <!-- Outer decorative ridge -->
-                    <circle cx="50" cy="50" r="41" fill="none" stroke="url(#goldRidge1)" stroke-width="2" opacity="0.9"/>
-                    
-                    <!-- Middle decorative band -->
-                    <circle cx="50" cy="50" r="38" fill="none" stroke="url(#goldRidge2)" stroke-width="1.5"/>
-                    
-                    <!-- Inner raised platform for text -->
-                    <circle cx="50" cy="50" r="35" fill="url(#goldInnerPlatform)"/>
-                    
-                    <!-- Subtle radial lines for texture -->
-                    <g opacity="0.2">
-                        <line x1="50" y1="15" x2="50" y2="20" stroke="#8B6914" stroke-width="0.5"/>
-                        <line x1="65" y1="20" x2="63" y2="25" stroke="#8B6914" stroke-width="0.5"/>
-                        <line x1="75" y1="35" x2="72" y2="38" stroke="#8B6914" stroke-width="0.5"/>
-                        <line x1="80" y1="50" x2="75" y2="50" stroke="#8B6914" stroke-width="0.5"/>
-                        <line x1="75" y1="65" x2="72" y2="62" stroke="#8B6914" stroke-width="0.5"/>
-                        <line x1="65" y1="80" x2="63" y2="75" stroke="#8B6914" stroke-width="0.5"/>
-                        <line x1="50" y1="85" x2="50" y2="80" stroke="#8B6914" stroke-width="0.5"/>
-                        <line x1="35" y1="80" x2="37" y2="75" stroke="#8B6914" stroke-width="0.5"/>
-                        <line x1="25" y1="65" x2="28" y2="62" stroke="#8B6914" stroke-width="0.5"/>
-                        <line x1="20" y1="50" x2="25" y2="50" stroke="#8B6914" stroke-width="0.5"/>
-                        <line x1="25" y1="35" x2="28" y2="38" stroke="#8B6914" stroke-width="0.5"/>
-                        <line x1="35" y1="20" x2="37" y2="25" stroke="#8B6914" stroke-width="0.5"/>
-                    </g>
-                    
-                    <!-- Rs symbol with raised embossed effect -->
-                    <text x="50" y="68" font-size="36" font-weight="bold" fill="#8B6914" text-anchor="middle" 
-                          style="font-family: 'Times New Roman', serif; 
-                                 paint-order: stroke; 
-                                 stroke: rgba(255,215,0,0.5); 
-                                 stroke-width: 0.8px;
-                                 filter: url(#goldEmboss);">Rs</text>
-                    
-                    <!-- Light reflection on top (polished gold effect) -->
-                    <ellipse cx="50" cy="23" rx="24" ry="10" fill="rgba(255,255,255,0.7)" opacity="0.8"/>
-                    <ellipse cx="35" cy="32" rx="10" ry="6" fill="rgba(255,255,255,0.5)" opacity="0.6"/>
-                    <circle cx="68" cy="30" r="3" fill="rgba(255,255,255,0.6)" opacity="0.7"/>
-                    
-                    <!-- Gold sparkle effects -->
-                    <circle cx="70" cy="28" r="1.5" fill="rgba(255,255,255,0.9)" opacity="0.9"/>
-                    <circle cx="75" cy="42" r="1" fill="rgba(255,255,255,0.8)" opacity="0.8"/>
-                    <circle cx="28" cy="38" r="1.2" fill="rgba(255,255,255,0.85)" opacity="0.85"/>
-                    
-                    <!-- Bottom shadow on face for depth -->
-                    <ellipse cx="50" cy="77" rx="24" ry="8" fill="rgba(139,105,20,0.2)" opacity="0.5"/>
-                    
-                    <defs>
-                        <!-- Edge bevel gradient -->
-                        <linearGradient id="goldEdgeBevel" x1="0%" y1="0%" x2="0%" y2="100%">
-                            <stop offset="0%" style="stop-color:#DAA520;stop-opacity:1" />
-                            <stop offset="50%" style="stop-color:#FFD700;stop-opacity:1" />
-                            <stop offset="100%" style="stop-color:#B8860B;stop-opacity:1" />
-                        </linearGradient>
-                        
-                        <!-- Side thickness gradient -->
-                        <linearGradient id="goldSideThickness" x1="30%" y1="30%" x2="70%" y2="70%">
-                            <stop offset="0%" style="stop-color:#F4C430;stop-opacity:1" />
-                            <stop offset="100%" style="stop-color:#DAA520;stop-opacity:1" />
-                        </linearGradient>
-                        
-                        <!-- Main face with polished texture -->
-                        <radialGradient id="goldMainFace">
-                            <stop offset="0%" style="stop-color:#FFF8DC;stop-opacity:1" />
-                            <stop offset="30%" style="stop-color:#FFEC8B;stop-opacity:1" />
-                            <stop offset="60%" style="stop-color:#FFD700;stop-opacity:1" />
-                            <stop offset="100%" style="stop-color:#DAA520;stop-opacity:1" />
-                        </radialGradient>
-                        
-                        <!-- Ridge gradients for decorative bands -->
-                        <linearGradient id="goldRidge1" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" style="stop-color:#DAA520;stop-opacity:1" />
-                            <stop offset="50%" style="stop-color:#FFE55C;stop-opacity:1" />
-                            <stop offset="100%" style="stop-color:#B8860B;stop-opacity:1" />
-                        </linearGradient>
-                        
-                        <linearGradient id="goldRidge2" x1="100%" y1="0%" x2="0%" y2="100%">
-                            <stop offset="0%" style="stop-color:#F4C430;stop-opacity:1" />
-                            <stop offset="50%" style="stop-color:#FFD700;stop-opacity:1" />
-                            <stop offset="100%" style="stop-color:#DAA520;stop-opacity:1" />
-                        </linearGradient>
-                        
-                        <!-- Inner platform gradient -->
-                        <radialGradient id="goldInnerPlatform">
-                            <stop offset="0%" style="stop-color:#FFE873;stop-opacity:1" />
-                            <stop offset="100%" style="stop-color:#F4C430;stop-opacity:1" />
-                        </radialGradient>
-                        
-                        <!-- Gold emboss filter for text -->
-                        <filter id="goldEmboss">
-                            <feGaussianBlur in="SourceAlpha" stdDeviation="1" result="blur"/>
-                            <feOffset in="blur" dx="1" dy="1" result="offsetBlur"/>
-                            <feSpecularLighting in="blur" surfaceScale="4" specularConstant="1" specularExponent="25" lighting-color="#FFD700" result="specOut">
-                                <fePointLight x="-5000" y="-10000" z="20000"/>
-                            </feSpecularLighting>
-                            <feComposite in="specOut" in2="SourceAlpha" operator="in" result="specOut"/>
-                            <feComposite in="SourceGraphic" in2="specOut" operator="arithmetic" k1="0" k2="1" k3="1" k4="0"/>
-                        </filter>
-                    </defs>
-                </svg>
-            `;
-        }
-
-        // Initialize game
-        function initGame() {
-            // Load saved game state
-            loadGameState();
-            
-            // Check if user is logged in
-            if (gameState.userName && gameState.userPhone) {
-                document.getElementById('loginContainer').classList.remove('active');
-                document.getElementById('gameContainer').classList.add('active');
-                document.getElementById('userName').textContent = gameState.userName;
-            } else {
-                document.getElementById('loginContainer').classList.add('active');
-                document.getElementById('gameContainer').classList.remove('active');
-            }
-            
-            createGrid();
-            updateDisplay();
-        }
-
-        function createGrid() {
-            const grid = document.getElementById('gameGrid');
-            grid.innerHTML = '';
-            
-            // Create all 25 tiles with silver coins
-            for (let i = 0; i < 25; i++) {
-                const tile = document.createElement('div');
-                tile.className = 'tile unrevealed';
-                tile.dataset.index = i;
-                tile.innerHTML = createSilverCoin(); // All tiles start as silver coins
-                tile.onclick = () => revealTile(i);
-                grid.appendChild(tile);
-            }
-        }
-
-        function revealTile(index) {
-            if (!gameState.gameActive) {
-                if (gameState.currentBet === 0) {
-                    showMessage('Please set bet amount first!', 'error');
-                    return;
-                }
-                startGame();
-            }
-
-            const tiles = document.querySelectorAll('.tile');
-            const tile = tiles[index];
-
-            if (tile.classList.contains('revealed')) return;
-
-            tile.classList.remove('unrevealed');
-            tile.classList.add('revealed');
-
-            if (gameState.minePositions.includes(index)) {
-                // Hit a mine - show bomb
-                tile.classList.add('exploded');
-                tile.textContent = '💣';
-                tile.style.background = 'linear-gradient(135deg, #4B0082, #8B008B)';
-                tile.style.fontSize = '40px';
-                gameOver(false);
-            } else {
-                // Safe tile - convert silver to gold
-                tile.innerHTML = createGoldCoin();
-                gameState.revealedTiles++;
-                
-                // Calculate win based on mines count
-                let winAmount = 0;
-                if (gameState.minesCount === 1) winAmount = 5;
-                else if (gameState.minesCount === 2) winAmount = 10;
-                else if (gameState.minesCount === 3) winAmount = 20;
-                else if (gameState.minesCount === 4) winAmount = 40;
-                else if (gameState.minesCount === 5) winAmount = 50;
-                else if (gameState.minesCount === 6) winAmount = 60;
-                else if (gameState.minesCount === 7) winAmount = 70;
-                else if (gameState.minesCount === 8) winAmount = 80;
-                else if (gameState.minesCount === 9) winAmount = 90;
-                else if (gameState.minesCount === 10) winAmount = 100;
-                else winAmount = gameState.minesCount * 10;
-                
-                gameState.currentWin += winAmount;
-                updateDisplay();
-                document.getElementById('cashoutBtn').disabled = false;
-            }
-        }
-
-        function startGame() {
-            // Balance already deducted when bet was set
-            gameState.gameActive = true;
-            gameState.revealedTiles = 0;
-            gameState.currentWin = 0;
-
-            // Place mines randomly
-            gameState.minePositions = [];
-            while (gameState.minePositions.length < gameState.minesCount) {
-                const pos = Math.floor(Math.random() * 25);
-                if (!gameState.minePositions.includes(pos)) {
-                    gameState.minePositions.push(pos);
-                }
-            }
-
-            updateDisplay();
-            showMessage('Game started! Avoid the mines! 💣', 'info');
-        }
-
-        function cashout() {
-            if (!gameState.gameActive || gameState.currentWin === 0) return;
-
-            // Add both bet amount and winnings back to balance
-            const totalReturn = gameState.currentBet + gameState.currentWin;
-            gameState.balance += totalReturn;
-            gameState.totalWon += gameState.currentWin;
-            
-            showMessage(`Cashed out Rs ${totalReturn}! (Bet: ${gameState.currentBet} + Win: ${gameState.currentWin}) 🎉`, 'success');
-            
-            gameState.currentWin = 0;
-            gameState.currentBet = 0; // Reset bet amount to 0 on cashout
-            gameState.gameActive = false;
-            document.getElementById('cashoutBtn').disabled = true;
-            
-            updateDisplay();
-            saveGameState(); // Save to localStorage
-            revealAllTiles();
-        }
-
-        function gameOver(won) {
-            gameState.gameActive = false;
-            document.getElementById('cashoutBtn').disabled = true;
-
-            if (!won) {
-                gameState.totalLost += gameState.currentBet;
-                showMessage(`Game Over! Lost Rs ${gameState.currentBet} 💔`, 'error');
-                gameState.currentWin = 0;
-                gameState.currentBet = 0; // Reset bet amount to 0 when game is lost
-            }
-
-            updateDisplay();
-            saveGameState(); // Save to localStorage
-            revealAllTiles();
-        }
-
-        function revealAllTiles() {
-            const tiles = document.querySelectorAll('.tile');
-            tiles.forEach((tile, index) => {
-                if (!tile.classList.contains('revealed')) {
-                    tile.classList.remove('unrevealed');
-                    tile.classList.add('revealed');
-                    
-                    if (gameState.minePositions.includes(index)) {
-                        // Show bombs
-                        tile.textContent = '💣';
-                        tile.style.background = 'linear-gradient(135deg, #4B0082, #8B008B)';
-                        tile.style.fontSize = '40px';
-                    } else {
-                        // All other tiles become gold coins
-                        tile.innerHTML = createGoldCoin();
-                    }
-                }
-            });
-        }
-
-        function resetGame() {
-            gameState.gameActive = false;
-            gameState.revealedTiles = 0;
-            gameState.currentWin = 0;
-            gameState.minePositions = [];
-            
-            createGrid();
-            updateDisplay();
-            document.getElementById('cashoutBtn').disabled = true;
-            showMessage('Game reset! Place your bet to start.', 'info');
-        }
-
-        function updateDisplay() {
-            document.getElementById('balance').textContent = gameState.balance.toFixed(0);
-            document.getElementById('currentWin').textContent = gameState.currentWin.toFixed(0);
-            document.getElementById('currentBet').textContent = gameState.currentBet;
-            document.getElementById('minesCount').textContent = gameState.minesCount;
-        }
-
-        // Modal functions
-        function openDepositModal() {
-            document.getElementById('depositModal').style.display = 'flex';
-        }
-
-        function openWithdrawModal() {
-            document.getElementById('withdrawModal').style.display = 'flex';
-        }
-
-        function openBetModal() {
-            if (gameState.gameActive) {
-                showMessage('Cannot change bet during active game!', 'error');
-                return;
-            }
-            document.getElementById('betModal').style.display = 'flex';
-            document.getElementById('betAmount').value = gameState.currentBet;
-        }
-
-        function openMinesModal() {
-            if (gameState.gameActive) {
-                showMessage('Cannot change mines during active game!', 'error');
-                return;
-            }
-            document.getElementById('minesModal').style.display = 'flex';
-            document.getElementById('minesInput').value = gameState.minesCount;
-        }
-
-        function closeModal(modalId) {
-            document.getElementById(modalId).style.display = 'none';
-        }
-
-        function confirmDeposit() {
-            const amount = parseFloat(document.getElementById('depositAmount').value);
-            if (isNaN(amount) || amount < 100) {
-                showMessage('Minimum deposit is Rs 100', 'error');
-                return;
-            }
-
-            gameState.balance += amount;
-            gameState.totalDeposit += amount;
-            gameState.currentBet = 0; // Reset bet amount to 0 on deposit
-            updateDisplay();
-            saveGameState(); // Save to localStorage
-            closeModal('depositModal');
-            showMessage(`Successfully deposited Rs ${amount}! 💰`, 'success');
-            document.getElementById('depositAmount').value = '';
-        }
-
-        function confirmWithdraw() {
-            const amount = parseFloat(document.getElementById('withdrawAmount').value);
-            if (isNaN(amount) || amount < 100) {
-                showMessage('Minimum withdrawal is Rs 100', 'error');
-                return;
-            }
-
-            if (amount > gameState.balance) {
-                showMessage('Insufficient balance!', 'error');
-                return;
-            }
-
-            gameState.balance -= amount;
-            
-            // If balance becomes 0, reset bet amount to 0
-            if (gameState.balance === 0) {
-                gameState.currentBet = 0;
-            }
-            
-            updateDisplay();
-            saveGameState(); // Save to localStorage
-            closeModal('withdrawModal');
-            showMessage(`Successfully withdrew Rs ${amount}! 💸`, 'success');
-            document.getElementById('withdrawAmount').value = '';
-        }
-
-        function confirmBet() {
-            const amount = parseFloat(document.getElementById('betAmount').value);
-            if (isNaN(amount) || amount < 100) {
-                showMessage('Minimum bet is Rs 100', 'error');
-                return;
-            }
-
-            if (amount > 10000) {
-                showMessage('Maximum bet is Rs 10,000', 'error');
-                return;
-            }
-
-            if (amount > gameState.balance) {
-                showMessage('Bet amount exceeds balance!', 'error');
-                return;
-            }
-
-            // Deduct balance immediately when bet is set
-            gameState.balance -= amount;
-            gameState.currentBet = amount;
-            updateDisplay();
-            saveGameState(); // Save to localStorage
-            closeModal('betModal');
-            showMessage(`Bet set to Rs ${amount}. Balance deducted. Start playing!`, 'success');
-        }
-
-        function confirmMines() {
-            const count = parseInt(document.getElementById('minesInput').value);
-            if (isNaN(count) || count < 1 || count > 24) {
-                showMessage('Mines must be between 1 and 24', 'error');
-                return;
-            }
-
-            gameState.minesCount = count;
-            updateDisplay();
-            closeModal('minesModal');
-            showMessage(`Mines set to ${count}`, 'success');
-        }
-
-        function showMessage(text, type) {
-            const messageEl = document.getElementById('message');
-            messageEl.textContent = text;
-            messageEl.className = `message ${type}`;
-            messageEl.style.display = 'block';
-
-            setTimeout(() => {
-                messageEl.style.display = 'none';
-            }, 3000);
-        }
-
-        // Close modals when clicking outside
-        window.onclick = function(event) {
-            if (event.target.classList.contains('modal')) {
-                event.target.style.display = 'none';
-            }
-        }
-
-        // Initialize game on load
-        window.onload = initGame;
-    </script>
-</body>
-</html>
+        // Sound effects
+        const sounds = {
+            deposit: new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBjiJ0fDTgjMGHm7A7+OZUQ0PU6vm8KtfGgdBl9zvwmwhBjaD0O/cizkGGmm+7N+XUgwOUKzp77JiHQVCmNvwwm0hBjaF0e/fiTcGHGy/7N+ZUw0OUqzq8LFgHQVBl9vwwWwgBjaH0e/fjDcGHG2/7N+YVA0NU6vq8LBfHQZCmNvwwWwgBjaG0e/dizcGHG2/7N+YUw0NUqvp8LBgHQZCl9vwwWwgBjaH0e/dizcGHG6+7N+YVA0MUqrp8K9fHQZBl9vwwWwgBjaG0e/diTcGHG+/7N+XVA0MUavp77BfHQZBl9vwwGwgBjaG0e/ciTcGHG6+7N+XUw0MUqvp7/BfHQZBl9vwwWsgBjaG0e/cizcGHGy+7N+YUw0MUqvp8LBgHQZCl9vwwGwgBjaG0e/diTcGHGy/7N+YUw0MUqvp8LBfHgZBl9vwwWwgBjaG0e/diTcGHGy/7N+YVA0MUqvp8LBgHQZBl9vwwWsgBjaG0e/diTcGHGy/7N+YVA0MUqvp8LBfHgZBl9vwwWsgBjaG0e/diTcGHGy/7d+XVA0MUqvp8LBfHgZBl9vwwWwgBjaG0e/diTcGHGy/7N+YVA0MUqrp8LBfHgZBl9vwwWsgBjaG0e/cizcGHGy/7d+XVA0MUqvp8LBfHgZBl9vwwWsgBjaG0e/cizcGHGy/7N+YVA0MUqrp8K9fHgZBl9vwwWsgBjaG0e/cizcGHGy/7N+YVA0MUqvp8K9fHgZBl9vwwWsgBjaG0e/cizcGHGy/7N+YVA0MUqrp8K9fHQZBl9vwwGsgBjaG0e/cizcGHGy/7N+XVA0MUqrp8K9fHQZBl9vwwGsgBjaG0e/cizcGHGy/7N+YVA0MUqvp8K9fHQZBl9vwwGsgBjaG0e/cizcGHGy/7N+XVA0MUqvp8K9fHQZBl9vwwGsgBjaG0e/cizcGHGy/7N+XVA0MUqvp8K9fHQZBl9vwwGsgBjaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsg'),
+            win: new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBjiJ0fDTgjMGHm7A7+OZUQ0PU6vm8KtfGgdBl9zvwmwhBjaD0O/cizkGGmm+7N+XUgwOUKzp77JiHQVCmNvwwm0hBjaF0e/fiTcGHGy/7N+ZUw0OUqzq8LFgHQVBl9vwwWwgBjaH0e/fjDcGHG2/7N+YVA0NU6vq8LBfHQZCmNvwwWwgBjaG0e/dizcGHG2/7N+YUw0NUqvp8LBgHQZCl9vwwWwgBjaH0e/dizcGHG6+7N+YVA0MUqrp8K9fHQZBl9vwwWwgBjaG0e/diTcGHG+/7N+XVA0MUavp77BfHQZBl9vwwGwgBjaG0e/ciTcGHG6+7N+XUw0MUqvp7/BfHQZBl9vwwWsgBjaG0e/cizcGHGy+7N+YUw0MUqvp8LBgHQZCl9vwwGwgBjaG0e/diTcGHGy/7N+YUw0MUqvp8LBfHgZBl9vwwWwgBjaG0e/diTcGHGy/7N+YVA0MUqvp8LBgHQZBl9vwwWsgBjaG0e/diTcGHGy/7N+YVA0MUqvp8LBfHgZBl9vwwWsgBjaG0e/diTcGHGy/7d+XVA0MUqvp8LBfHgZBl9vwwWwgBjaG0e/diTcGHGy/7N+YVA0MUqrp8LBfHgZBl9vwwWsgBjaG0e/cizcGHGy/7d+XVA0MUqvp8LBfHgZBl9vwwWsgBjaG0e/cizcGHGy/7N+YVA0MUqrp8K9fHgZBl9vwwWsgBjaG0e/cizcGHGy/7N+YVA0MUqvp8K9fHgZBl9vwwWsgBjaG0e/cizcGHGy/7N+YVA0MUqrp8K9fHQZBl9vwwGsgBjaG0e/cizcGHGy/7N+XVA0MUqrp8K9fHQZBl9vwwGsgBjaG0e/cizcGHGy/7N+YVA0MUqvp8K9fHQZBl9vwwGsgBjaG0e/cizcGHGy/7N+XVA0MUqvp8K9fHQZBl9vwwGsgBjaG0e/cizcGHGy/7N+XVA0MUqvp8K9fHQZBl9vwwGsgBjaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsg'),
+            lose: new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIC
