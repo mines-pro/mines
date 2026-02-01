@@ -1,1 +1,1 @@
-# Cricket
+# mines-pro
