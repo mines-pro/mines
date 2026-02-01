@@ -1,649 +1,617 @@
 <!DOCTYPE html>
-<html lang="ur">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mines Jackpot Game</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Arial', sans-serif;
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-
-        .login-container {
-            background: rgba(20, 40, 80, 0.95);
-            border-radius: 20px;
-            padding: 40px;
-            box-shadow: 0 10px 50px rgba(0, 0, 0, 0.5);
-            max-width: 400px;
-            width: 100%;
-            display: none;
-        }
-
-        .login-container.active {
-            display: block;
-        }
-
-        .login-title {
-            font-size: 36px;
-            font-weight: bold;
-            background: linear-gradient(45deg, #FFD700, #FFA500);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-        .login-input-group {
-            margin-bottom: 20px;
-        }
-
-        .login-input-group label {
-            display: block;
-            color: #FFD700;
-            margin-bottom: 8px;
-            font-size: 16px;
-            font-weight: bold;
-        }
-
-        .login-input-group input {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #4169E1;
-            border-radius: 8px;
-            font-size: 16px;
-            background: rgba(255, 255, 255, 0.9);
-        }
-
-        .login-btn, .otp-btn {
-            width: 100%;
-            padding: 15px;
-            background: linear-gradient(135deg, #4CAF50, #45a049);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: transform 0.2s;
-            margin-top: 10px;
-        }
-
-        .login-btn:hover, .otp-btn:hover {
-            transform: translateY(-2px);
-        }
-
-        .login-btn:disabled, .otp-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .otp-section {
-            display: none;
-            margin-top: 20px;
-        }
-
-        .otp-section.active {
-            display: block;
-        }
-
-        .otp-note {
-            background: rgba(255, 215, 0, 0.1);
-            border: 1px solid #FFD700;
-            padding: 10px;
-            border-radius: 5px;
-            color: #FFD700;
-            font-size: 14px;
-            margin-bottom: 15px;
-        }
-
-        .game-container {
-            background: rgba(20, 40, 80, 0.95);
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 10px 50px rgba(0, 0, 0, 0.5);
-            max-width: 600px;
-            width: 100%;
-            display: none;
-        }
-
-        .game-container.active {
-            display: block;
-        }
-
-        .user-info {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: rgba(0, 0, 0, 0.3);
-            padding: 10px 15px;
-            border-radius: 10px;
-            margin-bottom: 10px;
-        }
-
-        .user-name {
-            color: #FFD700;
-            font-weight: bold;
-            font-size: 16px;
-        }
-
-        .user-phone {
-            color: #aaa;
-            font-size: 12px;
-        }
-
-        .logout-btn {
-            background: linear-gradient(135deg, #DC143C, #8B0000);
-            color: white;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: bold;
-        }
-
-        .logout-btn:hover {
-            opacity: 0.9;
-        }
-
-        .header {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-
-        .title {
-            font-size: 48px;
-            font-weight: bold;
-            background: linear-gradient(45deg, #FFD700, #FFA500);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-            text-align: center;
-        }
-
-        .deposit-btn, .withdraw-btn {
-            width: 100%;
-            padding: 15px 20px;
-            border: none;
-            border-radius: 10px;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-
-        .deposit-btn {
-            background: linear-gradient(135deg, #4CAF50, #45a049);
-            color: white;
-        }
-
-        .withdraw-btn {
-            background: linear-gradient(135deg, #ff9800, #f57c00);
-            color: white;
-        }
-
-        .deposit-btn:hover, .withdraw-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-        }
-
-        .game-grid {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-
-        .tile {
-            aspect-ratio: 1;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-            font-size: 40px;
-            position: relative;
-            background: transparent;
-        }
-
-        .tile.unrevealed {
-            cursor: pointer;
-        }
-        
-        .tile.unrevealed:hover {
-            transform: scale(1.05);
-            filter: brightness(1.1);
-        }
-
-        .tile.revealed {
-            cursor: default;
-        }
-
-        .tile.exploded {
-            animation: explode 0.5s ease-out;
-        }
-
-        @keyframes explode {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.2); background: #ff0000; }
-            100% { transform: scale(1); }
-        }
-
-        .balance-section {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 20px;
-            padding: 15px;
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 10px;
-        }
-
-        .balance-item {
-            text-align: center;
-        }
-
-        .balance-label {
-            font-size: 14px;
-            color: #ccc;
-            margin-bottom: 5px;
-        }
-
-        .balance-value {
-            font-size: 24px;
-            color: #FFD700;
-            font-weight: bold;
-        }
-
-        .controls {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-
-        .control-btn {
-            padding: 15px;
-            border: none;
-            border-radius: 10px;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
-
-        .bet-btn {
-            background: linear-gradient(135deg, #4169E1, #1E90FF);
-            color: white;
-        }
-
-        .mines-btn {
-            background: linear-gradient(135deg, #DC143C, #8B0000);
-            color: white;
-        }
-
-        .cashout-btn {
-            background: linear-gradient(135deg, #32CD32, #228B22);
-            color: white;
-        }
-
-        .reset-btn {
-            background: linear-gradient(135deg, #FFD700, #FFA500);
-            color: #000;
-        }
-
-        .control-btn:hover:not(:disabled) {
-            transform: translateY(-3px);
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.4);
-        }
-
-        .control-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .message {
-            display: none;
-            padding: 15px;
-            margin-bottom: 20px;
-            border-radius: 10px;
-            text-align: center;
-            font-weight: bold;
-        }
-
-        .message.success {
-            background: rgba(76, 175, 80, 0.3);
-            border: 2px solid #4CAF50;
-            color: #4CAF50;
-        }
-
-        .message.error {
-            background: rgba(244, 67, 54, 0.3);
-            border: 2px solid #f44336;
-            color: #f44336;
-        }
-
-        .message.info {
-            background: rgba(33, 150, 243, 0.3);
-            border: 2px solid #2196F3;
-            color: #2196F3;
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .modal-content {
-            background: linear-gradient(135deg, #1e3c72, #2a5298);
-            padding: 30px;
-            border-radius: 15px;
-            max-width: 400px;
-            width: 90%;
-        }
-
-        .modal h2 {
-            color: #FFD700;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-
-        .input-group {
-            margin-bottom: 15px;
-        }
-
-        .input-group label {
-            display: block;
-            color: #fff;
-            margin-bottom: 5px;
-        }
-
-        .input-group input, .input-group textarea {
-            width: 100%;
-            padding: 10px;
-            border: 2px solid #4169E1;
-            border-radius: 5px;
-            font-size: 16px;
-            background: rgba(255, 255, 255, 0.9);
-        }
-
-        .input-group textarea {
-            resize: vertical;
-            min-height: 80px;
-        }
-
-        .modal-buttons {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-        }
-
-        .modal-btn {
-            flex: 1;
-            padding: 12px;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        .confirm-btn {
-            background: linear-gradient(135deg, #4CAF50, #45a049);
-            color: white;
-        }
-
-        .cancel-btn {
-            background: linear-gradient(135deg, #757575, #616161);
-            color: white;
-        }
-
-        .jazzcash-info {
-            background: rgba(255, 215, 0, 0.1);
-            border: 2px solid #FFD700;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 15px;
-        }
-
-        .jazzcash-info h3 {
-            color: #FFD700;
-            margin-bottom: 10px;
-        }
-
-        .jazzcash-info p {
-            color: #fff;
-            margin: 5px 0;
-        }
-
-        .jazzcash-number {
-            font-size: 24px;
-            font-weight: bold;
-            color: #FFD700;
-            text-align: center;
-            padding: 10px;
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 5px;
-            margin: 10px 0;
-        }
-
-        .pending-status {
-            background: rgba(255, 152, 0, 0.2);
-            border: 1px solid #FF9800;
-            padding: 8px 12px;
-            border-radius: 5px;
-            color: #FF9800;
-            font-size: 12px;
-            display: inline-block;
-        }
-
-        .approved-status {
-            background: rgba(76, 175, 80, 0.2);
-            border: 1px solid #4CAF50;
-            padding: 8px 12px;
-            border-radius: 5px;
-            color: #4CAF50;
-            font-size: 12px;
-            display: inline-block;
-        }
-
-        .rejected-status {
-            background: rgba(244, 67, 54, 0.2);
-            border: 1px solid #f44336;
-            padding: 8px 12px;
-            border-radius: 5px;
-            color: #f44336;
-            font-size: 12px;
-            display: inline-block;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mines Game - Manual Control System</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { 
+    font-family: Arial; 
+    background: linear-gradient(135deg, #1e3c72, #2a5298);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+.container {
+    background: rgba(20,40,80,0.95);
+    border-radius: 20px;
+    padding: 30px;
+    max-width: 600px;
+    width: 100%;
+    box-shadow: 0 10px 50px rgba(0,0,0,0.5);
+}
+.hidden { display: none !important; }
+.title { 
+    font-size: 42px; 
+    font-weight: bold;
+    background: linear-gradient(45deg, #FFD700, #FFA500);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-align: center;
+    margin-bottom: 20px;
+}
+input, textarea {
+    width: 100%;
+    padding: 12px;
+    margin: 8px 0;
+    border: 2px solid #4169E1;
+    border-radius: 8px;
+    font-size: 16px;
+    background: rgba(255,255,255,0.9);
+}
+button {
+    width: 100%;
+    padding: 15px;
+    margin: 10px 0;
+    border: none;
+    border-radius: 10px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+button:hover { transform: translateY(-2px); }
+.btn-green { background: linear-gradient(135deg, #4CAF50, #45a049); color: white; }
+.btn-orange { background: linear-gradient(135deg, #ff9800, #f57c00); color: white; }
+.btn-red { background: linear-gradient(135deg, #DC143C, #8B0000); color: white; }
+.btn-blue { background: linear-gradient(135deg, #4169E1, #1E90FF); color: white; }
+.btn-gold { background: linear-gradient(135deg, #FFD700, #FFA500); color: #000; }
+.info-box {
+    background: rgba(255,215,0,0.1);
+    border: 2px solid #FFD700;
+    padding: 15px;
+    border-radius: 10px;
+    margin: 15px 0;
+    color: #fff;
+}
+.grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+    margin: 20px 0;
+}
+.tile {
+    aspect-ratio: 1;
+    background: linear-gradient(135deg, #555, #777);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 30px;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+.tile:hover { transform: scale(1.05); }
+.balance-section {
+    display: flex;
+    justify-content: space-around;
+    background: rgba(0,0,0,0.3);
+    padding: 15px;
+    border-radius: 10px;
+    margin: 20px 0;
+}
+.balance-item { text-align: center; }
+.balance-label { font-size: 14px; color: #ccc; }
+.balance-value { font-size: 24px; color: #FFD700; font-weight: bold; }
+.user-info {
+    background: rgba(0,0,0,0.3);
+    padding: 10px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.user-name { color: #FFD700; font-weight: bold; }
+.user-phone { color: #aaa; font-size: 12px; }
+.msg {
+    padding: 15px;
+    margin: 10px 0;
+    border-radius: 10px;
+    text-align: center;
+    font-weight: bold;
+    display: none;
+}
+.msg.success { background: rgba(76,175,80,0.3); border: 2px solid #4CAF50; color: #4CAF50; }
+.msg.error { background: rgba(244,67,54,0.3); border: 2px solid #f44336; color: #f44336; }
+.msg.info { background: rgba(33,150,243,0.3); border: 2px solid #2196F3; color: #2196F3; }
+.status-pending { color: #FF9800; background: rgba(255,152,0,0.2); padding: 5px 10px; border-radius: 5px; font-size: 12px; }
+.status-approved { color: #4CAF50; background: rgba(76,175,80,0.2); padding: 5px 10px; border-radius: 5px; font-size: 12px; }
+</style>
 </head>
 <body>
-    <!-- Login Container -->
-    <div class="login-container active" id="loginContainer">
-        <div class="login-title">MINES JACKPOT</div>
-        <div class="login-input-group">
-            <label>Complete Name</label>
-            <input type="text" id="loginName" placeholder="Enter your full name" />
+
+<!-- LOGIN SCREEN -->
+<div id="loginScreen" class="container">
+    <div class="title">MINES JACKPOT</div>
+    <div id="loginMsg" class="msg"></div>
+    <label style="color: #FFD700;">Complete Name</label>
+    <input type="text" id="loginName" placeholder="Enter your full name">
+    <label style="color: #FFD700;">Phone Number (03XXXXXXXXX)</label>
+    <input type="tel" id="loginPhone" placeholder="03001234567" maxlength="11">
+    <button class="btn-blue" onclick="sendOTP()">Send OTP</button>
+    <div id="otpSection" class="hidden">
+        <div class="info-box">📱 OTP sent! (Demo mode: use 1234)</div>
+        <label style="color: #FFD700;">Enter OTP</label>
+        <input type="text" id="otpInput" placeholder="1234" maxlength="4">
+        <button class="btn-green" onclick="verifyOTP()">Verify & Login</button>
+    </div>
+</div>
+
+<!-- GAME SCREEN -->
+<div id="gameScreen" class="container hidden">
+    <div class="user-info">
+        <div>
+            <div class="user-name" id="userName"></div>
+            <div class="user-phone" id="userPhone"></div>
         </div>
-        <div class="login-input-group">
-            <label>Phone Number (03XX-XXXXXXX)</label>
-            <input type="tel" id="loginPhone" placeholder="03001234567" maxlength="11" />
+        <button class="btn-red" style="width: auto; padding: 8px 15px;" onclick="logout()">Logout</button>
+    </div>
+    <div class="title">MINES</div>
+    <div id="gameMsg" class="msg"></div>
+    
+    <button class="btn-green" onclick="showDepositModal()">💰 DEPOSIT REQUEST</button>
+    <button class="btn-orange" onclick="showWithdrawModal()">💸 WITHDRAW REQUEST</button>
+    
+    <div class="balance-section">
+        <div class="balance-item">
+            <div class="balance-label">Balance</div>
+            <div class="balance-value">Rs <span id="balance">0</span></div>
         </div>
-        <button class="login-btn" onclick="sendOTP()">Send OTP</button>
-        
-        <div class="otp-section" id="otpSection">
-            <div class="otp-note">
-                📱 OTP sent to your number! (Demo: Use 1234)
-            </div>
-            <div class="login-input-group">
-                <label>Enter OTP</label>
-                <input type="text" id="otpInput" placeholder="Enter 4-digit OTP" maxlength="4" />
-            </div>
-            <button class="otp-btn" onclick="verifyOTP()">Verify & Login</button>
+        <div class="balance-item">
+            <div class="balance-label">Bet</div>
+            <div class="balance-value">Rs <span id="bet">0</span></div>
+        </div>
+        <div class="balance-item">
+            <div class="balance-label">Win</div>
+            <div class="balance-value">Rs <span id="win">0</span></div>
         </div>
     </div>
+    
+    <div class="grid" id="grid"></div>
+    
+    <button class="btn-blue" onclick="showBetModal()">💰 SET BET</button>
+    <button class="btn-gold" id="cashoutBtn" onclick="cashout()" disabled>💵 CASH OUT</button>
+    <button class="btn-red" onclick="resetGame()">🔄 RESET GAME</button>
+</div>
 
-    <!-- Game Container -->
-    <div class="game-container" id="gameContainer">
-        <div class="user-info">
-            <div>
-                <div class="user-name" id="userName"></div>
-                <div class="user-phone" id="userPhoneDisplay"></div>
-            </div>
-            <button class="logout-btn" onclick="handleLogout()">Logout</button>
-        </div>
-        <div class="header">
-            <div class="title">MINES</div>
-            <button class="deposit-btn" onclick="openDepositModal()">💰 DEPOSIT</button>
-            <button class="withdraw-btn" onclick="openWithdrawModal()">💸 WITHDRAW</button>
-        </div>
-
-        <div class="message" id="message"></div>
-
-        <div class="game-grid" id="gameGrid"></div>
-
-        <div class="balance-section">
-            <div class="balance-item">
-                <div class="balance-label">Balance</div>
-                <div class="balance-value">Rs <span id="balance">0</span></div>
-            </div>
-            <div class="balance-item">
-                <div class="balance-label">Current Win</div>
-                <div class="balance-value">Rs <span id="currentWin">0</span></div>
-            </div>
-            <div class="balance-item">
-                <div class="balance-label">Bet Amount</div>
-                <div class="balance-value">Rs <span id="currentBet">0</span></div>
-            </div>
-            <div class="balance-item">
-                <div class="balance-label">Mines</div>
-                <div class="balance-value"><span id="minesCount">3</span></div>
-            </div>
-        </div>
-
-        <div class="controls">
-            <button class="control-btn bet-btn" onclick="openBetModal()">💰 SET BET</button>
-            <button class="control-btn mines-btn" onclick="openMinesModal()">💣 SET MINES</button>
-            <button class="control-btn cashout-btn" id="cashoutBtn" onclick="cashout()" disabled>💵 CASH OUT</button>
-            <button class="control-btn reset-btn" onclick="resetGame()">🔄 RESET</button>
-        </div>
+<!-- DEPOSIT MODAL -->
+<div id="depositModal" class="container hidden">
+    <div class="title">Deposit Request</div>
+    <div class="info-box">
+        <h3 style="color: #FFD700;">📱 Send to JazzCash:</h3>
+        <div style="font-size: 24px; font-weight: bold; text-align: center; margin: 10px 0;">03XX-1234567</div>
+        <p>⚠️ Change this number to your actual JazzCash number!</p>
     </div>
+    <label style="color: #FFD700;">Amount (Rs)</label>
+    <input type="number" id="depositAmount" placeholder="Minimum 100" min="100">
+    <label style="color: #FFD700;">Transaction ID</label>
+    <input type="text" id="transactionId" placeholder="Enter JazzCash transaction ID">
+    <label style="color: #FFD700;">Note (Optional)</label>
+    <textarea id="depositNote" rows="3" placeholder="Any message..."></textarea>
+    <button class="btn-green" onclick="submitDeposit()">Submit Request</button>
+    <button class="btn-red" onclick="hideModal('depositModal')">Cancel</button>
+</div>
 
-    <!-- Deposit Modal -->
-    <div class="modal" id="depositModal">
-        <div class="modal-content">
-            <h2>💰 Deposit Request</h2>
-            <div class="jazzcash-info">
-                <h3>📱 Send Money to JazzCash:</h3>
-                <div class="jazzcash-number">03XX-XXXXXXX</div>
-                <p><strong>Account Name:</strong> Game Owner</p>
-                <p>⚠️ Send exact amount you want to deposit</p>
-            </div>
-            <div class="input-group">
-                <label>Amount to Deposit (Rs)</label>
-                <input type="number" id="depositAmount" placeholder="Enter amount (min 100)" min="100">
-            </div>
-            <div class="input-group">
-                <label>Transaction ID / Reference Number</label>
-                <input type="text" id="transactionId" placeholder="Enter JazzCash transaction ID">
-            </div>
-            <div class="input-group">
-                <label>Note (Optional)</label>
-                <textarea id="depositNote" placeholder="Any message for admin..."></textarea>
-            </div>
-            <div class="modal-buttons">
-                <button class="modal-btn confirm-btn" onclick="submitDepositRequest()">Submit Request</button>
-                <button class="modal-btn cancel-btn" onclick="closeModal('depositModal')">Cancel</button>
-            </div>
-        </div>
-    </div>
+<!-- WITHDRAW MODAL -->
+<div id="withdrawModal" class="container hidden">
+    <div class="title">Withdraw Request</div>
+    <label style="color: #FFD700;">Your JazzCash Number</label>
+    <input type="tel" id="withdrawJazz" placeholder="03001234567" maxlength="11">
+    <label style="color: #FFD700;">Amount (Rs)</label>
+    <input type="number" id="withdrawAmount" placeholder="Minimum 100" min="100">
+    <label style="color: #FFD700;">Note (Optional)</label>
+    <textarea id="withdrawNote" rows="3" placeholder="Any message..."></textarea>
+    <p style="color: #FFD700; font-size: 14px; margin: 10px 0;">⏳ Admin will process within 24 hours</p>
+    <button class="btn-orange" onclick="submitWithdraw()">Submit Request</button>
+    <button class="btn-red" onclick="hideModal('withdrawModal')">Cancel</button>
+</div>
 
-    <!-- Withdraw Modal -->
-    <div class="modal" id="withdrawModal">
-        <div class="modal-content">
-            <h2>💸 Withdraw Request</h2>
-            <div class="input-group">
-                <label>Your JazzCash Number</label>
-                <input type="tel" id="withdrawJazzCash" placeholder="03001234567" maxlength="11">
-            </div>
-            <div class="input-group">
-                <label>Amount to Withdraw (Rs)</label>
-                <input type="number" id="withdrawAmount" placeholder="Enter amount (min 100)" min="100">
-            </div>
-            <div class="input-group">
-                <label>Note (Optional)</label>
-                <textarea id="withdrawNote" placeholder="Any message for admin..."></textarea>
-            </div>
-            <p style="color: #FFD700; font-size: 14px; margin-top: 10px;">
-                ⏳ Your withdrawal will be processed by admin within 24 hours
-            </p>
-            <div class="modal-buttons">
-                <button class="modal-btn confirm-btn" onclick="submitWithdrawRequest()">Submit Request</button>
-                <button class="modal-btn cancel-btn" onclick="closeModal('withdrawModal')">Cancel</button>
-            </div>
-        </div>
-    </div>
+<!-- BET MODAL -->
+<div id="betModal" class="container hidden">
+    <div class="title">Set Bet</div>
+    <label style="color: #FFD700;">Bet Amount (Rs 100 - 10,000)</label>
+    <input type="number" id="betAmount" placeholder="Enter amount" min="100" max="10000">
+    <button class="btn-blue" onclick="confirmBet()">Confirm</button>
+    <button class="btn-red" onclick="hideModal('betModal')">Cancel</button>
+</div>
 
-    <!-- Bet Modal -->
-    <div class="modal" id="betModal">
-        <div class="modal-content">
-            <h2>💰 Set Bet Amount</h2>
-            <div class="input-group">
-                <label>Bet Amount (Rs 100 - Rs 10,000)</label>
-                <input type="number" id="betAmount" placeholder="Enter bet amount" min="100" max="10000" value="0">
-            </div>
-            <div class="modal-buttons">
-                <button class="modal-btn confirm-btn" onclick="confirmBet()">Confirm</button>
-                <button class="modal-btn cancel-btn" onclick="closeModal('betModal')">Cancel</button>
-            </div>
-        </div>
-    </div>
+<script>
+// MAIN STATE
+let state = {
+    user: null,
+    balance: 0,
+    bet: 0,
+    win: 0,
+    gameActive: false,
+    mines: [],
+    revealed: []
+};
 
-    <!-- Mines Modal -->
-    <div class="modal" id="minesModal">
-        <div class="modal-content">
-            <h2>💣 Set Number of Mines</h2>
-            <div class="input-group">
-                <label>Number of Mines (1-24)</label>
-                <input type="number" id="minesInput" placeholder="Enter mines count" min="1" max="24" value="3">
-            </div>
-            <div class="modal-buttons">
-                <button class="modal-btn confirm-btn" onclick="confirmMines()">Confirm</button>
-                <button class="modal-btn cancel-btn" onclick="closeModal('minesModal')">Cancel</button>
-            </div>
-        </div>
-    </div>
+// SOUNDS (simplified - using beep instead of actual audio files)
+function playSound(type) {
+    // In real app, load actual audio files
+    console.log('Sound:', type);
+}
 
-    <script>
-        // Sound effects
-        const sounds = {
-            deposit: new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBjiJ0fDTgjMGHm7A7+OZUQ0PU6vm8KtfGgdBl9zvwmwhBjaD0O/cizkGGmm+7N+XUgwOUKzp77JiHQVCmNvwwm0hBjaF0e/fiTcGHGy/7N+ZUw0OUqzq8LFgHQVBl9vwwWwgBjaH0e/fjDcGHG2/7N+YVA0NU6vq8LBfHQZCmNvwwWwgBjaG0e/dizcGHG2/7N+YUw0NUqvp8LBgHQZCl9vwwWwgBjaH0e/dizcGHG6+7N+YVA0MUqrp8K9fHQZBl9vwwWwgBjaG0e/diTcGHG+/7N+XVA0MUavp77BfHQZBl9vwwGwgBjaG0e/ciTcGHG6+7N+XUw0MUqvp7/BfHQZBl9vwwWsgBjaG0e/cizcGHGy+7N+YUw0MUqvp8LBgHQZCl9vwwGwgBjaG0e/diTcGHGy/7N+YUw0MUqvp8LBfHgZBl9vwwWwgBjaG0e/diTcGHGy/7N+YVA0MUqvp8LBgHQZBl9vwwWsgBjaG0e/diTcGHGy/7N+YVA0MUqvp8LBfHgZBl9vwwWsgBjaG0e/diTcGHGy/7d+XVA0MUqvp8LBfHgZBl9vwwWwgBjaG0e/diTcGHGy/7N+YVA0MUqrp8LBfHgZBl9vwwWsgBjaG0e/cizcGHGy/7d+XVA0MUqvp8LBfHgZBl9vwwWsgBjaG0e/cizcGHGy/7N+YVA0MUqrp8K9fHgZBl9vwwWsgBjaG0e/cizcGHGy/7N+YVA0MUqvp8K9fHgZBl9vwwWsgBjaG0e/cizcGHGy/7N+YVA0MUqrp8K9fHQZBl9vwwGsgBjaG0e/cizcGHGy/7N+XVA0MUqrp8K9fHQZBl9vwwGsgBjaG0e/cizcGHGy/7N+YVA0MUqvp8K9fHQZBl9vwwGsgBjaG0e/cizcGHGy/7N+XVA0MUqvp8K9fHQZBl9vwwGsgBjaG0e/cizcGHGy/7N+XVA0MUqvp8K9fHQZBl9vwwGsgBjaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsg'),
-            win: new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBjiJ0fDTgjMGHm7A7+OZUQ0PU6vm8KtfGgdBl9zvwmwhBjaD0O/cizkGGmm+7N+XUgwOUKzp77JiHQVCmNvwwm0hBjaF0e/fiTcGHGy/7N+ZUw0OUqzq8LFgHQVBl9vwwWwgBjaH0e/fjDcGHG2/7N+YVA0NU6vq8LBfHQZCmNvwwWwgBjaG0e/dizcGHG2/7N+YUw0NUqvp8LBgHQZCl9vwwWwgBjaH0e/dizcGHG6+7N+YVA0MUqrp8K9fHQZBl9vwwWwgBjaG0e/diTcGHG+/7N+XVA0MUavp77BfHQZBl9vwwGwgBjaG0e/ciTcGHG6+7N+XUw0MUqvp7/BfHQZBl9vwwWsgBjaG0e/cizcGHGy+7N+YUw0MUqvp8LBgHQZCl9vwwGwgBjaG0e/diTcGHGy/7N+YUw0MUqvp8LBfHgZBl9vwwWwgBjaG0e/diTcGHGy/7N+YVA0MUqvp8LBgHQZBl9vwwWsgBjaG0e/diTcGHGy/7N+YVA0MUqvp8LBfHgZBl9vwwWsgBjaG0e/diTcGHGy/7d+XVA0MUqvp8LBfHgZBl9vwwWwgBjaG0e/diTcGHGy/7N+YVA0MUqrp8LBfHgZBl9vwwWsgBjaG0e/cizcGHGy/7d+XVA0MUqvp8LBfHgZBl9vwwWsgBjaG0e/cizcGHGy/7N+YVA0MUqrp8K9fHgZBl9vwwWsgBjaG0e/cizcGHGy/7N+YVA0MUqvp8K9fHgZBl9vwwWsgBjaG0e/cizcGHGy/7N+YVA0MUqrp8K9fHQZBl9vwwGsgBjaG0e/cizcGHGy/7N+XVA0MUqrp8K9fHQZBl9vwwGsgBjaG0e/cizcGHGy/7N+YVA0MUqvp8K9fHQZBl9vwwGsgBjaG0e/cizcGHGy/7N+XVA0MUqvp8K9fHQZBl9vwwGsgBjaG0e/cizcGHGy/7N+XVA0MUqvp8K9fHQZBl9vwwGsgBjaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsgBTaG0O/ciTcGHGy/7d+XVA0MUqvp8K9fHQdBl9vwwGsg'),
-            lose: new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIC
+// STORAGE HELPER
+function saveData(key, value) {
+    localStorage.setItem(key, JSON.stringify(value));
+}
+
+function loadData(key) {
+    const data = localStorage.getItem(key);
+    return data ? JSON.parse(data) : null;
+}
+
+// Get all users data (simulating database)
+function getAllUsers() {
+    return loadData('allUsers') || {};
+}
+
+function saveAllUsers(users) {
+    saveData('allUsers', users);
+}
+
+// Get pending requests
+function getRequests(type) {
+    return loadData(type + 'Requests') || [];
+}
+
+function saveRequests(type, requests) {
+    saveData(type + 'Requests', requests);
+}
+
+// MESSAGES
+function showMsg(el, text, type) {
+    el.textContent = text;
+    el.className = 'msg ' + type;
+    el.style.display = 'block';
+    setTimeout(() => el.style.display = 'none', 3000);
+}
+
+// PHONE VALIDATION
+function validatePhone(phone) {
+    // Must be 11 digits starting with 03
+    const regex = /^03[0-9]{9}$/;
+    return regex.test(phone);
+}
+
+// LOGIN FUNCTIONS
+function sendOTP() {
+    const name = document.getElementById('loginName').value.trim();
+    const phone = document.getElementById('loginPhone').value.trim();
+    
+    if (!name || name.length < 3) {
+        showMsg(document.getElementById('loginMsg'), 'Name must be at least 3 characters', 'error');
+        return;
+    }
+    
+    if (!validatePhone(phone)) {
+        showMsg(document.getElementById('loginMsg'), 'Invalid phone! Use format: 03XXXXXXXXX', 'error');
+        return;
+    }
+    
+    // In real app, call SMS API here
+    showMsg(document.getElementById('loginMsg'), 'OTP sent! (Demo: use 1234)', 'success');
+    document.getElementById('otpSection').classList.remove('hidden');
+    playSound('otp');
+}
+
+function verifyOTP() {
+    const otp = document.getElementById('otpInput').value;
+    const name = document.getElementById('loginName').value.trim();
+    const phone = document.getElementById('loginPhone').value.trim();
+    
+    if (otp !== '1234') {
+        showMsg(document.getElementById('loginMsg'), 'Invalid OTP!', 'error');
+        return;
+    }
+    
+    // Save/Load user data
+    let allUsers = getAllUsers();
+    if (!allUsers[phone]) {
+        allUsers[phone] = { name, phone, balance: 0, totalDeposit: 0, totalWithdraw: 0 };
+        saveAllUsers(allUsers);
+    }
+    
+    state.user = allUsers[phone];
+    state.balance = state.user.balance;
+    
+    // Show game screen
+    document.getElementById('loginScreen').classList.add('hidden');
+    document.getElementById('gameScreen').classList.remove('hidden');
+    document.getElementById('userName').textContent = name;
+    document.getElementById('userPhone').textContent = phone;
+    updateDisplay();
+    initGrid();
+    playSound('login');
+}
+
+function logout() {
+    if (confirm('Logout? Your balance will be saved.')) {
+        saveUserData();
+        location.reload();
+    }
+}
+
+function saveUserData() {
+    if (state.user) {
+        let allUsers = getAllUsers();
+        allUsers[state.user.phone].balance = state.balance;
+        saveAllUsers(allUsers);
+    }
+}
+
+// DEPOSIT
+function showDepositModal() {
+    document.getElementById('gameScreen').classList.add('hidden');
+    document.getElementById('depositModal').classList.remove('hidden');
+}
+
+function submitDeposit() {
+    const amount = parseInt(document.getElementById('depositAmount').value);
+    const txId = document.getElementById('transactionId').value.trim();
+    const note = document.getElementById('depositNote').value.trim();
+    
+    if (!amount || amount < 100) {
+        alert('Minimum deposit is Rs 100');
+        return;
+    }
+    
+    if (!txId) {
+        alert('Transaction ID required!');
+        return;
+    }
+    
+    // Add to pending deposits
+    const requests = getRequests('deposit');
+    requests.push({
+        id: Date.now(),
+        phone: state.user.phone,
+        name: state.user.name,
+        amount,
+        txId,
+        note,
+        status: 'pending',
+        timestamp: new Date().toISOString()
+    });
+    saveRequests('deposit', requests);
+    
+    alert('Deposit request submitted! Admin will approve soon.');
+    playSound('deposit');
+    hideModal('depositModal');
+    
+    // Clear form
+    document.getElementById('depositAmount').value = '';
+    document.getElementById('transactionId').value = '';
+    document.getElementById('depositNote').value = '';
+}
+
+// WITHDRAW
+function showWithdrawModal() {
+    document.getElementById('gameScreen').classList.add('hidden');
+    document.getElementById('withdrawModal').classList.remove('hidden');
+}
+
+function submitWithdraw() {
+    const jazzCash = document.getElementById('withdrawJazz').value.trim();
+    const amount = parseInt(document.getElementById('withdrawAmount').value);
+    const note = document.getElementById('withdrawNote').value.trim();
+    
+    if (!validatePhone(jazzCash)) {
+        alert('Invalid JazzCash number!');
+        return;
+    }
+    
+    if (!amount || amount < 100) {
+        alert('Minimum withdraw is Rs 100');
+        return;
+    }
+    
+    if (amount > state.balance) {
+        alert('Insufficient balance!');
+        return;
+    }
+    
+    // Add to pending withdraws
+    const requests = getRequests('withdraw');
+    requests.push({
+        id: Date.now(),
+        phone: state.user.phone,
+        name: state.user.name,
+        jazzCash,
+        amount,
+        note,
+        status: 'pending',
+        timestamp: new Date().toISOString()
+    });
+    saveRequests('withdraw', requests);
+    
+    alert('Withdraw request submitted! Admin will process soon.');
+    playSound('withdraw');
+    hideModal('withdrawModal');
+    
+    // Clear form
+    document.getElementById('withdrawJazz').value = '';
+    document.getElementById('withdrawAmount').value = '';
+    document.getElementById('withdrawNote').value = '';
+}
+
+// MODALS
+function hideModal(id) {
+    document.getElementById(id).classList.add('hidden');
+    document.getElementById('gameScreen').classList.remove('hidden');
+}
+
+// BET
+function showBetModal() {
+    if (state.gameActive) {
+        alert('Cannot change bet during active game!');
+        return;
+    }
+    document.getElementById('gameScreen').classList.add('hidden');
+    document.getElementById('betModal').classList.remove('hidden');
+}
+
+function confirmBet() {
+    const amount = parseInt(document.getElementById('betAmount').value);
+    
+    if (!amount || amount < 100 || amount > 10000) {
+        alert('Bet must be between Rs 100 and Rs 10,000');
+        return;
+    }
+    
+    if (amount > state.balance) {
+        alert('Insufficient balance!');
+        return;
+    }
+    
+    state.balance -= amount;
+    state.bet = amount;
+    saveUserData();
+    updateDisplay();
+    hideModal('betModal');
+    showMsg(document.getElementById('gameMsg'), 'Bet set! Start playing!', 'success');
+}
+
+// GAME
+function initGrid() {
+    const grid = document.getElementById('grid');
+    grid.innerHTML = '';
+    for (let i = 0; i < 25; i++) {
+        const tile = document.createElement('div');
+        tile.className = 'tile';
+        tile.innerHTML = '🪙';
+        tile.onclick = () => clickTile(i);
+        grid.appendChild(tile);
+    }
+}
+
+function clickTile(i) {
+    if (state.revealed.includes(i)) return;
+    
+    if (!state.gameActive) {
+        if (state.bet === 0) {
+            alert('Set bet first!');
+            return;
+        }
+        startGame();
+    }
+    
+    state.revealed.push(i);
+    const tiles = document.querySelectorAll('.tile');
+    
+    if (state.mines.includes(i)) {
+        tiles[i].innerHTML = '💣';
+        tiles[i].style.background = 'linear-gradient(135deg, #DC143C, #8B0000)';
+        playSound('lose');
+        gameOver(false);
+    } else {
+        tiles[i].innerHTML = '💎';
+        tiles[i].style.background = 'linear-gradient(135deg, #FFD700, #FFA500)';
+        state.win += 20;
+        updateDisplay();
+        document.getElementById('cashoutBtn').disabled = false;
+        playSound('win');
+    }
+}
+
+function startGame() {
+    state.gameActive = true;
+    state.mines = [];
+    state.revealed = [];
+    state.win = 0;
+    
+    // Place 3 random mines
+    while (state.mines.length < 3) {
+        const pos = Math.floor(Math.random() * 25);
+        if (!state.mines.includes(pos)) state.mines.push(pos);
+    }
+    
+    updateDisplay();
+}
+
+function cashout() {
+    if (state.win === 0) return;
+    
+    const total = state.bet + state.win;
+    state.balance += total;
+    state.bet = 0;
+    state.win = 0;
+    state.gameActive = false;
+    document.getElementById('cashoutBtn').disabled = true;
+    
+    saveUserData();
+    updateDisplay();
+    revealAll();
+    playSound('cashout');
+    showMsg(document.getElementById('gameMsg'), `Cashed out Rs ${total}!`, 'success');
+}
+
+function gameOver(won) {
+    state.gameActive = false;
+    state.bet = 0;
+    state.win = 0;
+    document.getElementById('cashoutBtn').disabled = true;
+    saveUserData();
+    updateDisplay();
+    revealAll();
+    if (!won) showMsg(document.getElementById('gameMsg'), 'Game Over!', 'error');
+}
+
+function revealAll() {
+    const tiles = document.querySelectorAll('.tile');
+    tiles.forEach((tile, i) => {
+        if (state.mines.includes(i)) {
+            tile.innerHTML = '💣';
+            tile.style.background = 'linear-gradient(135deg, #DC143C, #8B0000)';
+        } else {
+            tile.innerHTML = '💎';
+            tile.style.background = 'linear-gradient(135deg, #FFD700, #FFA500)';
+        }
+    });
+}
+
+function resetGame() {
+    state.gameActive = false;
+    state.bet = 0;
+    state.win = 0;
+    state.mines = [];
+    state.revealed = [];
+    document.getElementById('cashoutBtn').disabled = true;
+    initGrid();
+    updateDisplay();
+}
+
+function updateDisplay() {
+    document.getElementById('balance').textContent = state.balance;
+    document.getElementById('bet').textContent = state.bet;
+    document.getElementById('win').textContent = state.win;
+}
+
+// INIT
+window.onload = function() {
+    // Check if user already logged in
+    const savedUser = loadData('currentUser');
+    if (savedUser) {
+        const allUsers = getAllUsers();
+        if (allUsers[savedUser]) {
+            state.user = allUsers[savedUser];
+            state.balance = state.user.balance;
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('gameScreen').classList.remove('hidden');
+            document.getElementById('userName').textContent = state.user.name;
+            document.getElementById('userPhone').textContent = state.user.phone;
+            updateDisplay();
+            initGrid();
+        }
+    }
+};
+</script>
+
+</body>
+</html>
