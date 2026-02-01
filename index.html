@@ -746,10 +746,12 @@
         function cashout() {
             if (!gameState.gameActive || gameState.currentWin === 0) return;
 
-            gameState.balance += gameState.currentWin;
+            // Add both bet amount and winnings back to balance
+            const totalReturn = gameState.currentBet + gameState.currentWin;
+            gameState.balance += totalReturn;
             gameState.totalWon += gameState.currentWin;
             
-            showMessage(`Cashed out Rs ${gameState.currentWin}! 🎉`, 'success');
+            showMessage(`Cashed out Rs ${totalReturn}! (Bet: ${gameState.currentBet} + Win: ${gameState.currentWin}) 🎉`, 'success');
             
             gameState.currentWin = 0;
             gameState.currentBet = 0; // Reset bet amount to 0 on cashout
