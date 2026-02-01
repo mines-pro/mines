@@ -1,406 +1,761 @@
 <!DOCTYPE html>
-<html>
+<html lang="ur" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mines Game - Manual Control System</title>
-<style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body { 
-    font-family: Arial; 
-    background: linear-gradient(135deg, #1e3c72, #2a5298);
-    min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 20px;
-}
-.container {
-    background: rgba(20,40,80,0.95);
-    border-radius: 20px;
-    padding: 30px;
-    max-width: 600px;
-    width: 100%;
-    box-shadow: 0 10px 50px rgba(0,0,0,0.5);
-}
-.hidden { display: none !important; }
-.title { 
-    font-size: 42px; 
-    font-weight: bold;
-    background: linear-gradient(45deg, #FFD700, #FFA500);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    text-align: center;
-    margin-bottom: 20px;
-}
-input, textarea {
-    width: 100%;
-    padding: 12px;
-    margin: 8px 0;
-    border: 2px solid #4169E1;
-    border-radius: 8px;
-    font-size: 16px;
-    background: rgba(255,255,255,0.9);
-}
-button {
-    width: 100%;
-    padding: 15px;
-    margin: 10px 0;
-    border: none;
-    border-radius: 10px;
-    font-size: 18px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: transform 0.2s;
-}
-button:hover { transform: translateY(-2px); }
-.btn-green { background: linear-gradient(135deg, #4CAF50, #45a049); color: white; }
-.btn-orange { background: linear-gradient(135deg, #ff9800, #f57c00); color: white; }
-.btn-red { background: linear-gradient(135deg, #DC143C, #8B0000); color: white; }
-.btn-blue { background: linear-gradient(135deg, #4169E1, #1E90FF); color: white; }
-.btn-gold { background: linear-gradient(135deg, #FFD700, #FFA500); color: #000; }
-.info-box {
-    background: rgba(255,215,0,0.1);
-    border: 2px solid #FFD700;
-    padding: 15px;
-    border-radius: 10px;
-    margin: 15px 0;
-    color: #fff;
-}
-.grid {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 10px;
-    margin: 20px 0;
-}
-.tile {
-    aspect-ratio: 1;
-    background: linear-gradient(135deg, #555, #777);
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 30px;
-    cursor: pointer;
-    transition: transform 0.2s;
-}
-.tile:hover { transform: scale(1.05); }
-.balance-section {
-    display: flex;
-    justify-content: space-around;
-    background: rgba(0,0,0,0.3);
-    padding: 15px;
-    border-radius: 10px;
-    margin: 20px 0;
-}
-.balance-item { text-align: center; }
-.balance-label { font-size: 14px; color: #ccc; }
-.balance-value { font-size: 24px; color: #FFD700; font-weight: bold; }
-.user-info {
-    background: rgba(0,0,0,0.3);
-    padding: 10px;
-    border-radius: 10px;
-    margin-bottom: 10px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-.user-name { color: #FFD700; font-weight: bold; }
-.user-phone { color: #aaa; font-size: 12px; }
-.msg {
-    padding: 15px;
-    margin: 10px 0;
-    border-radius: 10px;
-    text-align: center;
-    font-weight: bold;
-    display: none;
-}
-.msg.success { background: rgba(76,175,80,0.3); border: 2px solid #4CAF50; color: #4CAF50; }
-.msg.error { background: rgba(244,67,54,0.3); border: 2px solid #f44336; color: #f44336; }
-.msg.info { background: rgba(33,150,243,0.3); border: 2px solid #2196F3; color: #2196F3; }
-.status-pending { color: #FF9800; background: rgba(255,152,0,0.2); padding: 5px 10px; border-radius: 5px; font-size: 12px; }
-.status-approved { color: #4CAF50; background: rgba(76,175,80,0.2); padding: 5px 10px; border-radius: 5px; font-size: 12px; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mines Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(30, 50, 100, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 10px 50px rgba(0, 0, 0, 0.5);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .title {
+            font-size: 64px;
+            font-weight: bold;
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-align: center;
+            margin-bottom: 10px;
+            letter-spacing: 8px;
+        }
+
+        .subtitle {
+            font-size: 18px;
+            color: #FFD700;
+            text-align: center;
+            margin-bottom: 30px;
+            font-family: 'Noto Nastaliq Urdu', Arial;
+        }
+
+        .user-info {
+            background: rgba(20, 30, 60, 0.8);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .user-details {
+            color: #FFD700;
+            font-weight: bold;
+        }
+
+        .user-name {
+            font-size: 18px;
+            margin-bottom: 5px;
+        }
+
+        .user-phone {
+            font-size: 14px;
+            color: #aaa;
+        }
+
+        .logout-btn {
+            background: linear-gradient(135deg, #DC143C, #8B0000);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        input {
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            border: 2px solid #4169E1;
+            border-radius: 10px;
+            font-size: 16px;
+            background: rgba(255, 255, 255, 0.9);
+            text-align: center;
+        }
+
+        button {
+            width: 100%;
+            padding: 18px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 12px;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-green {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+        }
+
+        .btn-orange {
+            background: linear-gradient(135deg, #ff9800, #f57c00);
+            color: white;
+        }
+
+        .btn-blue {
+            background: linear-gradient(135deg, #4169E1, #1E90FF);
+            color: white;
+        }
+
+        .btn-red {
+            background: linear-gradient(135deg, #DC143C, #8B0000);
+            color: white;
+        }
+
+        .btn-gold {
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            color: #000;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+            margin: 20px 0;
+        }
+
+        .tile {
+            aspect-ratio: 1;
+            background: linear-gradient(135deg, #667788, #556677);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .tile:hover:not(.revealed) {
+            transform: scale(1.05);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+        }
+
+        .tile.revealed {
+            cursor: default;
+        }
+
+        .balance-section {
+            display: flex;
+            justify-content: space-around;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 15px;
+            border-radius: 12px;
+            margin: 20px 0;
+        }
+
+        .balance-item {
+            text-align: center;
+        }
+
+        .balance-label {
+            font-size: 14px;
+            color: #ccc;
+            margin-bottom: 5px;
+        }
+
+        .balance-value {
+            font-size: 28px;
+            color: #FFD700;
+            font-weight: bold;
+        }
+
+        .info-box {
+            background: rgba(255, 215, 0, 0.15);
+            border: 2px solid #FFD700;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .info-title {
+            color: #FFD700;
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            font-family: 'Noto Nastaliq Urdu', Arial;
+        }
+
+        .jazzcash-number {
+            font-size: 32px;
+            font-weight: bold;
+            color: #FFD700;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            letter-spacing: 2px;
+        }
+
+        .upload-section {
+            margin: 20px 0;
+        }
+
+        .upload-label {
+            display: block;
+            color: #FFD700;
+            font-size: 16px;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        input[type="file"] {
+            background: white;
+            padding: 10px;
+            cursor: pointer;
+        }
+
+        .msg {
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: bold;
+            display: none;
+        }
+
+        .msg.success {
+            background: rgba(76, 175, 80, 0.3);
+            border: 2px solid #4CAF50;
+            color: #4CAF50;
+        }
+
+        .msg.error {
+            background: rgba(244, 67, 54, 0.3);
+            border: 2px solid #f44336;
+            color: #f44336;
+        }
+
+        .msg.info {
+            background: rgba(33, 150, 243, 0.3);
+            border: 2px solid #2196F3;
+            color: #2196F3;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            padding: 30px;
+            border-radius: 20px;
+            max-width: 450px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #FFD700;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .close-btn {
+            margin-top: 10px;
+        }
+    </style>
 </head>
 <body>
 
 <!-- LOGIN SCREEN -->
 <div id="loginScreen" class="container">
-    <div class="title">MINES JACKPOT</div>
+    <div class="title">MINES</div>
+    <div class="subtitle">اپنا نام اور نمبر لکھیں</div>
     <div id="loginMsg" class="msg"></div>
-    <label style="color: #FFD700;">Complete Name</label>
-    <input type="text" id="loginName" placeholder="Enter your full name">
-    <label style="color: #FFD700;">Phone Number (03XXXXXXXXX)</label>
-    <input type="tel" id="loginPhone" placeholder="03001234567" maxlength="11">
-    <button class="btn-blue" onclick="sendOTP()">Send OTP</button>
-    <div id="otpSection" class="hidden">
-        <div class="info-box">📱 OTP sent! (Demo mode: use 1234)</div>
-        <label style="color: #FFD700;">Enter OTP</label>
-        <input type="text" id="otpInput" placeholder="1234" maxlength="4">
-        <button class="btn-green" onclick="verifyOTP()">Verify & Login</button>
-    </div>
+    <input type="text" id="loginName" placeholder="Your Name / آپ کا نام" maxlength="50">
+    <input type="tel" id="loginPhone" placeholder="03XXXXXXXXX" maxlength="11">
+    <button class="btn-green" onclick="handleLogin()">LOGIN / لاگ ان</button>
 </div>
 
 <!-- GAME SCREEN -->
 <div id="gameScreen" class="container hidden">
     <div class="user-info">
-        <div>
-            <div class="user-name" id="userName"></div>
-            <div class="user-phone" id="userPhone"></div>
+        <div class="user-details">
+            <div class="user-name" id="displayName"></div>
+            <div class="user-phone" id="displayPhone"></div>
         </div>
-        <button class="btn-red" style="width: auto; padding: 8px 15px;" onclick="logout()">Logout</button>
+        <button class="logout-btn" onclick="handleLogout()">Logout</button>
     </div>
+
     <div class="title">MINES</div>
     <div id="gameMsg" class="msg"></div>
-    
-    <button class="btn-green" onclick="showDepositModal()">💰 DEPOSIT REQUEST</button>
-    <button class="btn-orange" onclick="showWithdrawModal()">💸 WITHDRAW REQUEST</button>
-    
+
+    <button class="btn-green" onclick="openDepositModal()">💰 DEPOSIT</button>
+    <button class="btn-orange" onclick="openWithdrawModal()">💸 WITHDRAW</button>
+
     <div class="balance-section">
         <div class="balance-item">
             <div class="balance-label">Balance</div>
             <div class="balance-value">Rs <span id="balance">0</span></div>
         </div>
         <div class="balance-item">
-            <div class="balance-label">Bet</div>
-            <div class="balance-value">Rs <span id="bet">0</span></div>
-        </div>
-        <div class="balance-item">
-            <div class="balance-label">Win</div>
+            <div class="balance-label">Current Win</div>
             <div class="balance-value">Rs <span id="win">0</span></div>
         </div>
     </div>
-    
-    <div class="grid" id="grid"></div>
-    
-    <button class="btn-blue" onclick="showBetModal()">💰 SET BET</button>
-    <button class="btn-gold" id="cashoutBtn" onclick="cashout()" disabled>💵 CASH OUT</button>
-    <button class="btn-red" onclick="resetGame()">🔄 RESET GAME</button>
+
+    <div class="grid" id="gameGrid"></div>
+
+    <button class="btn-blue" onclick="openBetModal()">💰 Bet Rs <span id="betDisplay">0</span></button>
+    <button class="btn-red" onclick="openMinesModal()">💣 Mines: <span id="minesDisplay">3</span></button>
+    <button class="btn-gold" id="cashoutBtn" onclick="cashout()" disabled>💵 Cash Out</button>
+    <button class="btn-gold" onclick="resetGame()">🔄 Reset</button>
 </div>
 
 <!-- DEPOSIT MODAL -->
-<div id="depositModal" class="container hidden">
-    <div class="title">Deposit Request</div>
-    <div class="info-box">
-        <h3 style="color: #FFD700;">📱 Send to JazzCash:</h3>
-        <div style="font-size: 24px; font-weight: bold; text-align: center; margin: 10px 0;">0326-6916283</div>
-        <p>⚠️ Change this number to your actual JazzCash number!</p>
+<div id="depositModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-title">💰 Deposit Request</div>
+        <div class="info-box">
+            <div class="info-title">براہِ مہربانی اس نمبر پر رقم سینڈ کریں اور سکرین شاٹ بھیجیں</div>
+            <div class="jazzcash-number">03266916283</div>
+        </div>
+        <input type="number" id="depositAmount" placeholder="Amount (Minimum Rs 100)" min="100">
+        <div class="upload-section">
+            <label class="upload-label">Upload Screenshot / سکرین شاٹ اپ لوڈ کریں</label>
+            <input type="file" id="depositScreenshot" accept="image/*">
+        </div>
+        <button class="btn-green" onclick="submitDeposit()">Submit Request</button>
+        <button class="btn-red close-btn" onclick="closeModal('depositModal')">Cancel</button>
     </div>
-    <label style="color: #FFD700;">Amount (Rs)</label>
-    <input type="number" id="depositAmount" placeholder="Minimum 100" min="100">
-    <label style="color: #FFD700;">Transaction ID</label>
-    <input type="text" id="transactionId" placeholder="Enter JazzCash transaction ID">
-    <label style="color: #FFD700;">Note (Optional)</label>
-    <textarea id="depositNote" rows="3" placeholder="Any message..."></textarea>
-    <button class="btn-green" onclick="submitDeposit()">Submit Request</button>
-    <button class="btn-red" onclick="hideModal('depositModal')">Cancel</button>
 </div>
 
 <!-- WITHDRAW MODAL -->
-<div id="withdrawModal" class="container hidden">
-    <div class="title">Withdraw Request</div>
-    <label style="color: #FFD700;">Your JazzCash Number</label>
-    <input type="tel" id="withdrawJazz" placeholder="03001234567" maxlength="11">
-    <label style="color: #FFD700;">Amount (Rs)</label>
-    <input type="number" id="withdrawAmount" placeholder="Minimum 100" min="100">
-    <label style="color: #FFD700;">Note (Optional)</label>
-    <textarea id="withdrawNote" rows="3" placeholder="Any message..."></textarea>
-    <p style="color: #FFD700; font-size: 14px; margin: 10px 0;">⏳ Admin will process within 24 hours</p>
-    <button class="btn-orange" onclick="submitWithdraw()">Submit Request</button>
-    <button class="btn-red" onclick="hideModal('withdrawModal')">Cancel</button>
+<div id="withdrawModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-title">💸 Withdraw Request</div>
+        <input type="tel" id="withdrawJazz" placeholder="Your JazzCash Number (03XXXXXXXXX)" maxlength="11">
+        <input type="number" id="withdrawAmount" placeholder="Amount (Minimum Rs 100)" min="100">
+        <p style="color: #FFD700; text-align: center; margin: 15px 0; font-size: 14px;">
+            ⏳ Admin will process within 24 hours
+        </p>
+        <button class="btn-orange" onclick="submitWithdraw()">Submit Request</button>
+        <button class="btn-red close-btn" onclick="closeModal('withdrawModal')">Cancel</button>
+    </div>
 </div>
 
 <!-- BET MODAL -->
-<div id="betModal" class="container hidden">
-    <div class="title">Set Bet</div>
-    <label style="color: #FFD700;">Bet Amount (Rs 100 - 10,000)</label>
-    <input type="number" id="betAmount" placeholder="Enter amount" min="100" max="10000">
-    <button class="btn-blue" onclick="confirmBet()">Confirm</button>
-    <button class="btn-red" onclick="hideModal('betModal')">Cancel</button>
+<div id="betModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-title">💰 Set Bet Amount</div>
+        <input type="number" id="betInput" placeholder="Bet (Rs 100 - Rs 10,000)" min="100" max="10000">
+        <button class="btn-blue" onclick="setBet()">Confirm</button>
+        <button class="btn-red close-btn" onclick="closeModal('betModal')">Cancel</button>
+    </div>
+</div>
+
+<!-- MINES MODAL -->
+<div id="minesModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-title">💣 Set Mines Count</div>
+        <input type="number" id="minesInput" placeholder="Mines (1 - 24)" min="1" max="24" value="3">
+        <button class="btn-red" onclick="setMines()">Confirm</button>
+        <button class="btn-red close-btn" onclick="closeModal('minesModal')">Cancel</button>
+    </div>
 </div>
 
 <script>
-// MAIN STATE
-let state = {
-    user: null,
+// API Configuration
+const API_URL = 'YOUR_BACKEND_URL_HERE'; // Will be updated after backend deployment
+
+// Game State
+let gameState = {
+    userId: null,
+    userName: '',
+    userPhone: '',
     balance: 0,
-    bet: 0,
-    win: 0,
+    currentWin: 0,
+    currentBet: 0,
+    minesCount: 3,
     gameActive: false,
-    mines: [],
-    revealed: []
+    minePositions: [],
+    revealedTiles: []
 };
 
-// SOUNDS (simplified - using beep instead of actual audio files)
-function playSound(type) {
-    // In real app, load actual audio files
-    console.log('Sound:', type);
+// Check login status on load
+window.onload = function() {
+    checkLoginStatus();
+};
+
+// Check if user is logged in
+function checkLoginStatus() {
+    const loginData = localStorage.getItem('minesUserLogin');
+    if (loginData) {
+        const data = JSON.parse(loginData);
+        const loginTime = new Date(data.timestamp);
+        const now = new Date();
+        const hoursDiff = (now - loginTime) / (1000 * 60 * 60);
+        
+        if (hoursDiff < 8) {
+            // Still valid login
+            gameState.userId = data.userId;
+            gameState.userName = data.name;
+            gameState.userPhone = data.phone;
+            showGameScreen();
+            fetchUserBalance();
+        } else {
+            // Session expired
+            localStorage.removeItem('minesUserLogin');
+            showLoginScreen();
+        }
+    } else {
+        showLoginScreen();
+    }
 }
 
-// STORAGE HELPER
-function saveData(key, value) {
-    localStorage.setItem(key, JSON.stringify(value));
-}
-
-function loadData(key) {
-    const data = localStorage.getItem(key);
-    return data ? JSON.parse(data) : null;
-}
-
-// Get all users data (simulating database)
-function getAllUsers() {
-    return loadData('allUsers') || {};
-}
-
-function saveAllUsers(users) {
-    saveData('allUsers', users);
-}
-
-// Get pending requests
-function getRequests(type) {
-    return loadData(type + 'Requests') || [];
-}
-
-function saveRequests(type, requests) {
-    saveData(type + 'Requests', requests);
-}
-
-// MESSAGES
-function showMsg(el, text, type) {
-    el.textContent = text;
-    el.className = 'msg ' + type;
-    el.style.display = 'block';
-    setTimeout(() => el.style.display = 'none', 3000);
-}
-
-// PHONE VALIDATION
-function validatePhone(phone) {
-    // Must be 11 digits starting with 03
-    const regex = /^03[0-9]{9}$/;
-    return regex.test(phone);
-}
-
-// LOGIN FUNCTIONS
-function sendOTP() {
+// Handle Login
+async function handleLogin() {
     const name = document.getElementById('loginName').value.trim();
     const phone = document.getElementById('loginPhone').value.trim();
     
     if (!name || name.length < 3) {
-        showMsg(document.getElementById('loginMsg'), 'Name must be at least 3 characters', 'error');
+        showMessage('loginMsg', 'Please enter your name (minimum 3 characters)', 'error');
         return;
     }
     
     if (!validatePhone(phone)) {
-        showMsg(document.getElementById('loginMsg'), 'Invalid phone! Use format: 03XXXXXXXXX', 'error');
+        showMessage('loginMsg', 'Invalid phone! Use format: 03XXXXXXXXX', 'error');
         return;
     }
     
-    // In real app, call SMS API here
-    showMsg(document.getElementById('loginMsg'), 'OTP sent! (Demo: use 1234)', 'success');
-    document.getElementById('otpSection').classList.remove('hidden');
-    playSound('otp');
+    try {
+        const response = await fetch(API_URL + '/api/login', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ name, phone })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            gameState.userId = data.userId;
+            gameState.userName = name;
+            gameState.userPhone = phone;
+            
+            // Save login session
+            localStorage.setItem('minesUserLogin', JSON.stringify({
+                userId: data.userId,
+                name,
+                phone,
+                timestamp: new Date().toISOString()
+            }));
+            
+            showGameScreen();
+            fetchUserBalance();
+        } else {
+            showMessage('loginMsg', data.message || 'Login failed', 'error');
+        }
+    } catch (error) {
+        console.error('Login error:', error);
+        showMessage('loginMsg', 'Connection error. Please try again.', 'error');
+    }
 }
 
-function verifyOTP() {
-    const otp = document.getElementById('otpInput').value;
-    const name = document.getElementById('loginName').value.trim();
-    const phone = document.getElementById('loginPhone').value.trim();
-    
-    if (otp !== '1234') {
-        showMsg(document.getElementById('loginMsg'), 'Invalid OTP!', 'error');
-        return;
-    }
-    
-    // Save/Load user data
-    let allUsers = getAllUsers();
-    if (!allUsers[phone]) {
-        allUsers[phone] = { name, phone, balance: 0, totalDeposit: 0, totalWithdraw: 0 };
-        saveAllUsers(allUsers);
-    }
-    
-    state.user = allUsers[phone];
-    state.balance = state.user.balance;
-    
-    // Show game screen
+// Validate Pakistani phone number
+function validatePhone(phone) {
+    return /^03[0-9]{9}$/.test(phone);
+}
+
+// Show/Hide screens
+function showLoginScreen() {
+    document.getElementById('loginScreen').classList.remove('hidden');
+    document.getElementById('gameScreen').classList.add('hidden');
+}
+
+function showGameScreen() {
     document.getElementById('loginScreen').classList.add('hidden');
     document.getElementById('gameScreen').classList.remove('hidden');
-    document.getElementById('userName').textContent = name;
-    document.getElementById('userPhone').textContent = phone;
+    document.getElementById('displayName').textContent = gameState.userName;
+    document.getElementById('displayPhone').textContent = gameState.userPhone;
+    initializeGrid();
     updateDisplay();
-    initGrid();
-    playSound('login');
 }
 
-function logout() {
-    if (confirm('Logout? Your balance will be saved.')) {
-        saveUserData();
+// Logout
+function handleLogout() {
+    if (confirm('Are you sure you want to logout?')) {
+        localStorage.removeItem('minesUserLogin');
         location.reload();
     }
 }
 
-function saveUserData() {
-    if (state.user) {
-        let allUsers = getAllUsers();
-        allUsers[state.user.phone].balance = state.balance;
-        saveAllUsers(allUsers);
+// Fetch user balance from server
+async function fetchUserBalance() {
+    try {
+        const response = await fetch(API_URL + '/api/balance/' + gameState.userId);
+        const data = await response.json();
+        if (data.success) {
+            gameState.balance = data.balance;
+            updateDisplay();
+        }
+    } catch (error) {
+        console.error('Balance fetch error:', error);
     }
 }
 
-// DEPOSIT
-function showDepositModal() {
-    document.getElementById('gameScreen').classList.add('hidden');
-    document.getElementById('depositModal').classList.remove('hidden');
+// Initialize game grid
+function initializeGrid() {
+    const grid = document.getElementById('gameGrid');
+    grid.innerHTML = '';
+    for (let i = 0; i < 25; i++) {
+        const tile = document.createElement('div');
+        tile.className = 'tile';
+        tile.textContent = 'Rs';
+        tile.onclick = () => clickTile(i);
+        grid.appendChild(tile);
+    }
 }
 
-function submitDeposit() {
+// Tile click handler
+function clickTile(index) {
+    if (gameState.revealedTiles.includes(index)) return;
+    
+    if (!gameState.gameActive) {
+        if (gameState.currentBet === 0) {
+            showMessage('gameMsg', 'Please set bet amount first!', 'error');
+            return;
+        }
+        startGame();
+    }
+    
+    gameState.revealedTiles.push(index);
+    const tiles = document.querySelectorAll('.tile');
+    const tile = tiles[index];
+    
+    if (gameState.minePositions.includes(index)) {
+        // Hit mine
+        tile.textContent = '💣';
+        tile.style.background = 'linear-gradient(135deg, #DC143C, #8B0000)';
+        tile.classList.add('revealed');
+        gameOver(false);
+    } else {
+        // Safe tile
+        tile.textContent = '💎';
+        tile.style.background = 'linear-gradient(135deg, #FFD700, #FFA500)';
+        tile.classList.add('revealed');
+        
+        // Calculate win
+        const winPerTile = Math.floor(gameState.currentBet * 0.15);
+        gameState.currentWin += winPerTile;
+        updateDisplay();
+        document.getElementById('cashoutBtn').disabled = false;
+    }
+}
+
+// Start game
+function startGame() {
+    gameState.gameActive = true;
+    gameState.minePositions = [];
+    gameState.revealedTiles = [];
+    gameState.currentWin = 0;
+    
+    // Place mines
+    while (gameState.minePositions.length < gameState.minesCount) {
+        const pos = Math.floor(Math.random() * 25);
+        if (!gameState.minePositions.includes(pos)) {
+            gameState.minePositions.push(pos);
+        }
+    }
+    
+    updateDisplay();
+}
+
+// Cash out
+async function cashout() {
+    if (!gameState.gameActive || gameState.currentWin === 0) return;
+    
+    const totalReturn = gameState.currentBet + gameState.currentWin;
+    
+    try {
+        const response = await fetch(API_URL + '/api/cashout', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                userId: gameState.userId,
+                betAmount: gameState.currentBet,
+                winAmount: gameState.currentWin,
+                totalReturn
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            gameState.balance += totalReturn;
+            gameState.currentBet = 0;
+            gameState.currentWin = 0;
+            gameState.gameActive = false;
+            document.getElementById('cashoutBtn').disabled = true;
+            
+            updateDisplay();
+            revealAllTiles();
+            showMessage('gameMsg', `Cashed out Rs ${totalReturn}! 🎉`, 'success');
+        }
+    } catch (error) {
+        console.error('Cashout error:', error);
+    }
+}
+
+// Game over
+function gameOver(won) {
+    gameState.gameActive = false;
+    gameState.currentBet = 0;
+    gameState.currentWin = 0;
+    document.getElementById('cashoutBtn').disabled = true;
+    
+    updateDisplay();
+    revealAllTiles();
+    
+    if (!won) {
+        showMessage('gameMsg', 'Game Over! 💔', 'error');
+    }
+}
+
+// Reveal all tiles
+function revealAllTiles() {
+    const tiles = document.querySelectorAll('.tile');
+    tiles.forEach((tile, i) => {
+        if (!tile.classList.contains('revealed')) {
+            tile.classList.add('revealed');
+            if (gameState.minePositions.includes(i)) {
+                tile.textContent = '💣';
+                tile.style.background = 'linear-gradient(135deg, #DC143C, #8B0000)';
+            } else {
+                tile.textContent = '💎';
+                tile.style.background = 'linear-gradient(135deg, #FFD700, #FFA500)';
+            }
+        }
+    });
+}
+
+// Reset game
+function resetGame() {
+    gameState.gameActive = false;
+    gameState.currentWin = 0;
+    gameState.currentBet = 0;
+    gameState.minePositions = [];
+    gameState.revealedTiles = [];
+    document.getElementById('cashoutBtn').disabled = true;
+    initializeGrid();
+    updateDisplay();
+}
+
+// Update display
+function updateDisplay() {
+    document.getElementById('balance').textContent = gameState.balance;
+    document.getElementById('win').textContent = gameState.currentWin;
+    document.getElementById('betDisplay').textContent = gameState.currentBet;
+    document.getElementById('minesDisplay').textContent = gameState.minesCount;
+}
+
+// Deposit request
+async function submitDeposit() {
     const amount = parseInt(document.getElementById('depositAmount').value);
-    const txId = document.getElementById('transactionId').value.trim();
-    const note = document.getElementById('depositNote').value.trim();
+    const screenshot = document.getElementById('depositScreenshot').files[0];
     
     if (!amount || amount < 100) {
         alert('Minimum deposit is Rs 100');
         return;
     }
     
-    if (!txId) {
-        alert('Transaction ID required!');
+    if (!screenshot) {
+        alert('Please upload screenshot!');
         return;
     }
     
-    // Add to pending deposits
-    const requests = getRequests('deposit');
-    requests.push({
-        id: Date.now(),
-        phone: state.user.phone,
-        name: state.user.name,
-        amount,
-        txId,
-        note,
-        status: 'pending',
-        timestamp: new Date().toISOString()
-    });
-    saveRequests('deposit', requests);
+    const formData = new FormData();
+    formData.append('userId', gameState.userId);
+    formData.append('name', gameState.userName);
+    formData.append('phone', gameState.userPhone);
+    formData.append('amount', amount);
+    formData.append('screenshot', screenshot);
     
-    alert('Deposit request submitted! Admin will approve soon.');
-    playSound('deposit');
-    hideModal('depositModal');
-    
-    // Clear form
-    document.getElementById('depositAmount').value = '';
-    document.getElementById('transactionId').value = '';
-    document.getElementById('depositNote').value = '';
+    try {
+        const response = await fetch(API_URL + '/api/deposit-request', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            alert('Deposit request submitted! Admin will approve soon.');
+            closeModal('depositModal');
+            document.getElementById('depositAmount').value = '';
+            document.getElementById('depositScreenshot').value = '';
+        } else {
+            alert('Error: ' + data.message);
+        }
+    } catch (error) {
+        console.error('Deposit error:', error);
+        alert('Connection error. Please try again.');
+    }
 }
 
-// WITHDRAW
-function showWithdrawModal() {
-    document.getElementById('gameScreen').classList.add('hidden');
-    document.getElementById('withdrawModal').classList.remove('hidden');
-}
-
-function submitWithdraw() {
+// Withdraw request
+async function submitWithdraw() {
     const jazzCash = document.getElementById('withdrawJazz').value.trim();
     const amount = parseInt(document.getElementById('withdrawAmount').value);
-    const note = document.getElementById('withdrawNote').value.trim();
     
     if (!validatePhone(jazzCash)) {
         alert('Invalid JazzCash number!');
@@ -412,205 +767,127 @@ function submitWithdraw() {
         return;
     }
     
-    if (amount > state.balance) {
+    if (amount > gameState.balance) {
         alert('Insufficient balance!');
         return;
     }
     
-    // Add to pending withdraws
-    const requests = getRequests('withdraw');
-    requests.push({
-        id: Date.now(),
-        phone: state.user.phone,
-        name: state.user.name,
-        jazzCash,
-        amount,
-        note,
-        status: 'pending',
-        timestamp: new Date().toISOString()
-    });
-    saveRequests('withdraw', requests);
-    
-    alert('Withdraw request submitted! Admin will process soon.');
-    playSound('withdraw');
-    hideModal('withdrawModal');
-    
-    // Clear form
-    document.getElementById('withdrawJazz').value = '';
-    document.getElementById('withdrawAmount').value = '';
-    document.getElementById('withdrawNote').value = '';
+    try {
+        const response = await fetch(API_URL + '/api/withdraw-request', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                userId: gameState.userId,
+                name: gameState.userName,
+                phone: gameState.userPhone,
+                jazzCash,
+                amount
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            alert('Withdraw request submitted! Admin will process soon.');
+            closeModal('withdrawModal');
+            document.getElementById('withdrawJazz').value = '';
+            document.getElementById('withdrawAmount').value = '';
+        } else {
+            alert('Error: ' + data.message);
+        }
+    } catch (error) {
+        console.error('Withdraw error:', error);
+        alert('Connection error. Please try again.');
+    }
 }
 
-// MODALS
-function hideModal(id) {
-    document.getElementById(id).classList.add('hidden');
-    document.getElementById('gameScreen').classList.remove('hidden');
-}
-
-// BET
-function showBetModal() {
-    if (state.gameActive) {
+// Set bet
+function openBetModal() {
+    if (gameState.gameActive) {
         alert('Cannot change bet during active game!');
         return;
     }
-    document.getElementById('gameScreen').classList.add('hidden');
-    document.getElementById('betModal').classList.remove('hidden');
+    document.getElementById('betModal').classList.add('active');
 }
 
-function confirmBet() {
-    const amount = parseInt(document.getElementById('betAmount').value);
+async function setBet() {
+    const amount = parseInt(document.getElementById('betInput').value);
     
     if (!amount || amount < 100 || amount > 10000) {
         alert('Bet must be between Rs 100 and Rs 10,000');
         return;
     }
     
-    if (amount > state.balance) {
+    if (amount > gameState.balance) {
         alert('Insufficient balance!');
         return;
     }
     
-    state.balance -= amount;
-    state.bet = amount;
-    saveUserData();
-    updateDisplay();
-    hideModal('betModal');
-    showMsg(document.getElementById('gameMsg'), 'Bet set! Start playing!', 'success');
-}
-
-// GAME
-function initGrid() {
-    const grid = document.getElementById('grid');
-    grid.innerHTML = '';
-    for (let i = 0; i < 25; i++) {
-        const tile = document.createElement('div');
-        tile.className = 'tile';
-        tile.innerHTML = '🪙';
-        tile.onclick = () => clickTile(i);
-        grid.appendChild(tile);
-    }
-}
-
-function clickTile(i) {
-    if (state.revealed.includes(i)) return;
+    gameState.balance -= amount;
+    gameState.currentBet = amount;
     
-    if (!state.gameActive) {
-        if (state.bet === 0) {
-            alert('Set bet first!');
-            return;
-        }
-        startGame();
-    }
-    
-    state.revealed.push(i);
-    const tiles = document.querySelectorAll('.tile');
-    
-    if (state.mines.includes(i)) {
-        tiles[i].innerHTML = '💣';
-        tiles[i].style.background = 'linear-gradient(135deg, #DC143C, #8B0000)';
-        playSound('lose');
-        gameOver(false);
-    } else {
-        tiles[i].innerHTML = '💎';
-        tiles[i].style.background = 'linear-gradient(135deg, #FFD700, #FFA500)';
-        state.win += 20;
-        updateDisplay();
-        document.getElementById('cashoutBtn').disabled = false;
-        playSound('win');
-    }
-}
-
-function startGame() {
-    state.gameActive = true;
-    state.mines = [];
-    state.revealed = [];
-    state.win = 0;
-    
-    // Place 3 random mines
-    while (state.mines.length < 3) {
-        const pos = Math.floor(Math.random() * 25);
-        if (!state.mines.includes(pos)) state.mines.push(pos);
+    // Update on server
+    try {
+        await fetch(API_URL + '/api/update-balance', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                userId: gameState.userId,
+                balance: gameState.balance
+            })
+        });
+    } catch (error) {
+        console.error('Balance update error:', error);
     }
     
     updateDisplay();
+    closeModal('betModal');
+    showMessage('gameMsg', 'Bet set! Start playing!', 'success');
 }
 
-function cashout() {
-    if (state.win === 0) return;
-    
-    const total = state.bet + state.win;
-    state.balance += total;
-    state.bet = 0;
-    state.win = 0;
-    state.gameActive = false;
-    document.getElementById('cashoutBtn').disabled = true;
-    
-    saveUserData();
-    updateDisplay();
-    revealAll();
-    playSound('cashout');
-    showMsg(document.getElementById('gameMsg'), `Cashed out Rs ${total}!`, 'success');
-}
-
-function gameOver(won) {
-    state.gameActive = false;
-    state.bet = 0;
-    state.win = 0;
-    document.getElementById('cashoutBtn').disabled = true;
-    saveUserData();
-    updateDisplay();
-    revealAll();
-    if (!won) showMsg(document.getElementById('gameMsg'), 'Game Over!', 'error');
-}
-
-function revealAll() {
-    const tiles = document.querySelectorAll('.tile');
-    tiles.forEach((tile, i) => {
-        if (state.mines.includes(i)) {
-            tile.innerHTML = '💣';
-            tile.style.background = 'linear-gradient(135deg, #DC143C, #8B0000)';
-        } else {
-            tile.innerHTML = '💎';
-            tile.style.background = 'linear-gradient(135deg, #FFD700, #FFA500)';
-        }
-    });
-}
-
-function resetGame() {
-    state.gameActive = false;
-    state.bet = 0;
-    state.win = 0;
-    state.mines = [];
-    state.revealed = [];
-    document.getElementById('cashoutBtn').disabled = true;
-    initGrid();
-    updateDisplay();
-}
-
-function updateDisplay() {
-    document.getElementById('balance').textContent = state.balance;
-    document.getElementById('bet').textContent = state.bet;
-    document.getElementById('win').textContent = state.win;
-}
-
-// INIT
-window.onload = function() {
-    // Check if user already logged in
-    const savedUser = loadData('currentUser');
-    if (savedUser) {
-        const allUsers = getAllUsers();
-        if (allUsers[savedUser]) {
-            state.user = allUsers[savedUser];
-            state.balance = state.user.balance;
-            document.getElementById('loginScreen').classList.add('hidden');
-            document.getElementById('gameScreen').classList.remove('hidden');
-            document.getElementById('userName').textContent = state.user.name;
-            document.getElementById('userPhone').textContent = state.user.phone;
-            updateDisplay();
-            initGrid();
-        }
+// Set mines
+function openMinesModal() {
+    if (gameState.gameActive) {
+        alert('Cannot change mines during active game!');
+        return;
     }
-};
+    document.getElementById('minesModal').classList.add('active');
+}
+
+function setMines() {
+    const count = parseInt(document.getElementById('minesInput').value);
+    
+    if (!count || count < 1 || count > 24) {
+        alert('Mines must be between 1 and 24');
+        return;
+    }
+    
+    gameState.minesCount = count;
+    updateDisplay();
+    closeModal('minesModal');
+}
+
+// Modal handlers
+function openDepositModal() {
+    document.getElementById('depositModal').classList.add('active');
+}
+
+function openWithdrawModal() {
+    document.getElementById('withdrawModal').classList.add('active');
+}
+
+function closeModal(id) {
+    document.getElementById(id).classList.remove('active');
+}
+
+// Show message
+function showMessage(elementId, text, type) {
+    const el = document.getElementById(elementId);
+    el.textContent = text;
+    el.className = 'msg ' + type;
+    el.style.display = 'block';
+    setTimeout(() => el.style.display = 'none', 3000);
+}
 </script>
 
 </body>
