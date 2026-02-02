@@ -136,7 +136,6 @@ button {
 .btn-edit { background: #2196F3; color: white; }
 .status-pending { color: #FF9800; background: rgba(255,152,0,0.15); padding: 5px 10px; border-radius: 5px; font-size: 12px; }
 .status-approved { color: #4CAF50; background: rgba(76,175,80,0.15); padding: 5px 10px; border-radius: 5px; font-size: 12px; }
-.screenshot { max-width: 200px; border-radius: 8px; cursor: pointer; }
 .modal {
     display: none;
     position: fixed;
@@ -167,6 +166,14 @@ button {
     font-size: 16px;
 }
 .no-data { text-align: center; padding: 40px; color: #999; }
+.refresh-btn {
+    background: #2196F3;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+}
 </style>
 </head>
 <body>
@@ -182,7 +189,10 @@ button {
 <div id="dashboard" class="container">
     <div class="header">
         <h1>🎮 Admin Dashboard</h1>
-        <button class="logout-btn" onclick="adminLogout()">Logout</button>
+        <div style="display: flex; gap: 10px;">
+            <button class="refresh-btn" onclick="loadAllData()">🔄 Refresh</button>
+            <button class="logout-btn" onclick="adminLogout()">Logout</button>
+        </div>
     </div>
 
     <div class="stats">
@@ -240,32 +250,13 @@ button {
     </div>
 </div>
 
-<div id="screenshotModal" class="modal" onclick="closeModal()">
-    <div class="modal-content" style="max-width: 90%;">
-        <img id="screenshotImg" style="width: 100%; border-radius: 10px;">
-    </div>
-</div>
-
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
-
 <script>
-const ADMIN_PASSWORD = '@/Aa14324300'; // CHANGE THIS!
-
-const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_PROJECT.firebaseapp.com",
-    databaseURL: "https://YOUR_PROJECT.firebaseio.com",
-    projectId: "YOUR_PROJECT",
-    storageBucket: "YOUR_PROJECT.appspot.com",
-    messagingSenderId: "YOUR_ID",
-    appId: "YOUR_APP_ID"
-};
-
-firebase.initializeApp(firebaseConfig);
-const database = firebase.database();
+const ADMIN_PASSWORD = 'admin123'; // CHANGE THIS TO STRONG PASSWORD!
 
 let currentEditUser = null;
+
+function load(key) { const d = localStorage.getItem(key); return d ? JSON.parse(d) : null; }
+function save(key, data) { localStorage.setItem(key, JSON.stringify(data)); }
 
 function adminLogin() {
     if (document.getElementById('adminPassword').value === ADMIN_PASSWORD) {
@@ -293,269 +284,223 @@ window.onload = function() {
     }
 };
 
-async function loadAllData() {
-    await loadUsers();
-    await loadDeposits();
-    await loadWithdraws();
-    await loadStats();
+function loadAllData() {
+    loadUsers();
+    loadDeposits();
+    loadWithdraws();
+    loadStats();
 }
 
-async function loadStats() {
-    try {
-        const usersSnapshot = await database.ref('users').once('value');
-        const depositsSnapshot = await database.ref('depositRequests').once('value');
-        const withdrawsSnapshot = await database.ref('withdrawRequests').once('value');
-        
-        let totalUsers = 0;
-        let totalBalance = 0;
-        let pendingDep = 0;
-        let pendingWith = 0;
-        
-        usersSnapshot.forEach(child => {
-            totalUsers++;
-            totalBalance += child.val().balance || 0;
-        });
-        
-        depositsSnapshot.forEach(child => {
-            if (child.val().status === 'pending') pendingDep++;
-        });
-        
-        withdrawsSnapshot.forEach(child => {
-            if (child.val().status === 'pending') pendingWith++;
-        });
-        
-        document.getElementById('totalUsers').textContent = totalUsers;
-        document.getElementById('totalBalance').textContent = totalBalance.toFixed(2);
-        document.getElementById('pendingDeposits').textContent = pendingDep;
-        document.getElementById('pendingWithdraws').textContent = pendingWith;
-    } catch (error) {
-        console.error('Stats error:', error);
-    }
-}
-
-async function loadUsers() {
-    try {
-        const snapshot = await database.ref('users').once('value');
-        const content = document.getElementById('usersContent');
-        
-        if (!snapshot.exists()) {
-            content.innerHTML = '<div class="no-data">No users yet</div>';
-            return;
-        }
-        
-        let html = '';
-        snapshot.forEach(child => {
-            const user = child.val();
-            html += `
-                <div class="card">
-                    <div class="card-header">
-                        <div>
-                            <div class="card-title">${user.name}</div>
-                            <div class="card-info">📱 ${user.phone}</div>
-                        </div>
-                        <button class="btn-edit" onclick="editBalance('${child.key}', '${user.name}', '${user.phone}', ${user.balance || 0})">
-                            Edit Balance
-                        </button>
-                    </div>
-                    <div class="card-amount">Rs ${(user.balance || 0).toFixed(2)}</div>
-                    <div class="card-info">Deposit: Rs ${(user.totalDeposit || 0).toFixed(2)} | Withdraw: Rs ${(user.totalWithdraw || 0).toFixed(2)}</div>
-                </div>
-            `;
-        });
-        
-        content.innerHTML = html;
-    } catch (error) {
-        console.error('Users error:', error);
-    }
-}
-
-async function loadDeposits() {
-    try {
-        const snapshot = await database.ref('depositRequests').orderByChild('timestamp').once('value');
-        const content = document.getElementById('depositsContent');
-        
-        if (!snapshot.exists()) {
-            content.innerHTML = '<div class="no-data">No deposits yet</div>';
-            return;
-        }
-        
-        let html = '';
-        let deposits = [];
-        snapshot.forEach(child => {
-            deposits.push({ key: child.key, ...child.val() });
-        });
-        
-        deposits.reverse().forEach(dep => {
-            const date = new Date(dep.timestamp).toLocaleString();
-            const statusClass = dep.status === 'pending' ? 'status-pending' : 'status-approved';
-            
-            html += `
-                <div class="card">
-                    <div class="card-header">
-                        <div>
-                            <div class="card-title">${dep.name}</div>
-                            <div class="card-info">📱 ${dep.phone}</div>
-                            <div class="card-info">🕒 ${date}</div>
-                        </div>
-                        <span class="${statusClass}">${dep.status.toUpperCase()}</span>
-                    </div>
-                    <div class="card-amount">Rs ${dep.amount}</div>
-                    ${dep.screenshotUrl ? `
-                        <img src="${dep.screenshotUrl}" class="screenshot" onclick="viewScreenshot('${dep.screenshotUrl}')">
-                    ` : ''}
-                    ${dep.status === 'pending' ? `
-                        <div style="margin-top: 10px;">
-                            <button class="btn-approve" onclick="approveDeposit('${dep.key}', ${dep.amount}, '${dep.userId}')">✓ Approve</button>
-                            <button class="btn-reject" onclick="rejectDeposit('${dep.key}')">✗ Reject</button>
-                        </div>
-                    ` : ''}
-                </div>
-            `;
-        });
-        
-        content.innerHTML = html;
-    } catch (error) {
-        console.error('Deposits error:', error);
-    }
-}
-
-async function loadWithdraws() {
-    try {
-        const snapshot = await database.ref('withdrawRequests').orderByChild('timestamp').once('value');
-        const content = document.getElementById('withdrawsContent');
-        
-        if (!snapshot.exists()) {
-            content.innerHTML = '<div class="no-data">No withdrawals yet</div>';
-            return;
-        }
-        
-        let html = '';
-        let withdraws = [];
-        snapshot.forEach(child => {
-            withdraws.push({ key: child.key, ...child.val() });
-        });
-        
-        withdraws.reverse().forEach(wit => {
-            const date = new Date(wit.timestamp).toLocaleString();
-            const statusClass = wit.status === 'pending' ? 'status-pending' : 'status-approved';
-            
-            html += `
-                <div class="card">
-                    <div class="card-header">
-                        <div>
-                            <div class="card-title">${wit.name}</div>
-                            <div class="card-info">📱 ${wit.phone}</div>
-                            <div class="card-info">💰 JazzCash: ${wit.jazzCash}</div>
-                            <div class="card-info">🕒 ${date}</div>
-                        </div>
-                        <span class="${statusClass}">${wit.status.toUpperCase()}</span>
-                    </div>
-                    <div class="card-amount">Rs ${wit.amount}</div>
-                    ${wit.status === 'pending' ? `
-                        <div style="margin-top: 10px;">
-                            <button class="btn-approve" onclick="approveWithdraw('${wit.key}', ${wit.amount}, '${wit.userId}')">✓ Approve</button>
-                            <button class="btn-reject" onclick="rejectWithdraw('${wit.key}')">✗ Reject</button>
-                        </div>
-                    ` : ''}
-                </div>
-            `;
-        });
-        
-        content.innerHTML = html;
-    } catch (error) {
-        console.error('Withdraws error:', error);
-    }
-}
-
-async function approveDeposit(key, amount, userId) {
-    if (!confirm('Approve this deposit?')) return;
+function loadStats() {
+    const allUsers = load('allUsers') || {};
+    const deposits = load('depositRequests') || [];
+    const withdraws = load('withdrawRequests') || [];
     
-    try {
-        const userRef = database.ref('users/' + userId);
-        const snapshot = await userRef.once('value');
-        const currentBalance = snapshot.val().balance || 0;
-        const currentDeposit = snapshot.val().totalDeposit || 0;
-        
-        await userRef.update({
-            balance: currentBalance + amount,
-            totalDeposit: currentDeposit + amount
-        });
-        
-        await database.ref('depositRequests/' + key).update({
-            status: 'approved',
-            approvedAt: Date.now()
-        });
-        
-        alert('✅ Deposit approved!');
-        loadAllData();
-    } catch (error) {
-        console.error('Approve error:', error);
-        alert('Error approving');
-    }
+    const totalUsers = Object.keys(allUsers).length;
+    const totalBalance = Object.values(allUsers).reduce((sum, u) => sum + (u.balance || 0), 0);
+    const pendingDep = deposits.filter(d => d.status === 'pending').length;
+    const pendingWith = withdraws.filter(w => w.status === 'pending').length;
+    
+    document.getElementById('totalUsers').textContent = totalUsers;
+    document.getElementById('totalBalance').textContent = totalBalance.toFixed(2);
+    document.getElementById('pendingDeposits').textContent = pendingDep;
+    document.getElementById('pendingWithdraws').textContent = pendingWith;
 }
 
-async function rejectDeposit(key) {
+function loadUsers() {
+    const allUsers = load('allUsers') || {};
+    const content = document.getElementById('usersContent');
+    
+    if (Object.keys(allUsers).length === 0) {
+        content.innerHTML = '<div class="no-data">No users yet</div>';
+        return;
+    }
+    
+    let html = '';
+    Object.values(allUsers).forEach(user => {
+        html += `
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">${user.name}</div>
+                        <div class="card-info">📱 ${user.phone}</div>
+                    </div>
+                    <button class="btn-edit" onclick="editBalance('${user.phone}', '${user.name}', '${user.phone}', ${user.balance || 0})">
+                        Edit Balance
+                    </button>
+                </div>
+                <div class="card-amount">Rs ${(user.balance || 0).toFixed(2)}</div>
+                <div class="card-info">Deposit: Rs ${(user.totalDeposit || 0).toFixed(2)} | Withdraw: Rs ${(user.totalWithdraw || 0).toFixed(2)}</div>
+            </div>
+        `;
+    });
+    
+    content.innerHTML = html;
+}
+
+function loadDeposits() {
+    const deposits = load('depositRequests') || [];
+    const content = document.getElementById('depositsContent');
+    
+    if (deposits.length === 0) {
+        content.innerHTML = '<div class="no-data">No deposits yet</div>';
+        return;
+    }
+    
+    let html = '';
+    deposits.slice().reverse().forEach(dep => {
+        const date = new Date(dep.timestamp).toLocaleString();
+        const statusClass = dep.status === 'pending' ? 'status-pending' : 'status-approved';
+        
+        html += `
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">${dep.name}</div>
+                        <div class="card-info">📱 ${dep.phone}</div>
+                        <div class="card-info">🕒 ${date}</div>
+                    </div>
+                    <span class="${statusClass}">${dep.status.toUpperCase()}</span>
+                </div>
+                <div class="card-amount">Rs ${dep.amount}</div>
+                <div class="card-info">Screenshot: ${dep.screenshot}</div>
+                ${dep.status === 'pending' ? `
+                    <div style="margin-top: 10px;">
+                        <button class="btn-approve" onclick="approveDeposit(${dep.id})">✓ Approve</button>
+                        <button class="btn-reject" onclick="rejectDeposit(${dep.id})">✗ Reject</button>
+                    </div>
+                ` : ''}
+            </div>
+        `;
+    });
+    
+    content.innerHTML = html;
+}
+
+function loadWithdraws() {
+    const withdraws = load('withdrawRequests') || [];
+    const content = document.getElementById('withdrawsContent');
+    
+    if (withdraws.length === 0) {
+        content.innerHTML = '<div class="no-data">No withdrawals yet</div>';
+        return;
+    }
+    
+    let html = '';
+    withdraws.slice().reverse().forEach(wit => {
+        const date = new Date(wit.timestamp).toLocaleString();
+        const statusClass = wit.status === 'pending' ? 'status-pending' : 'status-approved';
+        
+        html += `
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">${wit.name}</div>
+                        <div class="card-info">📱 ${wit.phone}</div>
+                        <div class="card-info">💰 JazzCash: ${wit.jazzCash}</div>
+                        <div class="card-info">🕒 ${date}</div>
+                    </div>
+                    <span class="${statusClass}">${wit.status.toUpperCase()}</span>
+                </div>
+                <div class="card-amount">Rs ${wit.amount}</div>
+                ${wit.status === 'pending' ? `
+                    <div style="margin-top: 10px;">
+                        <button class="btn-approve" onclick="approveWithdraw(${wit.id})">✓ Approve</button>
+                        <button class="btn-reject" onclick="rejectWithdraw(${wit.id})">✗ Reject</button>
+                    </div>
+                ` : ''}
+            </div>
+        `;
+    });
+    
+    content.innerHTML = html;
+}
+
+function approveDeposit(id) {
+    if (!confirm('Approve this deposit? User balance will be credited.')) return;
+    
+    let deposits = load('depositRequests') || [];
+    const deposit = deposits.find(d => d.id === id);
+    if (!deposit) return;
+    
+    let allUsers = load('allUsers') || {};
+    if (allUsers[deposit.phone]) {
+        allUsers[deposit.phone].balance += deposit.amount;
+        allUsers[deposit.phone].totalDeposit = (allUsers[deposit.phone].totalDeposit || 0) + deposit.amount;
+        save('allUsers', allUsers);
+        
+        let userData = load('user_' + deposit.phone);
+        if (userData) {
+            userData.balance = allUsers[deposit.phone].balance;
+            save('user_' + deposit.phone, userData);
+        }
+    }
+    
+    deposit.status = 'approved';
+    deposit.approvedAt = Date.now();
+    save('depositRequests', deposits);
+    
+    alert('✅ Deposit approved! User balance updated.');
+    loadAllData();
+}
+
+function rejectDeposit(id) {
     if (!confirm('Reject this deposit?')) return;
     
-    try {
-        await database.ref('depositRequests/' + key).update({
-            status: 'rejected',
-            rejectedAt: Date.now()
-        });
-        
+    let deposits = load('depositRequests') || [];
+    const deposit = deposits.find(d => d.id === id);
+    if (deposit) {
+        deposit.status = 'rejected';
+        save('depositRequests', deposits);
         alert('Deposit rejected');
         loadAllData();
-    } catch (error) {
-        console.error('Reject error:', error);
     }
 }
 
-async function approveWithdraw(key, amount, userId) {
+function approveWithdraw(id) {
     if (!confirm('Step 1: Have you sent money to user?')) return;
     if (!confirm('Step 2: Confirm approval? Balance will be deducted.')) return;
     
-    try {
-        const userRef = database.ref('users/' + userId);
-        const snapshot = await userRef.once('value');
-        const currentBalance = snapshot.val().balance || 0;
-        const currentWithdraw = snapshot.val().totalWithdraw || 0;
+    let withdraws = load('withdrawRequests') || [];
+    const withdraw = withdraws.find(w => w.id === id);
+    if (!withdraw) return;
+    
+    let allUsers = load('allUsers') || {};
+    if (allUsers[withdraw.phone]) {
+        allUsers[withdraw.phone].balance -= withdraw.amount;
+        allUsers[withdraw.phone].totalWithdraw = (allUsers[withdraw.phone].totalWithdraw || 0) + withdraw.amount;
+        save('allUsers', allUsers);
         
-        await userRef.update({
-            balance: currentBalance - amount,
-            totalWithdraw: currentWithdraw + amount
-        });
-        
-        await database.ref('withdrawRequests/' + key).update({
-            status: 'approved',
-            approvedAt: Date.now()
-        });
-        
-        alert('✅ Withdrawal approved!');
-        loadAllData();
-    } catch (error) {
-        console.error('Approve error:', error);
-        alert('Error approving');
+        let userData = load('user_' + withdraw.phone);
+        if (userData) {
+            userData.balance = allUsers[withdraw.phone].balance;
+            save('user_' + withdraw.phone, userData);
+        }
     }
+    
+    withdraw.status = 'approved';
+    withdraw.approvedAt = Date.now();
+    save('withdrawRequests', withdraws);
+    
+    alert('✅ Withdrawal approved! User balance deducted.');
+    loadAllData();
 }
 
-async function rejectWithdraw(key) {
+function rejectWithdraw(id) {
     if (!confirm('Reject this withdrawal?')) return;
     
-    try {
-        await database.ref('withdrawRequests/' + key).update({
-            status: 'rejected',
-            rejectedAt: Date.now()
-        });
-        
+    let withdraws = load('withdrawRequests') || [];
+    const withdraw = withdraws.find(w => w.id === id);
+    if (withdraw) {
+        withdraw.status = 'rejected';
+        save('withdrawRequests', withdraws);
         alert('Withdrawal rejected');
         loadAllData();
-    } catch (error) {
-        console.error('Reject error:', error);
     }
 }
 
 function editBalance(userId, name, phone, balance) {
-    currentEditUser = userId;
+    currentEditUser = phone;
     document.getElementById('editUserName').textContent = name;
     document.getElementById('editUserPhone').textContent = phone;
     document.getElementById('editCurrentBalance').textContent = balance.toFixed(2);
@@ -563,7 +508,7 @@ function editBalance(userId, name, phone, balance) {
     document.getElementById('editBalanceModal').classList.add('active');
 }
 
-async function saveBalance() {
+function saveBalance() {
     const newBalance = parseFloat(document.getElementById('editNewBalance').value);
     
     if (isNaN(newBalance) || newBalance < 0) {
@@ -571,25 +516,25 @@ async function saveBalance() {
         return;
     }
     
-    try {
-        await database.ref('users/' + currentEditUser + '/balance').set(newBalance);
+    let allUsers = load('allUsers') || {};
+    if (allUsers[currentEditUser]) {
+        allUsers[currentEditUser].balance = newBalance;
+        save('allUsers', allUsers);
+        
+        let userData = load('user_' + currentEditUser);
+        if (userData) {
+            userData.balance = newBalance;
+            save('user_' + currentEditUser, userData);
+        }
+        
         alert('✅ Balance updated!');
         closeModal();
         loadAllData();
-    } catch (error) {
-        console.error('Update error:', error);
-        alert('Error updating');
     }
-}
-
-function viewScreenshot(url) {
-    document.getElementById('screenshotImg').src = url;
-    document.getElementById('screenshotModal').classList.add('active');
 }
 
 function closeModal() {
     document.getElementById('editBalanceModal').classList.remove('active');
-    document.getElementById('screenshotModal').classList.remove('active');
 }
 
 function showTab(tabName) {
