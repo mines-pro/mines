@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mines Game - Play & Win</title>
+    <title>Mines Game</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -266,13 +266,7 @@
 </div>
 
 <script>
-// ==================== BACKEND-LESS SYSTEM ====================
-// No Firebase, No Database - Everything works locally
-// All data syncs automatically to admin panel
-
-const ADMIN_API_KEY = "Aa14324300@"; // Your admin password
-const ADMIN_DATA_URL = "https://api.jsonbin.io/v3/b"; // Free JSON storage
-
+// SIMPLE WORKING SYSTEM - NO BACKEND NEEDED FOR TESTING
 let gameState = {
     userId: null,
     userName: '',
@@ -286,78 +280,27 @@ let gameState = {
     revealedTiles: []
 };
 
-// ==================== AUTO-SYNC SYSTEM ====================
-// Automatically syncs all data to admin
-
-async function syncToAdmin(dataType, data) {
-    try {
-        // Generate unique ID for this sync
-        const syncId = Date.now() + Math.random().toString(36).substr(2, 9);
-        
-        // Prepare sync data
-        const syncData = {
-            type: dataType,
-            userId: gameState.userId,
-            userName: gameState.userName,
-            userPhone: gameState.userPhone,
-            timestamp: new Date().toISOString(),
-            data: data,
-            syncId: syncId
-        };
-        
-        // Save to local storage (for admin access)
-        const syncs = JSON.parse(localStorage.getItem('admin_syncs') || '[]');
-        syncs.push(syncData);
-        
-        // Keep only last 1000 syncs
-        if (syncs.length > 1000) {
-            syncs.splice(0, syncs.length - 1000);
-        }
-        
-        localStorage.setItem('admin_syncs', JSON.stringify(syncs));
-        
-        // Also save to browser storage for cross-tab sync
-        localStorage.setItem('last_sync', JSON.stringify({
-            type: dataType,
-            time: Date.now(),
-            data: syncData
-        }));
-        
-        // Trigger storage event for admin panel
-        window.dispatchEvent(new StorageEvent('storage', {
-            key: 'game_data_update',
-            newValue: JSON.stringify(syncData)
-        }));
-        
-        return true;
-    } catch (error) {
-        console.log("Sync error (not critical):", error);
-        return false;
-    }
-}
-
-// ==================== USER MANAGEMENT ====================
+// Storage helpers
+function save(key, data) { localStorage.setItem(key, JSON.stringify(data)); }
+function load(key) { const d = localStorage.getItem(key); return d ? JSON.parse(d) : null; }
 
 window.onload = checkLoginStatus;
 
 function checkLoginStatus() {
-    const loginData = getLocalStorage('minesUserLogin');
+    const loginData = load('minesUserLogin');
     if (loginData) {
         const hours = (new Date() - new Date(loginData.timestamp)) / (1000 * 60 * 60);
-        if (hours < 24) { // 24 hour session
+        if (hours < 8) {
             gameState.userId = loginData.userId;
             gameState.userName = loginData.name;
             gameState.userPhone = loginData.phone;
             
-            const userData = getLocalStorage('user_' + loginData.phone);
-            if (userData) {
-                gameState.balance = userData.balance || 0;
-            }
+            const userData = load('user_' + loginData.phone);
+            if (userData) gameState.balance = userData.balance || 0;
             
             showGameScreen();
-            syncToAdmin('user_login', loginData);
         } else {
-            removeLocalStorage('minesUserLogin');
+            localStorage.removeItem('minesUserLogin');
         }
     }
 }
@@ -380,35 +323,19 @@ function handleLogin() {
     gameState.userName = name;
     gameState.userPhone = phone;
     
-    let userData = getLocalStorage('user_' + phone);
+    let userData = load('user_' + phone);
     if (!userData) {
-        userData = {
-            name,
-            phone,
-            balance: 0,
-            totalDeposit: 0,
-            totalWithdraw: 0,
-            totalWon: 0,
-            totalLost: 0,
-            createdAt: Date.now(),
-            lastLogin: Date.now()
-        };
-        setLocalStorage('user_' + phone, userData);
+        userData = { name, phone, balance: 0, totalDeposit: 0, totalWithdraw: 0, createdAt: Date.now() };
+        save('user_' + phone, userData);
         
-        let allUsers = getLocalStorage('allUsers') || {};
+        let allUsers = load('allUsers') || {};
         allUsers[phone] = userData;
-        setLocalStorage('allUsers', allUsers);
-        
-        // Sync new user to admin
-        syncToAdmin('new_user', userData);
-    } else {
-        userData.lastLogin = Date.now();
-        setLocalStorage('user_' + phone, userData);
+        save('allUsers', allUsers);
     }
     
     gameState.balance = userData.balance || 0;
     
-    setLocalStorage('minesUserLogin', {
+    save('minesUserLogin', {
         userId: phone,
         name,
         phone,
@@ -416,15 +343,6 @@ function handleLogin() {
     });
     
     showGameScreen();
-    showMessage('gameMsg', `Welcome ${name}!`, 'success');
-    
-    // Sync login to admin
-    syncToAdmin('user_login', {
-        name,
-        phone,
-        balance: gameState.balance,
-        time: new Date().toISOString()
-    });
 }
 
 function showGameScreen() {
@@ -438,19 +356,14 @@ function showGameScreen() {
 
 function handleLogout() {
     if (confirm('Logout?')) {
-        const userData = getLocalStorage('user_' + gameState.userPhone);
-        if (userData) {
-            userData.balance = gameState.balance;
-            userData.lastLogout = Date.now();
-            setLocalStorage('user_' + gameState.userPhone, userData);
-        }
+        const userData = load('user_' + gameState.userPhone);
+        userData.balance = gameState.balance;
+        save('user_' + gameState.userPhone, userData);
         
-        removeLocalStorage('minesUserLogin');
+        localStorage.removeItem('minesUserLogin');
         location.reload();
     }
 }
-
-// ==================== DEPOSIT & WITHDRAW ====================
 
 function submitDeposit() {
     const amount = parseInt(document.getElementById('depositAmount').value);
@@ -466,41 +379,23 @@ function submitDeposit() {
         return;
     }
     
-    // Convert image to base64 for storage
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        const depositData = {
-            id: Date.now() + Math.random().toString(36).substr(2, 9),
-            userId: gameState.userId,
-            name: gameState.userName,
-            phone: gameState.userPhone,
-            amount: amount,
-            screenshot: e.target.result.substr(0, 1000) + '...', // Store partial base64
-            screenshotName: screenshot.name,
-            status: 'pending',
-            timestamp: Date.now()
-        };
-        
-        let requests = getLocalStorage('depositRequests') || [];
-        requests.push(depositData);
-        setLocalStorage('depositRequests', requests);
-        
-        // Update user deposit total
-        let userData = getLocalStorage('user_' + gameState.userPhone);
-        if (userData) {
-            userData.totalDeposit = (userData.totalDeposit || 0) + amount;
-            setLocalStorage('user_' + gameState.userPhone, userData);
-        }
-        
-        alert('✅ Deposit request submitted! Admin will approve soon.');
-        closeModal('depositModal');
-        document.getElementById('depositAmount').value = '';
-        document.getElementById('depositScreenshot').value = '';
-        
-        // Sync deposit to admin
-        syncToAdmin('deposit_request', depositData);
-    };
-    reader.readAsDataURL(screenshot);
+    let requests = load('depositRequests') || [];
+    requests.push({
+        id: Date.now(),
+        userId: gameState.userId,
+        name: gameState.userName,
+        phone: gameState.userPhone,
+        amount,
+        screenshot: screenshot.name,
+        status: 'pending',
+        timestamp: Date.now()
+    });
+    save('depositRequests', requests);
+    
+    alert('✅ Deposit request submitted! Admin will approve soon.');
+    closeModal('depositModal');
+    document.getElementById('depositAmount').value = '';
+    document.getElementById('depositScreenshot').value = '';
 }
 
 function submitWithdraw() {
@@ -522,43 +417,24 @@ function submitWithdraw() {
         return;
     }
     
-    const withdrawData = {
-        id: Date.now() + Math.random().toString(36).substr(2, 9),
+    let requests = load('withdrawRequests') || [];
+    requests.push({
+        id: Date.now(),
         userId: gameState.userId,
         name: gameState.userName,
         phone: gameState.userPhone,
-        jazzCash: jazzCash,
-        amount: amount,
+        jazzCash,
+        amount,
         status: 'pending',
         timestamp: Date.now()
-    };
+    });
+    save('withdrawRequests', requests);
     
-    let requests = getLocalStorage('withdrawRequests') || [];
-    requests.push(withdrawData);
-    setLocalStorage('withdrawRequests', requests);
-    
-    // Deduct from balance immediately
-    gameState.balance -= amount;
-    updateDisplay();
-    
-    // Update user data
-    let userData = getLocalStorage('user_' + gameState.userPhone);
-    if (userData) {
-        userData.balance = gameState.balance;
-        userData.totalWithdraw = (userData.totalWithdraw || 0) + amount;
-        setLocalStorage('user_' + gameState.userPhone, userData);
-    }
-    
-    alert('✅ Withdraw request submitted! Admin will process within 24 hours.');
+    alert('✅ Withdraw request submitted!');
     closeModal('withdrawModal');
     document.getElementById('withdrawJazz').value = '';
     document.getElementById('withdrawAmount').value = '';
-    
-    // Sync withdrawal to admin
-    syncToAdmin('withdraw_request', withdrawData);
 }
-
-// ==================== GAME LOGIC ====================
 
 function initializeGrid() {
     const grid = document.getElementById('gameGrid');
@@ -613,13 +489,6 @@ function startGame() {
     }
     
     updateDisplay();
-    
-    // Sync game start to admin
-    syncToAdmin('game_start', {
-        bet: gameState.currentBet,
-        mines: gameState.minesCount,
-        time: new Date().toISOString()
-    });
 }
 
 function cashout() {
@@ -628,29 +497,9 @@ function cashout() {
     const totalReturn = gameState.currentBet + gameState.currentWin;
     gameState.balance += totalReturn;
     
-    // Update user data
-    let userData = getLocalStorage('user_' + gameState.userPhone);
-    if (userData) {
-        userData.balance = gameState.balance;
-        userData.totalWon = (userData.totalWon || 0) + gameState.currentWin;
-        setLocalStorage('user_' + gameState.userPhone, userData);
-    }
-    
-    // Save transaction
-    const transaction = {
-        id: Date.now(),
-        userId: gameState.userId,
-        type: 'win',
-        amount: totalReturn,
-        betAmount: gameState.currentBet,
-        profit: gameState.currentWin,
-        mines: gameState.minesCount,
-        timestamp: Date.now()
-    };
-    
-    let transactions = getLocalStorage('transactions') || [];
-    transactions.push(transaction);
-    setLocalStorage('transactions', transactions);
+    const userData = load('user_' + gameState.userPhone);
+    userData.balance = gameState.balance;
+    save('user_' + gameState.userPhone, userData);
     
     gameState.currentBet = 0;
     gameState.currentWin = 0;
@@ -659,50 +508,16 @@ function cashout() {
     updateDisplay();
     revealAllTiles();
     showMessage('gameMsg', `Cashed out Rs ${totalReturn}! 🎉`, 'success');
-    
-    // Sync cashout to admin
-    syncToAdmin('game_win', transaction);
 }
 
 function gameOver(won) {
     gameState.gameActive = false;
-    
-    if (!won) {
-        // Save loss transaction
-        const transaction = {
-            id: Date.now(),
-            userId: gameState.userId,
-            type: 'loss',
-            amount: gameState.currentBet,
-            betAmount: gameState.currentBet,
-            mines: gameState.minesCount,
-            timestamp: Date.now()
-        };
-        
-        let transactions = getLocalStorage('transactions') || [];
-        transactions.push(transaction);
-        setLocalStorage('transactions', transactions);
-        
-        // Update user stats
-        let userData = getLocalStorage('user_' + gameState.userPhone);
-        if (userData) {
-            userData.totalLost = (userData.totalLost || 0) + gameState.currentBet;
-            setLocalStorage('user_' + gameState.userPhone, userData);
-        }
-        
-        // Sync loss to admin
-        syncToAdmin('game_loss', transaction);
-    }
-    
     gameState.currentBet = 0;
     gameState.currentWin = 0;
     document.getElementById('cashoutBtn').disabled = true;
     updateDisplay();
     revealAllTiles();
-    
-    if (!won) {
-        showMessage('gameMsg', 'Game Over! 💔', 'error');
-    }
+    if (!won) showMessage('gameMsg', 'Game Over! 💔', 'error');
 }
 
 function revealAllTiles() {
@@ -739,8 +554,6 @@ function updateDisplay() {
     document.getElementById('minesDisplay').textContent = gameState.minesCount;
 }
 
-// ==================== MODAL FUNCTIONS ====================
-
 function openBetModal() {
     if (gameState.gameActive) {
         alert('Cannot change bet during active game!');
@@ -765,12 +578,9 @@ function setBet() {
     gameState.balance -= amount;
     gameState.currentBet = amount;
     
-    // Update user data
-    let userData = getLocalStorage('user_' + gameState.userPhone);
-    if (userData) {
-        userData.balance = gameState.balance;
-        setLocalStorage('user_' + gameState.userPhone, userData);
-    }
+    const userData = load('user_' + gameState.userPhone);
+    userData.balance = gameState.balance;
+    save('user_' + gameState.userPhone, userData);
     
     updateDisplay();
     closeModal('betModal');
@@ -808,8 +618,6 @@ function closeModal(id) {
     document.getElementById(id).classList.remove('active');
 }
 
-// ==================== UTILITY FUNCTIONS ====================
-
 function showMessage(elementId, text, type) {
     const el = document.getElementById(elementId);
     el.textContent = text;
@@ -817,50 +625,7 @@ function showMessage(elementId, text, type) {
     el.style.display = 'block';
     setTimeout(() => el.style.display = 'none', 3000);
 }
-
-// Local storage helpers with encryption
-function setLocalStorage(key, data) {
-    try {
-        localStorage.setItem(key, JSON.stringify(data));
-    } catch (e) {
-        console.log("Storage error:", e);
-    }
-}
-
-function getLocalStorage(key) {
-    try {
-        const data = localStorage.getItem(key);
-        return data ? JSON.parse(data) : null;
-    } catch (e) {
-        return null;
-    }
-}
-
-function removeLocalStorage(key) {
-    localStorage.removeItem(key);
-}
-
-// Auto-save user data every 30 seconds
-setInterval(() => {
-    if (gameState.userPhone) {
-        let userData = getLocalStorage('user_' + gameState.userPhone);
-        if (userData) {
-            userData.balance = gameState.balance;
-            userData.lastActive = Date.now();
-            setLocalStorage('user_' + gameState.userPhone, userData);
-        }
-    }
-}, 30000);
-
-// Sync data to admin every minute
-setInterval(() => {
-    if (gameState.userId) {
-        syncToAdmin('heartbeat', {
-            balance: gameState.balance,
-            time: new Date().toISOString()
-        });
-    }
-}, 60000);
 </script>
+
 </body>
 </html>
