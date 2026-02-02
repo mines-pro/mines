@@ -5,12 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mines Game</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: Arial, sans-serif;
             background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
@@ -20,7 +15,6 @@
             align-items: center;
             padding: 20px;
         }
-
         .container {
             background: rgba(30, 50, 100, 0.95);
             border-radius: 20px;
@@ -29,11 +23,7 @@
             width: 100%;
             box-shadow: 0 10px 50px rgba(0, 0, 0, 0.5);
         }
-
-        .hidden {
-            display: none !important;
-        }
-
+        .hidden { display: none !important; }
         .title {
             font-size: 64px;
             font-weight: bold;
@@ -44,16 +34,13 @@
             margin-bottom: 10px;
             letter-spacing: 8px;
         }
-
         .subtitle {
             font-size: 22px;
             color: #FFD700;
             text-align: center;
             margin-bottom: 30px;
-            font-family: 'Noto Nastaliq Urdu', Arial;
             direction: rtl;
         }
-
         .user-info {
             background: rgba(20, 30, 60, 0.8);
             padding: 15px;
@@ -63,22 +50,8 @@
             justify-content: space-between;
             align-items: center;
         }
-
-        .user-details {
-            color: #FFD700;
-            font-weight: bold;
-        }
-
-        .user-name {
-            font-size: 18px;
-            margin-bottom: 5px;
-        }
-
-        .user-phone {
-            font-size: 14px;
-            color: #aaa;
-        }
-
+        .user-name { font-size: 18px; color: #FFD700; font-weight: bold; margin-bottom: 5px; }
+        .user-phone { font-size: 14px; color: #aaa; }
         .logout-btn {
             background: linear-gradient(135deg, #DC143C, #8B0000);
             color: white;
@@ -87,9 +60,7 @@
             border-radius: 8px;
             font-weight: bold;
             cursor: pointer;
-            font-size: 14px;
         }
-
         input {
             width: 100%;
             padding: 15px;
@@ -99,13 +70,7 @@
             font-size: 16px;
             background: rgba(255, 255, 255, 0.9);
             text-align: left;
-            direction: ltr;
         }
-
-        input::placeholder {
-            text-align: left;
-        }
-
         button {
             width: 100%;
             padding: 18px;
@@ -115,51 +80,21 @@
             font-size: 20px;
             font-weight: bold;
             cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: transform 0.2s;
         }
-
-        button:hover:not(:disabled) {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
-        }
-
-        button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .btn-green {
-            background: linear-gradient(135deg, #4CAF50, #45a049);
-            color: white;
-        }
-
-        .btn-orange {
-            background: linear-gradient(135deg, #ff9800, #f57c00);
-            color: white;
-        }
-
-        .btn-blue {
-            background: linear-gradient(135deg, #4169E1, #1E90FF);
-            color: white;
-        }
-
-        .btn-red {
-            background: linear-gradient(135deg, #DC143C, #8B0000);
-            color: white;
-        }
-
-        .btn-gold {
-            background: linear-gradient(135deg, #FFD700, #FFA500);
-            color: #000;
-        }
-
+        button:hover:not(:disabled) { transform: translateY(-3px); }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-green { background: linear-gradient(135deg, #4CAF50, #45a049); color: white; }
+        .btn-orange { background: linear-gradient(135deg, #ff9800, #f57c00); color: white; }
+        .btn-blue { background: linear-gradient(135deg, #4169E1, #1E90FF); color: white; }
+        .btn-red { background: linear-gradient(135deg, #DC143C, #8B0000); color: white; }
+        .btn-gold { background: linear-gradient(135deg, #FFD700, #FFA500); color: #000; }
         .grid {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
             gap: 8px;
             margin: 20px 0;
         }
-
         .tile {
             aspect-ratio: 1;
             background: linear-gradient(135deg, #667788, #556677);
@@ -170,18 +105,9 @@
             font-size: 32px;
             cursor: pointer;
             transition: all 0.2s;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
         }
-
-        .tile:hover:not(.revealed) {
-            transform: scale(1.05);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
-        }
-
-        .tile.revealed {
-            cursor: default;
-        }
-
+        .tile:hover:not(.revealed) { transform: scale(1.05); }
+        .tile.revealed { cursor: default; }
         .balance-section {
             display: flex;
             justify-content: space-around;
@@ -190,23 +116,9 @@
             border-radius: 12px;
             margin: 20px 0;
         }
-
-        .balance-item {
-            text-align: center;
-        }
-
-        .balance-label {
-            font-size: 14px;
-            color: #ccc;
-            margin-bottom: 5px;
-        }
-
-        .balance-value {
-            font-size: 28px;
-            color: #FFD700;
-            font-weight: bold;
-        }
-
+        .balance-item { text-align: center; }
+        .balance-label { font-size: 14px; color: #ccc; }
+        .balance-value { font-size: 28px; color: #FFD700; font-weight: bold; }
         .info-box {
             background: rgba(255, 215, 0, 0.15);
             border: 2px solid #FFD700;
@@ -215,16 +127,7 @@
             margin: 20px 0;
             text-align: center;
         }
-
-        .info-title {
-            color: #FFD700;
-            font-size: 18px;
-            font-weight: bold;
-            margin-bottom: 15px;
-            font-family: 'Noto Nastaliq Urdu', Arial;
-            direction: rtl;
-        }
-
+        .info-title { color: #FFD700; font-size: 18px; font-weight: bold; margin-bottom: 15px; direction: rtl; }
         .jazzcash-number {
             font-size: 32px;
             font-weight: bold;
@@ -233,55 +136,7 @@
             padding: 15px;
             border-radius: 10px;
             margin: 15px 0;
-            letter-spacing: 2px;
         }
-
-        .upload-section {
-            margin: 20px 0;
-        }
-
-        .upload-label {
-            display: block;
-            color: #FFD700;
-            font-size: 16px;
-            margin-bottom: 10px;
-            font-weight: bold;
-            text-align: left;
-        }
-
-        input[type="file"] {
-            background: white;
-            padding: 10px;
-            cursor: pointer;
-        }
-
-        .msg {
-            padding: 15px;
-            margin: 15px 0;
-            border-radius: 10px;
-            text-align: center;
-            font-weight: bold;
-            display: none;
-        }
-
-        .msg.success {
-            background: rgba(76, 175, 80, 0.3);
-            border: 2px solid #4CAF50;
-            color: #4CAF50;
-        }
-
-        .msg.error {
-            background: rgba(244, 67, 54, 0.3);
-            border: 2px solid #f44336;
-            color: #f44336;
-        }
-
-        .msg.info {
-            background: rgba(33, 150, 243, 0.3);
-            border: 2px solid #2196F3;
-            color: #2196F3;
-        }
-
         .modal {
             display: none;
             position: fixed;
@@ -295,11 +150,7 @@
             align-items: center;
             padding: 20px;
         }
-
-        .modal.active {
-            display: flex;
-        }
-
+        .modal.active { display: flex; }
         .modal-content {
             background: linear-gradient(135deg, #1e3c72, #2a5298);
             padding: 30px;
@@ -309,18 +160,17 @@
             max-height: 90vh;
             overflow-y: auto;
         }
-
-        .modal-title {
-            font-size: 28px;
-            font-weight: bold;
-            color: #FFD700;
-            margin-bottom: 20px;
+        .modal-title { font-size: 28px; font-weight: bold; color: #FFD700; margin-bottom: 20px; text-align: center; }
+        .msg {
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 10px;
             text-align: center;
+            font-weight: bold;
+            display: none;
         }
-
-        .close-btn {
-            margin-top: 10px;
-        }
+        .msg.success { background: rgba(76, 175, 80, 0.3); border: 2px solid #4CAF50; color: #4CAF50; }
+        .msg.error { background: rgba(244, 67, 54, 0.3); border: 2px solid #f44336; color: #f44336; }
     </style>
 </head>
 <body>
@@ -338,19 +188,16 @@
 <!-- GAME SCREEN -->
 <div id="gameScreen" class="container hidden">
     <div class="user-info">
-        <div class="user-details">
+        <div>
             <div class="user-name" id="displayName"></div>
             <div class="user-phone" id="displayPhone"></div>
         </div>
         <button class="logout-btn" onclick="handleLogout()">Logout</button>
     </div>
-
     <div class="title">MINES</div>
     <div id="gameMsg" class="msg"></div>
-
     <button class="btn-green" onclick="openDepositModal()">💰 DEPOSIT</button>
     <button class="btn-orange" onclick="openWithdrawModal()">💸 WITHDRAW</button>
-
     <div class="balance-section">
         <div class="balance-item">
             <div class="balance-label">Balance</div>
@@ -361,9 +208,7 @@
             <div class="balance-value">Rs <span id="win">0</span></div>
         </div>
     </div>
-
     <div class="grid" id="gameGrid"></div>
-
     <button class="btn-blue" onclick="openBetModal()">💰 Bet Rs <span id="betDisplay">0</span></button>
     <button class="btn-red" onclick="openMinesModal()">💣 Mines: <span id="minesDisplay">3</span></button>
     <button class="btn-gold" id="cashoutBtn" onclick="cashout()" disabled>💵 Cash Out</button>
@@ -379,12 +224,12 @@
             <div class="jazzcash-number">03266916283</div>
         </div>
         <input type="number" id="depositAmount" placeholder="Amount (Minimum Rs 100)" min="100">
-        <div class="upload-section">
-            <label class="upload-label">Upload Screenshot</label>
-            <input type="file" id="depositScreenshot" accept="image/*">
+        <div style="margin: 20px 0;">
+            <label style="color: #FFD700; font-weight: bold; display: block; margin-bottom: 10px;">Upload Screenshot</label>
+            <input type="file" id="depositScreenshot" accept="image/*" style="background: white; padding: 10px;">
         </div>
         <button class="btn-green" onclick="submitDeposit()">Submit Request</button>
-        <button class="btn-red close-btn" onclick="closeModal('depositModal')">Cancel</button>
+        <button class="btn-red" onclick="closeModal('depositModal')">Cancel</button>
     </div>
 </div>
 
@@ -394,11 +239,9 @@
         <div class="modal-title">💸 Withdraw Request</div>
         <input type="tel" id="withdrawJazz" placeholder="Your JazzCash Number (03XXXXXXXXX)" maxlength="11">
         <input type="number" id="withdrawAmount" placeholder="Amount (Minimum Rs 100)" min="100">
-        <p style="color: #FFD700; text-align: center; margin: 15px 0; font-size: 14px;">
-            ⏳ Admin will process within 24 hours
-        </p>
+        <p style="color: #FFD700; text-align: center; margin: 15px 0;">⏳ Admin will process within 24 hours</p>
         <button class="btn-orange" onclick="submitWithdraw()">Submit Request</button>
-        <button class="btn-red close-btn" onclick="closeModal('withdrawModal')">Cancel</button>
+        <button class="btn-red" onclick="closeModal('withdrawModal')">Cancel</button>
     </div>
 </div>
 
@@ -408,7 +251,7 @@
         <div class="modal-title">💰 Set Bet Amount</div>
         <input type="number" id="betInput" placeholder="Bet (Rs 100 - Rs 10,000)" min="100" max="10000">
         <button class="btn-blue" onclick="setBet()">Confirm</button>
-        <button class="btn-red close-btn" onclick="closeModal('betModal')">Cancel</button>
+        <button class="btn-red" onclick="closeModal('betModal')">Cancel</button>
     </div>
 </div>
 
@@ -418,14 +261,31 @@
         <div class="modal-title">💣 Set Mines Count</div>
         <input type="number" id="minesInput" placeholder="Mines (1 - 24)" min="1" max="24" value="3">
         <button class="btn-red" onclick="setMines()">Confirm</button>
-        <button class="btn-red close-btn" onclick="closeModal('minesModal')">Cancel</button>
+        <button class="btn-red" onclick="closeModal('minesModal')">Cancel</button>
     </div>
 </div>
 
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+
 <script>
-// FALLBACK MODE - Works without backend (for testing)
-const USE_FALLBACK = true; // Backend ready hone par false kar dena
-const API_URL = 'YOUR_BACKEND_URL_HERE';
+// Firebase Configuration (I'll set this up)
+const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_PROJECT.firebaseapp.com",
+    databaseURL: "https://YOUR_PROJECT.firebaseio.com",
+    projectId: "YOUR_PROJECT",
+    storageBucket: "YOUR_PROJECT.appspot.com",
+    messagingSenderId: "YOUR_ID",
+    appId: "YOUR_APP_ID"
+};
+
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+const database = firebase.database();
+const storage = firebase.storage();
 
 let gameState = {
     userId: null,
@@ -440,86 +300,78 @@ let gameState = {
     revealedTiles: []
 };
 
-// Storage helpers
-function save(key, data) { localStorage.setItem(key, JSON.stringify(data)); }
-function load(key) { const d = localStorage.getItem(key); return d ? JSON.parse(d) : null; }
-
-window.onload = function() {
-    checkLoginStatus();
-};
+window.onload = checkLoginStatus;
 
 function checkLoginStatus() {
-    const loginData = load('minesUserLogin');
+    const loginData = localStorage.getItem('minesUserLogin');
     if (loginData) {
-        const loginTime = new Date(loginData.timestamp);
-        const now = new Date();
-        const hoursDiff = (now - loginTime) / (1000 * 60 * 60);
+        const data = JSON.parse(loginData);
+        const hours = (new Date() - new Date(data.timestamp)) / (1000 * 60 * 60);
         
-        if (hoursDiff < 8) {
-            gameState.userId = loginData.userId;
-            gameState.userName = loginData.name;
-            gameState.userPhone = loginData.phone;
-            
-            const userData = load('user_' + loginData.phone);
-            if (userData) gameState.balance = userData.balance || 0;
-            
+        if (hours < 8) {
+            gameState.userId = data.userId;
+            gameState.userName = data.name;
+            gameState.userPhone = data.phone;
             showGameScreen();
+            loadUserBalance();
         } else {
             localStorage.removeItem('minesUserLogin');
-            showLoginScreen();
         }
-    } else {
-        showLoginScreen();
     }
 }
 
-function handleLogin() {
+async function handleLogin() {
     const name = document.getElementById('loginName').value.trim();
     const phone = document.getElementById('loginPhone').value.trim();
     
     if (!name || name.length < 3) {
-        showMessage('loginMsg', 'Please enter your name (minimum 3 characters)', 'error');
+        showMessage('loginMsg', 'Please enter name (min 3 characters)', 'error');
         return;
     }
     
     if (!/^03[0-9]{9}$/.test(phone)) {
-        showMessage('loginMsg', 'Invalid phone! Use format: 03XXXXXXXXX', 'error');
+        showMessage('loginMsg', 'Invalid phone! Format: 03XXXXXXXXX', 'error');
         return;
     }
     
-    gameState.userId = phone;
-    gameState.userName = name;
-    gameState.userPhone = phone;
-    
-    let userData = load('user_' + phone);
-    if (!userData) {
-        userData = { name, phone, balance: 0, totalDeposit: 0, totalWithdraw: 0 };
-        save('user_' + phone, userData);
+    try {
+        // Check/Create user in Firebase
+        const userRef = database.ref('users/' + phone);
+        const snapshot = await userRef.once('value');
         
-        let allUsers = load('allUsers') || {};
-        allUsers[phone] = userData;
-        save('allUsers', allUsers);
+        if (!snapshot.exists()) {
+            // Create new user
+            await userRef.set({
+                name,
+                phone,
+                balance: 0,
+                totalDeposit: 0,
+                totalWithdraw: 0,
+                createdAt: Date.now(),
+                lastLogin: Date.now()
+            });
+        } else {
+            // Update last login
+            await userRef.update({ lastLogin: Date.now() });
+        }
+        
+        gameState.userId = phone;
+        gameState.userName = name;
+        gameState.userPhone = phone;
+        
+        localStorage.setItem('minesUserLogin', JSON.stringify({
+            userId: phone,
+            name,
+            phone,
+            timestamp: new Date().toISOString()
+        }));
+        
+        showGameScreen();
+        loadUserBalance();
+    } catch (error) {
+        console.error('Login error:', error);
+        showMessage('loginMsg', 'Connection error', 'error');
     }
-    
-    gameState.balance = userData.balance || 0;
-    
-    save('minesUserLogin', {
-        userId: phone,
-        name,
-        phone,
-        timestamp: new Date().toISOString()
-    });
-    
-    showGameScreen();
-}
-
-function validatePhone(phone) {
-    return /^03[0-9]{9}$/.test(phone);
-}
-
-function showLoginScreen() {
-    document.getElementById('loginScreen').classList.remove('hidden');
-    document.getElementById('gameScreen').classList.add('hidden');
 }
 
 function showGameScreen() {
@@ -532,9 +384,100 @@ function showGameScreen() {
 }
 
 function handleLogout() {
-    if (confirm('Are you sure you want to logout?')) {
+    if (confirm('Logout?')) {
         localStorage.removeItem('minesUserLogin');
         location.reload();
+    }
+}
+
+async function loadUserBalance() {
+    try {
+        const snapshot = await database.ref('users/' + gameState.userId + '/balance').once('value');
+        gameState.balance = snapshot.val() || 0;
+        updateDisplay();
+    } catch (error) {
+        console.error('Balance load error:', error);
+    }
+}
+
+async function submitDeposit() {
+    const amount = parseInt(document.getElementById('depositAmount').value);
+    const screenshot = document.getElementById('depositScreenshot').files[0];
+    
+    if (!amount || amount < 100) {
+        alert('Minimum deposit Rs 100');
+        return;
+    }
+    
+    if (!screenshot) {
+        alert('Please upload screenshot!');
+        return;
+    }
+    
+    try {
+        // Upload screenshot to Firebase Storage
+        const storageRef = storage.ref('screenshots/' + Date.now() + '_' + screenshot.name);
+        await storageRef.put(screenshot);
+        const downloadURL = await storageRef.getDownloadURL();
+        
+        // Create deposit request
+        await database.ref('depositRequests').push({
+            userId: gameState.userId,
+            name: gameState.userName,
+            phone: gameState.userPhone,
+            amount,
+            screenshotUrl: downloadURL,
+            status: 'pending',
+            timestamp: Date.now()
+        });
+        
+        alert('✅ Deposit request submitted! Admin will approve soon.');
+        closeModal('depositModal');
+        document.getElementById('depositAmount').value = '';
+        document.getElementById('depositScreenshot').value = '';
+    } catch (error) {
+        console.error('Deposit error:', error);
+        alert('Error submitting request');
+    }
+}
+
+async function submitWithdraw() {
+    const jazzCash = document.getElementById('withdrawJazz').value.trim();
+    const amount = parseInt(document.getElementById('withdrawAmount').value);
+    
+    if (!/^03[0-9]{9}$/.test(jazzCash)) {
+        alert('Invalid JazzCash number!');
+        return;
+    }
+    
+    if (!amount || amount < 100) {
+        alert('Minimum withdraw Rs 100');
+        return;
+    }
+    
+    if (amount > gameState.balance) {
+        alert('Insufficient balance!');
+        return;
+    }
+    
+    try {
+        await database.ref('withdrawRequests').push({
+            userId: gameState.userId,
+            name: gameState.userName,
+            phone: gameState.userPhone,
+            jazzCash,
+            amount,
+            status: 'pending',
+            timestamp: Date.now()
+        });
+        
+        alert('✅ Withdraw request submitted!');
+        closeModal('withdrawModal');
+        document.getElementById('withdrawJazz').value = '';
+        document.getElementById('withdrawAmount').value = '';
+    } catch (error) {
+        console.error('Withdraw error:', error);
+        alert('Error submitting request');
     }
 }
 
@@ -555,7 +498,7 @@ function clickTile(index) {
     
     if (!gameState.gameActive) {
         if (gameState.currentBet === 0) {
-            showMessage('gameMsg', 'Please set bet amount first!', 'error');
+            showMessage('gameMsg', 'Set bet first!', 'error');
             return;
         }
         startGame();
@@ -563,20 +506,17 @@ function clickTile(index) {
     
     gameState.revealedTiles.push(index);
     const tiles = document.querySelectorAll('.tile');
-    const tile = tiles[index];
     
     if (gameState.minePositions.includes(index)) {
-        tile.textContent = '💣';
-        tile.style.background = 'linear-gradient(135deg, #DC143C, #8B0000)';
-        tile.classList.add('revealed');
+        tiles[index].textContent = '💣';
+        tiles[index].style.background = 'linear-gradient(135deg, #DC143C, #8B0000)';
+        tiles[index].classList.add('revealed');
         gameOver(false);
     } else {
-        tile.textContent = '💎';
-        tile.style.background = 'linear-gradient(135deg, #FFD700, #FFA500)';
-        tile.classList.add('revealed');
-        
-        const winPerTile = Math.floor(gameState.currentBet * 0.15);
-        gameState.currentWin += winPerTile;
+        tiles[index].textContent = '💎';
+        tiles[index].style.background = 'linear-gradient(135deg, #FFD700, #FFA500)';
+        tiles[index].classList.add('revealed');
+        gameState.currentWin += Math.floor(gameState.currentBet * 0.15);
         updateDisplay();
         document.getElementById('cashoutBtn').disabled = false;
     }
@@ -590,29 +530,38 @@ function startGame() {
     
     while (gameState.minePositions.length < gameState.minesCount) {
         const pos = Math.floor(Math.random() * 25);
-        if (!gameState.minePositions.includes(pos)) {
-            gameState.minePositions.push(pos);
-        }
+        if (!gameState.minePositions.includes(pos)) gameState.minePositions.push(pos);
     }
     
     updateDisplay();
 }
 
-function cashout() {
+async function cashout() {
     if (!gameState.gameActive || gameState.currentWin === 0) return;
     
     const totalReturn = gameState.currentBet + gameState.currentWin;
     gameState.balance += totalReturn;
     
-    const userData = load('user_' + gameState.userPhone);
-    userData.balance = gameState.balance;
-    save('user_' + gameState.userPhone, userData);
+    try {
+        await database.ref('users/' + gameState.userId).update({
+            balance: gameState.balance
+        });
+        
+        await database.ref('gameHistory').push({
+            userId: gameState.userId,
+            betAmount: gameState.currentBet,
+            winAmount: gameState.currentWin,
+            totalReturn,
+            timestamp: Date.now()
+        });
+    } catch (error) {
+        console.error('Cashout error:', error);
+    }
     
     gameState.currentBet = 0;
     gameState.currentWin = 0;
     gameState.gameActive = false;
     document.getElementById('cashoutBtn').disabled = true;
-    
     updateDisplay();
     revealAllTiles();
     showMessage('gameMsg', `Cashed out Rs ${totalReturn}! 🎉`, 'success');
@@ -623,13 +572,9 @@ function gameOver(won) {
     gameState.currentBet = 0;
     gameState.currentWin = 0;
     document.getElementById('cashoutBtn').disabled = true;
-    
     updateDisplay();
     revealAllTiles();
-    
-    if (!won) {
-        showMessage('gameMsg', 'Game Over! 💔', 'error');
-    }
+    if (!won) showMessage('gameMsg', 'Game Over! 💔', 'error');
 }
 
 function revealAllTiles() {
@@ -666,77 +611,6 @@ function updateDisplay() {
     document.getElementById('minesDisplay').textContent = gameState.minesCount;
 }
 
-function submitDeposit() {
-    const amount = parseInt(document.getElementById('depositAmount').value);
-    const screenshot = document.getElementById('depositScreenshot').files[0];
-    
-    if (!amount || amount < 100) {
-        alert('Minimum deposit is Rs 100');
-        return;
-    }
-    
-    if (!screenshot) {
-        alert('Please upload screenshot!');
-        return;
-    }
-    
-    const requests = load('depositRequests') || [];
-    requests.push({
-        id: Date.now(),
-        userId: gameState.userId,
-        name: gameState.userName,
-        phone: gameState.userPhone,
-        amount,
-        screenshot: screenshot.name,
-        status: 'pending',
-        timestamp: new Date().toISOString()
-    });
-    save('depositRequests', requests);
-    
-    alert('Deposit request submitted! Admin will approve soon.');
-    closeModal('depositModal');
-    document.getElementById('depositAmount').value = '';
-    document.getElementById('depositScreenshot').value = '';
-}
-
-function submitWithdraw() {
-    const jazzCash = document.getElementById('withdrawJazz').value.trim();
-    const amount = parseInt(document.getElementById('withdrawAmount').value);
-    
-    if (!validatePhone(jazzCash)) {
-        alert('Invalid JazzCash number!');
-        return;
-    }
-    
-    if (!amount || amount < 100) {
-        alert('Minimum withdraw is Rs 100');
-        return;
-    }
-    
-    if (amount > gameState.balance) {
-        alert('Insufficient balance!');
-        return;
-    }
-    
-    const requests = load('withdrawRequests') || [];
-    requests.push({
-        id: Date.now(),
-        userId: gameState.userId,
-        name: gameState.userName,
-        phone: gameState.userPhone,
-        jazzCash,
-        amount,
-        status: 'pending',
-        timestamp: new Date().toISOString()
-    });
-    save('withdrawRequests', requests);
-    
-    alert('Withdraw request submitted! Admin will process soon.');
-    closeModal('withdrawModal');
-    document.getElementById('withdrawJazz').value = '';
-    document.getElementById('withdrawAmount').value = '';
-}
-
 function openBetModal() {
     if (gameState.gameActive) {
         alert('Cannot change bet during active game!');
@@ -745,11 +619,11 @@ function openBetModal() {
     document.getElementById('betModal').classList.add('active');
 }
 
-function setBet() {
+async function setBet() {
     const amount = parseInt(document.getElementById('betInput').value);
     
     if (!amount || amount < 100 || amount > 10000) {
-        alert('Bet must be between Rs 100 and Rs 10,000');
+        alert('Bet must be Rs 100 - Rs 10,000');
         return;
     }
     
@@ -761,9 +635,11 @@ function setBet() {
     gameState.balance -= amount;
     gameState.currentBet = amount;
     
-    const userData = load('user_' + gameState.userPhone);
-    userData.balance = gameState.balance;
-    save('user_' + gameState.userPhone, userData);
+    try {
+        await database.ref('users/' + gameState.userId + '/balance').set(gameState.balance);
+    } catch (error) {
+        console.error('Balance update error:', error);
+    }
     
     updateDisplay();
     closeModal('betModal');
@@ -772,7 +648,7 @@ function setBet() {
 
 function openMinesModal() {
     if (gameState.gameActive) {
-        alert('Cannot change mines during active game!');
+        alert('Cannot change mines during game!');
         return;
     }
     document.getElementById('minesModal').classList.add('active');
@@ -780,12 +656,10 @@ function openMinesModal() {
 
 function setMines() {
     const count = parseInt(document.getElementById('minesInput').value);
-    
     if (!count || count < 1 || count > 24) {
-        alert('Mines must be between 1 and 24');
+        alert('Mines must be 1-24');
         return;
     }
-    
     gameState.minesCount = count;
     updateDisplay();
     closeModal('minesModal');
