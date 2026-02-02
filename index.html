@@ -265,28 +265,8 @@
     </div>
 </div>
 
-<!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
-
 <script>
-// Firebase Configuration (I'll set this up)
-const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_PROJECT.firebaseapp.com",
-    databaseURL: "https://YOUR_PROJECT.firebaseio.com",
-    projectId: "YOUR_PROJECT",
-    storageBucket: "YOUR_PROJECT.appspot.com",
-    messagingSenderId: "YOUR_ID",
-    appId: "YOUR_APP_ID"
-};
-
-// Initialize Firebase
-firebase.initializeApp(firebaseConfig);
-const database = firebase.database();
-const storage = firebase.storage();
-
+// SIMPLE WORKING SYSTEM - NO BACKEND NEEDED FOR TESTING
 let gameState = {
     userId: null,
     userName: '',
@@ -300,27 +280,32 @@ let gameState = {
     revealedTiles: []
 };
 
+// Storage helpers
+function save(key, data) { localStorage.setItem(key, JSON.stringify(data)); }
+function load(key) { const d = localStorage.getItem(key); return d ? JSON.parse(d) : null; }
+
 window.onload = checkLoginStatus;
 
 function checkLoginStatus() {
-    const loginData = localStorage.getItem('minesUserLogin');
+    const loginData = load('minesUserLogin');
     if (loginData) {
-        const data = JSON.parse(loginData);
-        const hours = (new Date() - new Date(data.timestamp)) / (1000 * 60 * 60);
-        
+        const hours = (new Date() - new Date(loginData.timestamp)) / (1000 * 60 * 60);
         if (hours < 8) {
-            gameState.userId = data.userId;
-            gameState.userName = data.name;
-            gameState.userPhone = data.phone;
+            gameState.userId = loginData.userId;
+            gameState.userName = loginData.name;
+            gameState.userPhone = loginData.phone;
+            
+            const userData = load('user_' + loginData.phone);
+            if (userData) gameState.balance = userData.balance || 0;
+            
             showGameScreen();
-            loadUserBalance();
         } else {
             localStorage.removeItem('minesUserLogin');
         }
     }
 }
 
-async function handleLogin() {
+function handleLogin() {
     const name = document.getElementById('loginName').value.trim();
     const phone = document.getElementById('loginPhone').value.trim();
     
@@ -334,44 +319,30 @@ async function handleLogin() {
         return;
     }
     
-    try {
-        // Check/Create user in Firebase
-        const userRef = database.ref('users/' + phone);
-        const snapshot = await userRef.once('value');
+    gameState.userId = phone;
+    gameState.userName = name;
+    gameState.userPhone = phone;
+    
+    let userData = load('user_' + phone);
+    if (!userData) {
+        userData = { name, phone, balance: 0, totalDeposit: 0, totalWithdraw: 0, createdAt: Date.now() };
+        save('user_' + phone, userData);
         
-        if (!snapshot.exists()) {
-            // Create new user
-            await userRef.set({
-                name,
-                phone,
-                balance: 0,
-                totalDeposit: 0,
-                totalWithdraw: 0,
-                createdAt: Date.now(),
-                lastLogin: Date.now()
-            });
-        } else {
-            // Update last login
-            await userRef.update({ lastLogin: Date.now() });
-        }
-        
-        gameState.userId = phone;
-        gameState.userName = name;
-        gameState.userPhone = phone;
-        
-        localStorage.setItem('minesUserLogin', JSON.stringify({
-            userId: phone,
-            name,
-            phone,
-            timestamp: new Date().toISOString()
-        }));
-        
-        showGameScreen();
-        loadUserBalance();
-    } catch (error) {
-        console.error('Login error:', error);
-        showMessage('loginMsg', 'Connection error', 'error');
+        let allUsers = load('allUsers') || {};
+        allUsers[phone] = userData;
+        save('allUsers', allUsers);
     }
+    
+    gameState.balance = userData.balance || 0;
+    
+    save('minesUserLogin', {
+        userId: phone,
+        name,
+        phone,
+        timestamp: new Date().toISOString()
+    });
+    
+    showGameScreen();
 }
 
 function showGameScreen() {
@@ -385,22 +356,16 @@ function showGameScreen() {
 
 function handleLogout() {
     if (confirm('Logout?')) {
+        const userData = load('user_' + gameState.userPhone);
+        userData.balance = gameState.balance;
+        save('user_' + gameState.userPhone, userData);
+        
         localStorage.removeItem('minesUserLogin');
         location.reload();
     }
 }
 
-async function loadUserBalance() {
-    try {
-        const snapshot = await database.ref('users/' + gameState.userId + '/balance').once('value');
-        gameState.balance = snapshot.val() || 0;
-        updateDisplay();
-    } catch (error) {
-        console.error('Balance load error:', error);
-    }
-}
-
-async function submitDeposit() {
+function submitDeposit() {
     const amount = parseInt(document.getElementById('depositAmount').value);
     const screenshot = document.getElementById('depositScreenshot').files[0];
     
@@ -414,34 +379,26 @@ async function submitDeposit() {
         return;
     }
     
-    try {
-        // Upload screenshot to Firebase Storage
-        const storageRef = storage.ref('screenshots/' + Date.now() + '_' + screenshot.name);
-        await storageRef.put(screenshot);
-        const downloadURL = await storageRef.getDownloadURL();
-        
-        // Create deposit request
-        await database.ref('depositRequests').push({
-            userId: gameState.userId,
-            name: gameState.userName,
-            phone: gameState.userPhone,
-            amount,
-            screenshotUrl: downloadURL,
-            status: 'pending',
-            timestamp: Date.now()
-        });
-        
-        alert('✅ Deposit request submitted! Admin will approve soon.');
-        closeModal('depositModal');
-        document.getElementById('depositAmount').value = '';
-        document.getElementById('depositScreenshot').value = '';
-    } catch (error) {
-        console.error('Deposit error:', error);
-        alert('Error submitting request');
-    }
+    let requests = load('depositRequests') || [];
+    requests.push({
+        id: Date.now(),
+        userId: gameState.userId,
+        name: gameState.userName,
+        phone: gameState.userPhone,
+        amount,
+        screenshot: screenshot.name,
+        status: 'pending',
+        timestamp: Date.now()
+    });
+    save('depositRequests', requests);
+    
+    alert('✅ Deposit request submitted! Admin will approve soon.');
+    closeModal('depositModal');
+    document.getElementById('depositAmount').value = '';
+    document.getElementById('depositScreenshot').value = '';
 }
 
-async function submitWithdraw() {
+function submitWithdraw() {
     const jazzCash = document.getElementById('withdrawJazz').value.trim();
     const amount = parseInt(document.getElementById('withdrawAmount').value);
     
@@ -460,25 +417,23 @@ async function submitWithdraw() {
         return;
     }
     
-    try {
-        await database.ref('withdrawRequests').push({
-            userId: gameState.userId,
-            name: gameState.userName,
-            phone: gameState.userPhone,
-            jazzCash,
-            amount,
-            status: 'pending',
-            timestamp: Date.now()
-        });
-        
-        alert('✅ Withdraw request submitted!');
-        closeModal('withdrawModal');
-        document.getElementById('withdrawJazz').value = '';
-        document.getElementById('withdrawAmount').value = '';
-    } catch (error) {
-        console.error('Withdraw error:', error);
-        alert('Error submitting request');
-    }
+    let requests = load('withdrawRequests') || [];
+    requests.push({
+        id: Date.now(),
+        userId: gameState.userId,
+        name: gameState.userName,
+        phone: gameState.userPhone,
+        jazzCash,
+        amount,
+        status: 'pending',
+        timestamp: Date.now()
+    });
+    save('withdrawRequests', requests);
+    
+    alert('✅ Withdraw request submitted!');
+    closeModal('withdrawModal');
+    document.getElementById('withdrawJazz').value = '';
+    document.getElementById('withdrawAmount').value = '';
 }
 
 function initializeGrid() {
@@ -536,27 +491,15 @@ function startGame() {
     updateDisplay();
 }
 
-async function cashout() {
+function cashout() {
     if (!gameState.gameActive || gameState.currentWin === 0) return;
     
     const totalReturn = gameState.currentBet + gameState.currentWin;
     gameState.balance += totalReturn;
     
-    try {
-        await database.ref('users/' + gameState.userId).update({
-            balance: gameState.balance
-        });
-        
-        await database.ref('gameHistory').push({
-            userId: gameState.userId,
-            betAmount: gameState.currentBet,
-            winAmount: gameState.currentWin,
-            totalReturn,
-            timestamp: Date.now()
-        });
-    } catch (error) {
-        console.error('Cashout error:', error);
-    }
+    const userData = load('user_' + gameState.userPhone);
+    userData.balance = gameState.balance;
+    save('user_' + gameState.userPhone, userData);
     
     gameState.currentBet = 0;
     gameState.currentWin = 0;
@@ -619,7 +562,7 @@ function openBetModal() {
     document.getElementById('betModal').classList.add('active');
 }
 
-async function setBet() {
+function setBet() {
     const amount = parseInt(document.getElementById('betInput').value);
     
     if (!amount || amount < 100 || amount > 10000) {
@@ -635,11 +578,9 @@ async function setBet() {
     gameState.balance -= amount;
     gameState.currentBet = amount;
     
-    try {
-        await database.ref('users/' + gameState.userId + '/balance').set(gameState.balance);
-    } catch (error) {
-        console.error('Balance update error:', error);
-    }
+    const userData = load('user_' + gameState.userPhone);
+    userData.balance = gameState.balance;
+    save('user_' + gameState.userPhone, userData);
     
     updateDisplay();
     closeModal('betModal');
