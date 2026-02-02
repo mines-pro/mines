@@ -1,1 +1,934 @@
-.
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin - Mines Game</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: Arial;
+    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+    min-height: 100vh;
+    padding: 10px;
+}
+.login-screen {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+.login-box {
+    background: white;
+    padding: 40px;
+    border-radius: 20px;
+    max-width: 400px;
+    width: 100%;
+}
+.login-title { font-size: 32px; font-weight: bold; text-align: center; margin-bottom: 30px; }
+.login-input {
+    width: 100%;
+    padding: 15px;
+    margin: 15px 0;
+    border: 2px solid #ddd;
+    border-radius: 10px;
+    font-size: 16px;
+}
+.login-btn {
+    width: 100%;
+    padding: 15px;
+    background: linear-gradient(135deg, #4CAF50, #45a049);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+}
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 20px;
+    padding: 20px;
+    display: none;
+}
+.container.active { display: block; }
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+h1 { color: #1e3c72; font-size: 28px; }
+.logout-btn {
+    background: #DC143C;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+}
+.stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+.stat-card {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    padding: 20px;
+    border-radius: 15px;
+    text-align: center;
+}
+.stat-value { font-size: 36px; font-weight: bold; margin: 10px 0; }
+.stat-label { font-size: 14px; }
+.tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+.tab {
+    padding: 12px 24px;
+    background: #1e3c72;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: bold;
+}
+.tab.active { background: linear-gradient(135deg, #FFD700, #FFA500); color: #000; }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+.card {
+    background: white;
+    border: 2px solid #eee;
+    border-radius: 10px;
+    padding: 15px;
+    margin: 10px 0;
+}
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+.card-title { font-weight: bold; font-size: 16px; }
+.card-info { color: #666; font-size: 14px; margin: 5px 0; }
+.card-amount { font-size: 24px; font-weight: bold; color: #4CAF50; margin: 10px 0; }
+button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    margin: 2px;
+}
+.btn-approve { background: #4CAF50; color: white; }
+.btn-reject { background: #f44336; color: white; }
+.btn-edit { background: #2196F3; color: white; }
+.status-pending { color: #FF9800; background: rgba(255,152,0,0.15); padding: 5px 10px; border-radius: 5px; font-size: 12px; }
+.status-approved { color: #4CAF50; background: rgba(76,175,80,0.15); padding: 5px 10px; border-radius: 5px; font-size: 12px; }
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.8);
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+.modal.active { display: flex; }
+.modal-content {
+    background: white;
+    padding: 30px;
+    border-radius: 20px;
+    max-width: 500px;
+    width: 90%;
+}
+.modal-title { font-size: 24px; font-weight: bold; margin-bottom: 20px; }
+.modal-input {
+    width: 100%;
+    padding: 12px;
+    margin: 12px 0;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-size: 16px;
+}
+.no-data { text-align: center; padding: 40px; color: #999; }
+.refresh-btn {
+    background: #2196F3;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+}
+.search-box {
+    padding: 10px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    width: 300px;
+    margin-bottom: 15px;
+}
+</style>
+</head>
+<body>
+
+<div id="loginScreen" class="login-screen">
+    <div class="login-box">
+        <div class="login-title">🔐 Admin Login</div>
+        <input type="password" id="adminPassword" class="login-input" placeholder="Enter Password">
+        <button class="login-btn" onclick="adminLogin()">LOGIN</button>
+    </div>
+</div>
+
+<div id="dashboard" class="container">
+    <div class="header">
+        <h1>🎮 Admin Dashboard</h1>
+        <div style="display: flex; gap: 10px;">
+            <input type="text" id="searchBox" class="search-box" placeholder="Search users..." onkeyup="searchUsers()">
+            <button class="refresh-btn" onclick="loadAllData()">🔄 Refresh</button>
+            <button class="logout-btn" onclick="adminLogout()">Logout</button>
+        </div>
+    </div>
+
+    <div class="stats">
+        <div class="stat-card" style="background: linear-gradient(135deg, #667eea, #764ba2);">
+            <div class="stat-label">Total Users</div>
+            <div class="stat-value" id="totalUsers">0</div>
+        </div>
+        <div class="stat-card" style="background: linear-gradient(135deg, #f093fb, #f5576c);">
+            <div class="stat-label">Active Today</div>
+            <div class="stat-value" id="activeUsers">0</div>
+        </div>
+        <div class="stat-card" style="background: linear-gradient(135deg, #4facfe, #00f2fe);">
+            <div class="stat-label">Pending Deposits</div>
+            <div class="stat-value" id="pendingDeposits">0</div>
+        </div>
+        <div class="stat-card" style="background: linear-gradient(135deg, #43e97b, #38f9d7);">
+            <div class="stat-label">Pending Withdrawals</div>
+            <div class="stat-value" id="pendingWithdraws">0</div>
+        </div>
+        <div class="stat-card" style="background: linear-gradient(135deg, #ff9a9e, #fad0c4);">
+            <div class="stat-label">Total Balance</div>
+            <div class="stat-value">Rs <span id="totalBalance">0</span></div>
+        </div>
+        <div class="stat-card" style="background: linear-gradient(135deg, #a18cd1, #fbc2eb);">
+            <div class="stat-label">Total Profit</div>
+            <div class="stat-value">Rs <span id="totalProfit">0</span></div>
+        </div>
+    </div>
+
+    <div class="tabs">
+        <button class="tab active" onclick="showTab('users')">👥 Users</button>
+        <button class="tab" onclick="showTab('deposits')">💰 Deposits</button>
+        <button class="tab" onclick="showTab('withdraws')">💸 Withdrawals</button>
+        <button class="tab" onclick="showTab('transactions')">📊 Transactions</button>
+        <button class="tab" onclick="showTab('live')">📡 Live Activity</button>
+    </div>
+
+    <div id="users" class="tab-content active">
+        <h2 style="margin-bottom: 15px;">All Users</h2>
+        <div id="usersContent"></div>
+    </div>
+
+    <div id="deposits" class="tab-content">
+        <h2 style="margin-bottom: 15px;">Deposit Requests</h2>
+        <div id="depositsContent"></div>
+    </div>
+
+    <div id="withdraws" class="tab-content">
+        <h2 style="margin-bottom: 15px;">Withdrawal Requests</h2>
+        <div id="withdrawsContent"></div>
+    </div>
+
+    <div id="transactions" class="tab-content">
+        <h2 style="margin-bottom: 15px;">Game Transactions</h2>
+        <div id="transactionsContent"></div>
+    </div>
+
+    <div id="live" class="tab-content">
+        <h2 style="margin-bottom: 15px;">Live User Activity</h2>
+        <div id="liveContent"></div>
+    </div>
+</div>
+
+<div id="editBalanceModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-title">Edit Balance</div>
+        <p><strong>User:</strong> <span id="editUserName"></span></p>
+        <p><strong>Phone:</strong> <span id="editUserPhone"></span></p>
+        <p><strong>Current:</strong> Rs <span id="editCurrentBalance"></span></p>
+        <input type="number" id="editNewBalance" class="modal-input" placeholder="New balance">
+        <div style="display: flex; gap: 10px; margin-top: 20px;">
+            <button class="btn-approve" style="flex: 1;" onclick="saveBalance()">Save</button>
+            <button class="btn-reject" style="flex: 1;" onclick="closeModal()">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// ==================== ADMIN PASSWORD ====================
+const ADMIN_PASSWORD = "@/Aa14324300"; // Your password
+
+// ==================== DATA COLLECTION SYSTEM ====================
+// Collects data from ALL users' browsers automatically
+
+let allData = {
+    users: {},
+    deposits: [],
+    withdrawals: [],
+    transactions: [],
+    liveActivity: []
+};
+
+let currentEditUser = null;
+
+// ==================== AUTO-DATA COLLECTOR ====================
+
+function collectAllData() {
+    // Collect from localStorage (if same browser)
+    collectLocalStorageData();
+    
+    // Collect from sync data
+    collectSyncData();
+    
+    // Collect from multiple sources
+    collectMultiSourceData();
+    
+    // Update display
+    updateAllDisplays();
+}
+
+function collectLocalStorageData() {
+    try {
+        // Collect users
+        const allUsers = JSON.parse(localStorage.getItem('allUsers') || '{}');
+        Object.assign(allData.users, allUsers);
+        
+        // Collect deposits
+        const deposits = JSON.parse(localStorage.getItem('depositRequests') || '[]');
+        allData.deposits = [...allData.deposits, ...deposits];
+        
+        // Collect withdrawals
+        const withdrawals = JSON.parse(localStorage.getItem('withdrawRequests') || '[]');
+        allData.withdrawals = [...allData.withdrawals, ...withdrawals];
+        
+        // Collect transactions
+        const transactions = JSON.parse(localStorage.getItem('transactions') || '[]');
+        allData.transactions = [...allData.transactions, ...transactions];
+        
+        // Collect admin syncs (from other users)
+        const syncs = JSON.parse(localStorage.getItem('admin_syncs') || '[]');
+        processSyncData(syncs);
+        
+    } catch (error) {
+        console.log("Data collection error:", error);
+    }
+}
+
+function collectSyncData() {
+    // Check for recent syncs
+    const lastSync = JSON.parse(localStorage.getItem('last_sync') || 'null');
+    if (lastSync) {
+        processSyncItem(lastSync.data);
+    }
+    
+    // Check storage events (cross-tab communication)
+    if (window.gameDataUpdates) {
+        while (window.gameDataUpdates.length > 0) {
+            const update = window.gameDataUpdates.pop();
+            processSyncItem(update);
+        }
+    }
+}
+
+function collectMultiSourceData() {
+    // Try to get data from multiple storage keys
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key.startsWith('user_')) {
+            try {
+                const userData = JSON.parse(localStorage.getItem(key));
+                const phone = key.replace('user_', '');
+                allData.users[phone] = userData;
+            } catch (e) {}
+        }
+    }
+}
+
+function processSyncData(syncs) {
+    syncs.forEach(sync => processSyncItem(sync));
+}
+
+function processSyncItem(syncItem) {
+    if (!syncItem || !syncItem.type) return;
+    
+    const timestamp = new Date(syncItem.timestamp || Date.now());
+    
+    // Add to live activity
+    allData.liveActivity.unshift({
+        type: syncItem.type,
+        user: syncItem.userName || syncItem.userPhone || 'Unknown',
+        phone: syncItem.userPhone || 'N/A',
+        data: syncItem.data || {},
+        time: timestamp
+    });
+    
+    // Keep only last 100 activities
+    if (allData.liveActivity.length > 100) {
+        allData.liveActivity = allData.liveActivity.slice(0, 100);
+    }
+    
+    // Process based on type
+    switch(syncItem.type) {
+        case 'new_user':
+        case 'user_login':
+            if (syncItem.userPhone && syncItem.data) {
+                allData.users[syncItem.userPhone] = {
+                    ...allData.users[syncItem.userPhone],
+                    ...syncItem.data,
+                    lastActivity: timestamp
+                };
+            }
+            break;
+            
+        case 'deposit_request':
+            allData.deposits.unshift(syncItem.data);
+            break;
+            
+        case 'withdraw_request':
+            allData.withdrawals.unshift(syncItem.data);
+            break;
+            
+        case 'game_start':
+        case 'game_win':
+        case 'game_loss':
+            allData.transactions.unshift(syncItem.data);
+            break;
+    }
+}
+
+// ==================== ADMIN FUNCTIONS ====================
+
+function adminLogin() {
+    const password = document.getElementById('adminPassword').value;
+    
+    if (password === ADMIN_PASSWORD) {
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('dashboard').classList.add('active');
+        sessionStorage.setItem('adminLoggedIn', 'true');
+        
+        // Start data collection
+        collectAllData();
+        
+        // Set up auto-refresh
+        setInterval(collectAllData, 5000);
+        setInterval(updateAllDisplays, 2000);
+        
+        // Listen for storage events (cross-tab communication)
+        window.addEventListener('storage', handleStorageEvent);
+        window.gameDataUpdates = [];
+        
+    } else {
+        alert('Incorrect password!');
+    }
+}
+
+function adminLogout() {
+    if (confirm('Logout?')) {
+        sessionStorage.removeItem('adminLoggedIn');
+        location.reload();
+    }
+}
+
+function handleStorageEvent(event) {
+    if (event.key === 'game_data_update' && event.newValue) {
+        try {
+            const update = JSON.parse(event.newValue);
+            window.gameDataUpdates.push(update);
+        } catch (e) {}
+    }
+}
+
+window.onload = function() {
+    if (sessionStorage.getItem('adminLoggedIn')) {
+        adminLogin();
+    }
+};
+
+function loadAllData() {
+    collectAllData();
+    updateStats();
+}
+
+function updateAllDisplays() {
+    updateStats();
+    displayUsers();
+    displayDeposits();
+    displayWithdrawals();
+    displayTransactions();
+    displayLiveActivity();
+}
+
+// ==================== STATS FUNCTIONS ====================
+
+function updateStats() {
+    // Total users
+    const totalUsers = Object.keys(allData.users).length;
+    document.getElementById('totalUsers').textContent = totalUsers;
+    
+    // Active users (last 24 hours)
+    const now = Date.now();
+    const oneDayAgo = now - (24 * 60 * 60 * 1000);
+    const activeUsers = Object.values(allData.users).filter(user => {
+        const lastActive = user.lastActivity || user.lastLogin || user.createdAt || 0;
+        return lastActive > oneDayAgo;
+    }).length;
+    document.getElementById('activeUsers').textContent = activeUsers;
+    
+    // Pending deposits
+    const pendingDeposits = allData.deposits.filter(d => d.status === 'pending').length;
+    document.getElementById('pendingDeposits').textContent = pendingDeposits;
+    
+    // Pending withdrawals
+    const pendingWithdrawals = allData.withdrawals.filter(w => w.status === 'pending').length;
+    document.getElementById('pendingWithdraws').textContent = pendingWithdrawals;
+    
+    // Total balance
+    const totalBalance = Object.values(allData.users).reduce((sum, user) => sum + (user.balance || 0), 0);
+    document.getElementById('totalBalance').textContent = totalBalance.toFixed(2);
+    
+    // Total profit
+    const totalProfit = allData.transactions.reduce((sum, trans) => {
+        if (trans.type === 'loss') return sum + (trans.amount || 0);
+        if (trans.type === 'win') return sum - (trans.profit || 0);
+        return sum;
+    }, 0);
+    document.getElementById('totalProfit').textContent = totalProfit.toFixed(2);
+}
+
+// ==================== DISPLAY FUNCTIONS ====================
+
+function displayUsers() {
+    const users = Object.values(allData.users);
+    const content = document.getElementById('usersContent');
+    
+    if (users.length === 0) {
+        content.innerHTML = '<div class="no-data">No users yet</div>';
+        return;
+    }
+    
+    // Sort by last activity
+    users.sort((a, b) => {
+        const timeA = a.lastActivity || a.lastLogin || a.createdAt || 0;
+        const timeB = b.lastActivity || b.lastLogin || b.createdAt || 0;
+        return timeB - timeA;
+    });
+    
+    let html = '';
+    users.forEach(user => {
+        const lastActive = user.lastActivity || user.lastLogin || user.createdAt;
+        const timeAgo = lastActive ? getTimeAgo(lastActive) : 'Unknown';
+        const created = user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A';
+        
+        html += `
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">${user.name || 'Unknown'}</div>
+                        <div class="card-info">📱 ${user.phone || 'N/A'}</div>
+                        <div class="card-info">🕒 Last active: ${timeAgo}</div>
+                    </div>
+                    <button class="btn-edit" onclick="editBalance('${user.phone}', '${user.name}', '${user.phone}', ${user.balance || 0})">
+                        Edit Balance
+                    </button>
+                </div>
+                <div class="card-amount">Rs ${(user.balance || 0).toFixed(2)}</div>
+                <div class="card-info">
+                    📅 Joined: ${created} | 
+                    💰 Deposit: Rs ${(user.totalDeposit || 0).toFixed(2)} | 
+                    💸 Withdraw: Rs ${(user.totalWithdraw || 0).toFixed(2)}
+                </div>
+                <div class="card-info">
+                    🎮 Wins: Rs ${(user.totalWon || 0).toFixed(2)} | 
+                    💔 Losses: Rs ${(user.totalLost || 0).toFixed(2)}
+                </div>
+            </div>
+        `;
+    });
+    
+    content.innerHTML = html;
+}
+
+function displayDeposits() {
+    const deposits = allData.deposits;
+    const content = document.getElementById('depositsContent');
+    
+    if (deposits.length === 0) {
+        content.innerHTML = '<div class="no-data">No deposits yet</div>';
+        return;
+    }
+    
+    // Sort by timestamp
+    deposits.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+    
+    let html = '';
+    deposits.forEach(dep => {
+        const date = dep.timestamp ? new Date(dep.timestamp).toLocaleString() : 'N/A';
+        const statusClass = dep.status === 'pending' ? 'status-pending' : 'status-approved';
+        
+        html += `
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">${dep.name || 'Unknown'}</div>
+                        <div class="card-info">📱 ${dep.phone || 'N/A'}</div>
+                        <div class="card-info">🕒 ${date}</div>
+                    </div>
+                    <span class="${statusClass}">${(dep.status || 'pending').toUpperCase()}</span>
+                </div>
+                <div class="card-amount">Rs ${dep.amount || 0}</div>
+                <div class="card-info">Screenshot: ${dep.screenshotName || 'N/A'}</div>
+                ${dep.status === 'pending' ? `
+                    <div style="margin-top: 10px;">
+                        <button class="btn-approve" onclick="approveDeposit('${dep.id}')">✓ Approve</button>
+                        <button class="btn-reject" onclick="rejectDeposit('${dep.id}')">✗ Reject</button>
+                    </div>
+                ` : ''}
+            </div>
+        `;
+    });
+    
+    content.innerHTML = html;
+}
+
+function displayWithdrawals() {
+    const withdrawals = allData.withdrawals;
+    const content = document.getElementById('withdrawsContent');
+    
+    if (withdrawals.length === 0) {
+        content.innerHTML = '<div class="no-data">No withdrawals yet</div>';
+        return;
+    }
+    
+    // Sort by timestamp
+    withdrawals.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+    
+    let html = '';
+    withdrawals.forEach(wit => {
+        const date = wit.timestamp ? new Date(wit.timestamp).toLocaleString() : 'N/A';
+        const statusClass = wit.status === 'pending' ? 'status-pending' : 'status-approved';
+        
+        html += `
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">${wit.name || 'Unknown'}</div>
+                        <div class="card-info">📱 ${wit.phone || 'N/A'}</div>
+                        <div class="card-info">💰 JazzCash: ${wit.jazzCash || 'N/A'}</div>
+                        <div class="card-info">🕒 ${date}</div>
+                    </div>
+                    <span class="${statusClass}">${(wit.status || 'pending').toUpperCase()}</span>
+                </div>
+                <div class="card-amount">Rs ${wit.amount || 0}</div>
+                ${wit.status === 'pending' ? `
+                    <div style="margin-top: 10px;">
+                        <button class="btn-approve" onclick="approveWithdraw('${wit.id}')">✓ Approve</button>
+                        <button class="btn-reject" onclick="rejectWithdraw('${wit.id}')">✗ Reject</button>
+                    </div>
+                ` : ''}
+            </div>
+        `;
+    });
+    
+    content.innerHTML = html;
+}
+
+function displayTransactions() {
+    const transactions = allData.transactions;
+    const content = document.getElementById('transactionsContent');
+    
+    if (transactions.length === 0) {
+        content.innerHTML = '<div class="no-data">No transactions yet</div>';
+        return;
+    }
+    
+    // Sort by timestamp
+    transactions.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+    
+    let html = '';
+    transactions.slice(0, 50).forEach(trans => {
+        const date = trans.timestamp ? new Date(trans.timestamp).toLocaleString() : 'N/A';
+        const typeColor = trans.type === 'win' ? '#4CAF50' : '#f44336';
+        const typeIcon = trans.type === 'win' ? '💰' : '💸';
+        
+        html += `
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">${typeIcon} ${trans.type.toUpperCase()}</div>
+                        <div class="card-info">📱 User: ${trans.userId || 'Unknown'}</div>
+                        <div class="card-info">🕒 ${date}</div>
+                    </div>
+                    <div style="color: ${typeColor}; font-weight: bold; font-size: 20px;">
+                        Rs ${trans.amount || 0}
+                    </div>
+                </div>
+                <div class="card-info">
+                    Bet: Rs ${trans.betAmount || 0} | 
+                    Mines: ${trans.mines || 3} | 
+                    ${trans.profit ? `Profit: Rs ${trans.profit}` : ''}
+                </div>
+            </div>
+        `;
+    });
+    
+    content.innerHTML = html;
+}
+
+function displayLiveActivity() {
+    const activities = allData.liveActivity;
+    const content = document.getElementById('liveContent');
+    
+    if (activities.length === 0) {
+        content.innerHTML = '<div class="no-data">No live activity yet</div>';
+        return;
+    }
+    
+    let html = '<div style="max-height: 500px; overflow-y: auto;">';
+    activities.forEach(activity => {
+        const time = activity.time ? activity.time.toLocaleTimeString() : 'Now';
+        let activityText = '';
+        let icon = '🟢';
+        
+        switch(activity.type) {
+            case 'new_user':
+                activityText = `New user registered: ${activity.user}`;
+                icon = '👤';
+                break;
+            case 'user_login':
+                activityText = `User logged in: ${activity.user}`;
+                icon = '🔐';
+                break;
+            case 'deposit_request':
+                activityText = `Deposit request: Rs ${activity.data.amount || 0} from ${activity.user}`;
+                icon = '💰';
+                break;
+            case 'withdraw_request':
+                activityText = `Withdrawal request: Rs ${activity.data.amount || 0} from ${activity.user}`;
+                icon = '💸';
+                break;
+            case 'game_start':
+                activityText = `Game started: Bet Rs ${activity.data.bet || 0} by ${activity.user}`;
+                icon = '🎮';
+                break;
+            case 'game_win':
+                activityText = `Game won: Rs ${activity.data.amount || 0} by ${activity.user}`;
+                icon = '🎉';
+                break;
+            case 'game_loss':
+                activityText = `Game lost: Rs ${activity.data.amount || 0} by ${activity.user}`;
+                icon = '💔';
+                break;
+            default:
+                activityText = `Activity: ${activity.type} by ${activity.user}`;
+        }
+        
+        html += `
+            <div class="card" style="margin-bottom: 10px; padding: 10px;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="font-size: 20px;">${icon}</div>
+                    <div style="flex: 1;">
+                        <div>${activityText}</div>
+                        <div style="font-size: 12px; color: #666;">
+                            📱 ${activity.phone} | 🕒 ${time}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    html += '</div>';
+    
+    content.innerHTML = html;
+}
+
+// ==================== ADMIN ACTIONS ====================
+
+function approveDeposit(id) {
+    if (!confirm('Approve this deposit?')) return;
+    
+    // Find deposit
+    const deposit = allData.deposits.find(d => d.id === id);
+    if (!deposit) return;
+    
+    // Update status
+    deposit.status = 'approved';
+    deposit.approvedAt = Date.now();
+    
+    // Update user balance
+    if (allData.users[deposit.phone]) {
+        allData.users[deposit.phone].balance += deposit.amount;
+    }
+    
+    // Save to localStorage
+    localStorage.setItem('depositRequests', JSON.stringify(allData.deposits));
+    
+    alert('✅ Deposit approved!');
+    loadAllData();
+}
+
+function rejectDeposit(id) {
+    if (!confirm('Reject this deposit?')) return;
+    
+    const deposit = allData.deposits.find(d => d.id === id);
+    if (deposit) {
+        deposit.status = 'rejected';
+        localStorage.setItem('depositRequests', JSON.stringify(allData.deposits));
+        alert('Deposit rejected');
+        loadAllData();
+    }
+}
+
+function approveWithdraw(id) {
+    if (!confirm('Approve this withdrawal?')) return;
+    
+    const withdraw = allData.withdrawals.find(w => w.id === id);
+    if (!withdraw) return;
+    
+    withdraw.status = 'approved';
+    withdraw.approvedAt = Date.now();
+    
+    localStorage.setItem('withdrawRequests', JSON.stringify(allData.withdrawals));
+    
+    alert('✅ Withdrawal approved!');
+    loadAllData();
+}
+
+function rejectWithdraw(id) {
+    if (!confirm('Reject this withdrawal?')) return;
+    
+    const withdraw = allData.withdrawals.find(w => w.id === id);
+    if (withdraw) {
+        withdraw.status = 'rejected';
+        localStorage.setItem('withdrawRequests', JSON.stringify(allData.withdrawals));
+        alert('Withdrawal rejected');
+        loadAllData();
+    }
+}
+
+function editBalance(phone, name, phoneNum, balance) {
+    currentEditUser = phone;
+    document.getElementById('editUserName').textContent = name;
+    document.getElementById('editUserPhone').textContent = phoneNum;
+    document.getElementById('editCurrentBalance').textContent = balance.toFixed(2);
+    document.getElementById('editNewBalance').value = balance.toFixed(2);
+    document.getElementById('editBalanceModal').classList.add('active');
+}
+
+function saveBalance() {
+    const newBalance = parseFloat(document.getElementById('editNewBalance').value);
+    
+    if (isNaN(newBalance) || newBalance < 0) {
+        alert('Invalid balance!');
+        return;
+    }
+    
+    if (allData.users[currentEditUser]) {
+        allData.users[currentEditUser].balance = newBalance;
+        
+        // Save to localStorage
+        localStorage.setItem('user_' + currentEditUser, JSON.stringify(allData.users[currentEditUser]));
+        
+        alert('✅ Balance updated!');
+        closeModal();
+        loadAllData();
+    }
+}
+
+function closeModal() {
+    document.getElementById('editBalanceModal').classList.remove('active');
+}
+
+// ==================== UTILITY FUNCTIONS ====================
+
+function showTab(tabName) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    event.target.classList.add('active');
+    document.getElementById(tabName).classList.add('active');
+}
+
+function searchUsers() {
+    const searchTerm = document.getElementById('searchBox').value.toLowerCase();
+    const users = Object.values(allData.users);
+    
+    if (!searchTerm) {
+        displayUsers();
+        return;
+    }
+    
+    const filtered = users.filter(user => 
+        (user.name && user.name.toLowerCase().includes(searchTerm)) ||
+        (user.phone && user.phone.includes(searchTerm))
+    );
+    
+    const content = document.getElementById('usersContent');
+    
+    if (filtered.length === 0) {
+        content.innerHTML = '<div class="no-data">No users found</div>';
+        return;
+    }
+    
+    let html = '';
+    filtered.forEach(user => {
+        const lastActive = user.lastActivity || user.lastLogin || user.createdAt;
+        const timeAgo = lastActive ? getTimeAgo(lastActive) : 'Unknown';
+        
+        html += `
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">${user.name || 'Unknown'}</div>
+                        <div class="card-info">📱 ${user.phone || 'N/A'}</div>
+                        <div class="card-info">🕒 Last active: ${timeAgo}</div>
+                    </div>
+                    <button class="btn-edit" onclick="editBalance('${user.phone}', '${user.name}', '${user.phone}', ${user.balance || 0})">
+                        Edit Balance
+                    </button>
+                </div>
+                <div class="card-amount">Rs ${(user.balance || 0).toFixed(2)}</div>
+            </div>
+        `;
+    });
+    
+    content.innerHTML = html;
+}
+
+function getTimeAgo(timestamp) {
+    const now = Date.now();
+    const diff = now - timestamp;
+    
+    if (diff < 60000) return 'Just now';
+    if (diff < 3600000) return Math.floor(diff / 60000) + ' minutes ago';
+    if (diff < 86400000) return Math.floor(diff / 3600000) + ' hours ago';
+    return Math.floor(diff / 86400000) + ' days ago';
+}
+
+// Auto-refresh every 5 seconds
+setInterval(loadAllData, 5000);
+</script>
+</body>
+</html>
