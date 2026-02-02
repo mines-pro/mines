@@ -97,7 +97,7 @@
         }
         .tile {
             aspect-ratio: 1;
-            background: linear-gradient(135deg, #667788, #556677);
+            background: linear-gradient(135deg, #C0C0C0, #A8A8A8);
             border-radius: 12px;
             display: flex;
             align-items: center;
@@ -171,6 +171,16 @@
         }
         .msg.success { background: rgba(76, 175, 80, 0.3); border: 2px solid #4CAF50; color: #4CAF50; }
         .msg.error { background: rgba(244, 67, 54, 0.3); border: 2px solid #f44336; color: #f44336; }
+        .timer-notice {
+            background: rgba(255, 152, 0, 0.3);
+            border: 2px solid #FF9800;
+            color: #FF9800;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            text-align: center;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -196,8 +206,10 @@
     </div>
     <div class="title">MINES</div>
     <div id="gameMsg" class="msg"></div>
-    <button class="btn-green" onclick="openDepositModal()">💰 DEPOSIT</button>
-    <button class="btn-orange" onclick="openWithdrawModal()">💸 WITHDRAW</button>
+    <div id="depositTimer" class="timer-notice hidden"></div>
+    <div id="withdrawTimer" class="timer-notice hidden"></div>
+    <button class="btn-green" id="depositBtn" onclick="openDepositModal()">💰 DEPOSIT</button>
+    <button class="btn-orange" id="withdrawBtn" onclick="openWithdrawModal()">💸 WITHDRAW</button>
     <div class="balance-section">
         <div class="balance-item">
             <div class="balance-label">Balance</div>
@@ -223,7 +235,7 @@
             <div class="info-title">براہِ مہربانی اس نمبر پر رقم سینڈ کریں</div>
             <div class="jazzcash-number">03266916283</div>
         </div>
-        <input type="number" id="depositAmount" placeholder="Amount (Minimum Rs 100)" min="100">
+        <input type="number" id="depositAmount" placeholder="Amount (Minimum Rs 300)" min="300">
         <button class="btn-green" onclick="submitDeposit()">Submit Request</button>
         <button class="btn-red" onclick="closeModal('depositModal')">Cancel</button>
     </div>
@@ -234,7 +246,7 @@
     <div class="modal-content">
         <div class="modal-title">💸 Withdraw Request</div>
         <input type="tel" id="withdrawJazz" placeholder="JazzCash Number 03XXXXXXXXX" maxlength="11">
-        <input type="number" id="withdrawAmount" placeholder="Amount (Minimum Rs 100)" min="100">
+        <input type="number" id="withdrawAmount" placeholder="Amount (Minimum Rs 1000)" min="1000">
         <button class="btn-orange" onclick="submitWithdraw()">Submit Request</button>
         <button class="btn-red" onclick="closeModal('withdrawModal')">Cancel</button>
     </div>
@@ -244,7 +256,7 @@
 <div id="betModal" class="modal">
     <div class="modal-content">
         <div class="modal-title">💰 Set Bet Amount</div>
-        <input type="number" id="betInput" placeholder="Amount (Rs 100 - Rs 10,000)" min="100" max="10000">
+        <input type="number" id="betInput" placeholder="Rs 100 - Rs 10,000" min="100" max="10000">
         <button class="btn-blue" onclick="setBet()">Set Bet</button>
         <button class="btn-red" onclick="closeModal('betModal')">Cancel</button>
     </div>
@@ -253,54 +265,47 @@
 <!-- MINES MODAL -->
 <div id="minesModal" class="modal">
     <div class="modal-content">
-        <div class="modal-title">💣 Set Mines Count</div>
-        <input type="number" id="minesInput" placeholder="Mines (1-24)" min="1" max="24" value="3">
+        <div class="modal-title">💣 Select Mines</div>
+        <input type="number" id="minesInput" placeholder="Number of Mines (1-24)" min="1" max="24" value="3">
         <button class="btn-red" onclick="setMines()">Set Mines</button>
-        <button class="btn-blue" onclick="closeModal('minesModal')">Cancel</button>
+        <button class="btn-red" onclick="closeModal('minesModal')">Cancel</button>
     </div>
 </div>
 
-<!-- Firebase SDK -->
 <script type="module">
 // ============================================
-// FIREBASE CONFIGURATION - YOUR PROJECT
+// FIREBASE CONFIG
 // ============================================
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-import { getDatabase, ref, set, get, update, onValue, push, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js';
+import { getDatabase, ref, set, get, update, push, onValue } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js';
 
 const firebaseConfig = {
-    apiKey: "AIzaSyA8C1-TpsRo0UsATshlI8Dy0v40PnLRlc4",
-    authDomain: "mines-67d8c.firebaseapp.com",
-    databaseURL: "https://mines-67d8c-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "mines-67d8c",
-    storageBucket: "mines-67d8c.firebasestorage.app",
-    messagingSenderId: "918317634273",
-    appId: "1:918317634273:web:8527c0d58a1f3de0371da0",
-    measurementId: "G-NHC6K1X3KZ"
+    apiKey: "AIzaSyDOVSOWKPA5y4EYQa4YPQVRi3BWH6tCqn4",
+    authDomain: "mines-game-e18cc.firebaseapp.com",
+    databaseURL: "https://mines-game-e18cc-default-rtdb.firebaseio.com",
+    projectId: "mines-game-e18cc",
+    storageBucket: "mines-game-e18cc.firebasestorage.app",
+    messagingSenderId: "739240698071",
+    appId: "1:739240698071:web:a8a25f8a3c7f1b5f8d3e7c"
 };
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const database = getDatabase(app);
+const db = getDatabase(app);
 
-// Make Firebase available globally
-window.db = database;
+window.db = db;
 window.dbRef = ref;
 window.dbSet = set;
 window.dbGet = get;
 window.dbUpdate = update;
-window.dbOnValue = onValue;
 window.dbPush = push;
-window.dbServerTimestamp = serverTimestamp;
-
-console.log('✅ Firebase initialized successfully!');
+window.dbOnValue = onValue;
 </script>
 
 <script>
 // ============================================
 // GAME STATE
 // ============================================
-let gameState = {
+const gameState = {
     userId: null,
     userName: '',
     userPhone: '',
@@ -310,169 +315,186 @@ let gameState = {
     minesCount: 3,
     gameActive: false,
     minePositions: [],
-    revealedTiles: []
+    revealedTiles: [],
+    lastDepositTime: 0,
+    lastWithdrawTime: 0,
+    betAmountDeducted: false
 };
 
-// ============================================
-// FIREBASE HELPER FUNCTIONS
-// ============================================
-async function saveUserData(phone, data) {
-    try {
-        const userRef = window.dbRef(window.db, `users/${phone}`);
-        await window.dbSet(userRef, {
-            ...data,
-            lastUpdated: window.dbServerTimestamp()
-        });
-        return true;
-    } catch (error) {
-        console.error('Error saving user data:', error);
-        return false;
+// Get or create device ID
+function getDeviceId() {
+    let deviceId = localStorage.getItem('deviceId');
+    if (!deviceId) {
+        deviceId = 'device_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        localStorage.setItem('deviceId', deviceId);
     }
-}
-
-async function getUserData(phone) {
-    try {
-        const userRef = window.dbRef(window.db, `users/${phone}`);
-        const snapshot = await window.dbGet(userRef);
-        return snapshot.exists() ? snapshot.val() : null;
-    } catch (error) {
-        console.error('Error getting user data:', error);
-        return null;
-    }
-}
-
-async function updateUserBalance(phone, newBalance) {
-    try {
-        const userRef = window.dbRef(window.db, `users/${phone}`);
-        await window.dbUpdate(userRef, {
-            balance: newBalance,
-            lastUpdated: window.dbServerTimestamp()
-        });
-        return true;
-    } catch (error) {
-        console.error('Error updating balance:', error);
-        return false;
-    }
-}
-
-function listenToUserBalance(phone, callback) {
-    const userRef = window.dbRef(window.db, `users/${phone}`);
-    return window.dbOnValue(userRef, (snapshot) => {
-        if (snapshot.exists()) {
-            const data = snapshot.val();
-            callback(data.balance);
-        }
-    });
-}
-
-async function submitDepositRequest(userId, name, phone, amount) {
-    try {
-        const depositsRef = window.dbRef(window.db, 'depositRequests');
-        const newDepositRef = window.dbPush(depositsRef);
-        await window.dbSet(newDepositRef, {
-            id: newDepositRef.key,
-            userId: userId,
-            name: name,
-            phone: phone,
-            amount: amount,
-            status: 'pending',
-            timestamp: window.dbServerTimestamp()
-        });
-        return true;
-    } catch (error) {
-        console.error('Error submitting deposit:', error);
-        return false;
-    }
-}
-
-async function submitWithdrawRequest(userId, name, phone, jazzCash, amount) {
-    try {
-        const withdrawsRef = window.dbRef(window.db, 'withdrawRequests');
-        const newWithdrawRef = window.dbPush(withdrawsRef);
-        await window.dbSet(newWithdrawRef, {
-            id: newWithdrawRef.key,
-            userId: userId,
-            name: name,
-            phone: phone,
-            jazzCash: jazzCash,
-            amount: amount,
-            status: 'pending',
-            timestamp: window.dbServerTimestamp()
-        });
-        return true;
-    } catch (error) {
-        console.error('Error submitting withdraw:', error);
-        return false;
-    }
+    return deviceId;
 }
 
 // ============================================
-// LOGIN & AUTHENTICATION
+// LOGIN SYSTEM WITH DEVICE LIMITS
 // ============================================
 async function handleLogin() {
     const name = document.getElementById('loginName').value.trim();
     const phone = document.getElementById('loginPhone').value.trim();
     
-    if (!name) {
-        showMessage('loginMsg', 'Please enter your name!', 'error');
+    if (!name || name.length < 2) {
+        showMessage('loginMsg', 'Enter valid name!', 'error');
         return;
     }
     
     if (!/^03[0-9]{9}$/.test(phone)) {
-        showMessage('loginMsg', 'Invalid phone number! Must be 03XXXXXXXXX', 'error');
+        showMessage('loginMsg', 'Enter valid 11-digit number!', 'error');
         return;
     }
     
-    showMessage('loginMsg', 'Logging in...', 'success');
+    const deviceId = getDeviceId();
     
-    // Check if user exists
-    let userData = await getUserData(phone);
-    
-    if (!userData) {
-        // New user - create account
-        userData = {
-            name: name,
-            phone: phone,
-            balance: 0,
-            totalDeposit: 0,
-            totalWithdraw: 0,
-            createdAt: Date.now()
-        };
+    try {
+        // Check if this number+name is already logged in from another device
+        const usersRef = window.dbRef(window.db, 'users');
+        const usersSnapshot = await window.dbGet(usersRef);
         
-        const saved = await saveUserData(phone, userData);
-        if (!saved) {
-            showMessage('loginMsg', 'Connection error! Try again.', 'error');
-            return;
+        if (usersSnapshot.exists()) {
+            const users = usersSnapshot.val();
+            const existingUser = users[phone];
+            
+            if (existingUser && existingUser.deviceId && existingUser.deviceId !== deviceId) {
+                showMessage('loginMsg', 'This number is already logged in on another device!', 'error');
+                return;
+            }
         }
         
-        showMessage('loginMsg', '✅ Account created!', 'success');
-    }
-    
-    // Load user session
-    gameState.userId = phone;
-    gameState.userName = userData.name;
-    gameState.userPhone = phone;
-    gameState.balance = userData.balance || 0;
-    
-    // Listen to balance updates in real-time
-    listenToUserBalance(phone, (newBalance) => {
-        gameState.balance = newBalance;
+        // Check device login limit (max 2 different numbers per device)
+        const deviceLoginsRef = window.dbRef(window.db, `deviceLogins/${deviceId}`);
+        const deviceSnapshot = await window.dbGet(deviceLoginsRef);
+        
+        if (deviceSnapshot.exists()) {
+            const deviceLogins = deviceSnapshot.val();
+            const loginCount = Object.keys(deviceLogins).length;
+            
+            // If this device already has 2 logins and this is a new number
+            if (loginCount >= 2 && !deviceLogins[phone]) {
+                showMessage('loginMsg', 'Device login limit reached! Maximum 2 accounts per device.', 'error');
+                return;
+            }
+        }
+        
+        // Get or create user
+        const userRef = window.dbRef(window.db, `users/${phone}`);
+        const snapshot = await window.dbGet(userRef);
+        
+        let userData;
+        if (snapshot.exists()) {
+            userData = snapshot.val();
+            await window.dbUpdate(userRef, {
+                name: name,
+                lastLogin: Date.now(),
+                deviceId: deviceId
+            });
+        } else {
+            userData = {
+                name: name,
+                phone: phone,
+                balance: 0,
+                totalDeposit: 0,
+                totalWithdraw: 0,
+                createdAt: Date.now(),
+                lastLogin: Date.now(),
+                deviceId: deviceId
+            };
+            await window.dbSet(userRef, userData);
+        }
+        
+        // Record device login
+        const deviceLoginRef = window.dbRef(window.db, `deviceLogins/${deviceId}/${phone}`);
+        await window.dbSet(deviceLoginRef, {
+            name: name,
+            loginTime: Date.now()
+        });
+        
+        // Store session
+        gameState.userId = phone;
+        gameState.userName = name;
+        gameState.userPhone = phone;
+        gameState.balance = userData.balance || 0;
+        gameState.lastDepositTime = userData.lastDepositTime || 0;
+        gameState.lastWithdrawTime = userData.lastWithdrawTime || 0;
+        
+        localStorage.setItem('currentUser', phone);
+        
+        // Show game screen
+        document.getElementById('loginScreen').classList.add('hidden');
+        document.getElementById('gameScreen').classList.remove('hidden');
+        document.getElementById('displayName').textContent = name;
+        document.getElementById('displayPhone').textContent = phone;
+        
+        initializeGrid();
         updateDisplay();
-    });
-    
-    // Show game screen
-    document.getElementById('displayName').textContent = userData.name;
-    document.getElementById('displayPhone').textContent = phone;
-    document.getElementById('loginScreen').classList.add('hidden');
-    document.getElementById('gameScreen').classList.remove('hidden');
-    
-    initializeGrid();
-    updateDisplay();
+        checkTimers();
+        
+        showMessage('gameMsg', `Welcome ${name}! 🎮`, 'success');
+    } catch (error) {
+        console.error('Login error:', error);
+        showMessage('loginMsg', 'Login failed! Try again.', 'error');
+    }
 }
 
 function handleLogout() {
     if (confirm('Are you sure you want to logout?')) {
+        localStorage.removeItem('currentUser');
         location.reload();
+    }
+}
+
+// ============================================
+// TIMER FUNCTIONS
+// ============================================
+function checkTimers() {
+    checkDepositTimer();
+    checkWithdrawTimer();
+    setInterval(checkDepositTimer, 1000);
+    setInterval(checkWithdrawTimer, 1000);
+}
+
+function checkDepositTimer() {
+    const now = Date.now();
+    const timeSinceDeposit = now - gameState.lastDepositTime;
+    const fiveMinutes = 5 * 60 * 1000;
+    
+    if (gameState.lastDepositTime > 0 && timeSinceDeposit < fiveMinutes) {
+        const remainingMs = fiveMinutes - timeSinceDeposit;
+        const minutes = Math.floor(remainingMs / 60000);
+        const seconds = Math.floor((remainingMs % 60000) / 1000);
+        
+        document.getElementById('depositTimer').textContent = 
+            `⏳ Next deposit in: ${minutes}:${seconds.toString().padStart(2, '0')}`;
+        document.getElementById('depositTimer').classList.remove('hidden');
+        document.getElementById('depositBtn').disabled = true;
+    } else {
+        document.getElementById('depositTimer').classList.add('hidden');
+        document.getElementById('depositBtn').disabled = false;
+    }
+}
+
+function checkWithdrawTimer() {
+    const now = Date.now();
+    const timeSinceWithdraw = now - gameState.lastWithdrawTime;
+    const twoHours = 2 * 60 * 60 * 1000;
+    
+    if (gameState.lastWithdrawTime > 0 && timeSinceWithdraw < twoHours) {
+        const remainingMs = twoHours - timeSinceWithdraw;
+        const hours = Math.floor(remainingMs / 3600000);
+        const minutes = Math.floor((remainingMs % 3600000) / 60000);
+        const seconds = Math.floor((remainingMs % 60000) / 1000);
+        
+        document.getElementById('withdrawTimer').textContent = 
+            `⏳ Next withdraw in: ${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        document.getElementById('withdrawTimer').classList.remove('hidden');
+        document.getElementById('withdrawBtn').disabled = true;
+    } else {
+        document.getElementById('withdrawTimer').classList.add('hidden');
+        document.getElementById('withdrawBtn').disabled = false;
     }
 }
 
@@ -482,24 +504,35 @@ function handleLogout() {
 async function submitDeposit() {
     const amount = parseInt(document.getElementById('depositAmount').value);
     
-    if (!amount || amount < 100) {
-        alert('Minimum deposit Rs 100!');
+    if (!amount || amount < 300) {
+        alert('Minimum deposit Rs 300');
         return;
     }
     
-    // Submit deposit request
-    const success = await submitDepositRequest(
-        gameState.userId,
-        gameState.userName,
-        gameState.userPhone,
-        amount
-    );
-    
-    if (success) {
+    try {
+        const depositRef = window.dbRef(window.db, 'depositRequests');
+        await window.dbPush(depositRef, {
+            userId: gameState.userId,
+            name: gameState.userName,
+            phone: gameState.userPhone,
+            amount: amount,
+            timestamp: Date.now(),
+            status: 'pending'
+        });
+        
+        // Update last deposit time
+        gameState.lastDepositTime = Date.now();
+        const userRef = window.dbRef(window.db, `users/${gameState.userPhone}`);
+        await window.dbUpdate(userRef, {
+            lastDepositTime: gameState.lastDepositTime
+        });
+        
         alert('✅ Deposit request submitted! Admin will approve soon.');
         closeModal('depositModal');
         document.getElementById('depositAmount').value = '';
-    } else {
+        checkDepositTimer();
+    } catch (error) {
+        console.error('Deposit error:', error);
         alert('❌ Request failed! Try again.');
     }
 }
@@ -513,8 +546,8 @@ async function submitWithdraw() {
         return;
     }
     
-    if (!amount || amount < 100) {
-        alert('Minimum withdraw Rs 100');
+    if (!amount || amount < 1000) {
+        alert('Minimum withdraw Rs 1000');
         return;
     }
     
@@ -523,20 +556,32 @@ async function submitWithdraw() {
         return;
     }
     
-    const success = await submitWithdrawRequest(
-        gameState.userId,
-        gameState.userName,
-        gameState.userPhone,
-        jazzCash,
-        amount
-    );
-    
-    if (success) {
+    try {
+        const withdrawRef = window.dbRef(window.db, 'withdrawRequests');
+        await window.dbPush(withdrawRef, {
+            userId: gameState.userId,
+            name: gameState.userName,
+            phone: gameState.userPhone,
+            jazzCash: jazzCash,
+            amount: amount,
+            timestamp: Date.now(),
+            status: 'pending'
+        });
+        
+        // Update last withdraw time
+        gameState.lastWithdrawTime = Date.now();
+        const userRef = window.dbRef(window.db, `users/${gameState.userPhone}`);
+        await window.dbUpdate(userRef, {
+            lastWithdrawTime: gameState.lastWithdrawTime
+        });
+        
         alert('✅ Withdraw request submitted! Admin will process soon.');
         closeModal('withdrawModal');
         document.getElementById('withdrawJazz').value = '';
         document.getElementById('withdrawAmount').value = '';
-    } else {
+        checkWithdrawTimer();
+    } catch (error) {
+        console.error('Withdraw error:', error);
         alert('❌ Request failed! Try again.');
     }
 }
@@ -550,7 +595,7 @@ function initializeGrid() {
     for (let i = 0; i < 25; i++) {
         const tile = document.createElement('div');
         tile.className = 'tile';
-        tile.textContent = 'Rs';
+        tile.textContent = '';
         tile.onclick = () => clickTile(i);
         grid.appendChild(tile);
     }
@@ -576,7 +621,7 @@ function clickTile(index) {
         tiles[index].classList.add('revealed');
         gameOver(false);
     } else {
-        tiles[index].textContent = '💎';
+        tiles[index].textContent = '🪙';
         tiles[index].style.background = 'linear-gradient(135deg, #FFD700, #FFA500)';
         tiles[index].classList.add('revealed');
         gameState.currentWin += Math.floor(gameState.currentBet * 0.15);
@@ -606,11 +651,15 @@ async function cashout() {
     gameState.balance += totalReturn;
     
     // Update balance in Firebase
-    await updateUserBalance(gameState.userPhone, gameState.balance);
+    const userRef = window.dbRef(window.db, `users/${gameState.userPhone}`);
+    await window.dbUpdate(userRef, {
+        balance: gameState.balance
+    });
     
     gameState.currentBet = 0;
     gameState.currentWin = 0;
     gameState.gameActive = false;
+    gameState.betAmountDeducted = false;
     document.getElementById('cashoutBtn').disabled = true;
     updateDisplay();
     revealAllTiles();
@@ -621,6 +670,7 @@ function gameOver(won) {
     gameState.gameActive = false;
     gameState.currentBet = 0;
     gameState.currentWin = 0;
+    gameState.betAmountDeducted = false;
     document.getElementById('cashoutBtn').disabled = true;
     updateDisplay();
     revealAllTiles();
@@ -636,19 +686,33 @@ function revealAllTiles() {
                 tile.textContent = '💣';
                 tile.style.background = 'linear-gradient(135deg, #DC143C, #8B0000)';
             } else {
-                tile.textContent = '💎';
+                tile.textContent = '🪙';
                 tile.style.background = 'linear-gradient(135deg, #FFD700, #FFA500)';
             }
         }
     });
 }
 
-function resetGame() {
+async function resetGame() {
+    // If bet was set but no tiles clicked, refund the bet amount
+    if (gameState.currentBet > 0 && !gameState.gameActive && gameState.revealedTiles.length === 0) {
+        gameState.balance += gameState.currentBet;
+        
+        // Update balance in Firebase
+        const userRef = window.dbRef(window.db, `users/${gameState.userPhone}`);
+        await window.dbUpdate(userRef, {
+            balance: gameState.balance
+        });
+        
+        showMessage('gameMsg', `Bet refunded! Rs ${gameState.currentBet} added back.`, 'success');
+    }
+    
     gameState.gameActive = false;
     gameState.currentWin = 0;
     gameState.currentBet = 0;
     gameState.minePositions = [];
     gameState.revealedTiles = [];
+    gameState.betAmountDeducted = false;
     document.getElementById('cashoutBtn').disabled = true;
     initializeGrid();
     updateDisplay();
@@ -687,9 +751,13 @@ async function setBet() {
     
     gameState.balance -= amount;
     gameState.currentBet = amount;
+    gameState.betAmountDeducted = true;
     
     // Update balance in Firebase
-    await updateUserBalance(gameState.userPhone, gameState.balance);
+    const userRef = window.dbRef(window.db, `users/${gameState.userPhone}`);
+    await window.dbUpdate(userRef, {
+        balance: gameState.balance
+    });
     
     updateDisplay();
     closeModal('betModal');
@@ -737,6 +805,54 @@ function showMessage(elementId, text, type) {
     el.style.display = 'block';
     setTimeout(() => el.style.display = 'none', 3000);
 }
+
+// Make functions global
+window.handleLogin = handleLogin;
+window.handleLogout = handleLogout;
+window.submitDeposit = submitDeposit;
+window.submitWithdraw = submitWithdraw;
+window.clickTile = clickTile;
+window.cashout = cashout;
+window.resetGame = resetGame;
+window.openBetModal = openBetModal;
+window.setBet = setBet;
+window.openMinesModal = openMinesModal;
+window.setMines = setMines;
+window.openDepositModal = openDepositModal;
+window.openWithdrawModal = openWithdrawModal;
+window.closeModal = closeModal;
+
+// Auto-login if session exists
+window.addEventListener('load', async () => {
+    const savedUser = localStorage.getItem('currentUser');
+    if (savedUser) {
+        try {
+            const userRef = window.dbRef(window.db, `users/${savedUser}`);
+            const snapshot = await window.dbGet(userRef);
+            
+            if (snapshot.exists()) {
+                const userData = snapshot.val();
+                gameState.userId = savedUser;
+                gameState.userName = userData.name;
+                gameState.userPhone = savedUser;
+                gameState.balance = userData.balance || 0;
+                gameState.lastDepositTime = userData.lastDepositTime || 0;
+                gameState.lastWithdrawTime = userData.lastWithdrawTime || 0;
+                
+                document.getElementById('loginScreen').classList.add('hidden');
+                document.getElementById('gameScreen').classList.remove('hidden');
+                document.getElementById('displayName').textContent = userData.name;
+                document.getElementById('displayPhone').textContent = savedUser;
+                
+                initializeGrid();
+                updateDisplay();
+                checkTimers();
+            }
+        } catch (error) {
+            console.error('Auto-login error:', error);
+        }
+    }
+});
 </script>
 
 </body>
