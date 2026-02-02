@@ -84,7 +84,10 @@ h1 { color: #1e3c72; font-size: 28px; }
     padding: 20px;
     border-radius: 15px;
     text-align: center;
+    cursor: pointer;
+    transition: transform 0.2s;
 }
+.stat-card:hover { transform: translateY(-3px); }
 .stat-value { font-size: 36px; font-weight: bold; margin: 10px 0; }
 .stat-label { font-size: 14px; }
 .tabs {
@@ -134,6 +137,7 @@ button {
 .btn-approve { background: #4CAF50; color: white; }
 .btn-reject { background: #f44336; color: white; }
 .btn-edit { background: #2196F3; color: white; }
+.btn-delete { background: #FF9800; color: white; }
 .status-pending { color: #FF9800; background: rgba(255,152,0,0.15); padding: 5px 10px; border-radius: 5px; font-size: 12px; }
 .status-approved { color: #4CAF50; background: rgba(76,175,80,0.15); padding: 5px 10px; border-radius: 5px; font-size: 12px; }
 .status-rejected { color: #f44336; background: rgba(244,67,54,0.15); padding: 5px 10px; border-radius: 5px; font-size: 12px; }
@@ -169,13 +173,29 @@ button {
     font-size: 16px;
 }
 .no-data { text-align: center; padding: 40px; color: #999; }
-.refresh-btn {
-    background: #2196F3;
-    color: white;
+.players-list {
+    max-height: 600px;
+    overflow-y: auto;
+}
+.player-card {
+    background: #f5f5f5;
+    padding: 15px;
+    margin: 10px 0;
+    border-radius: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.player-info { flex: 1; }
+.player-name { font-weight: bold; font-size: 16px; color: #1e3c72; }
+.player-phone { color: #666; font-size: 14px; margin-top: 5px; }
+.player-balance {
+    font-size: 24px;
+    font-weight: bold;
+    color: #FFD700;
+    background: linear-gradient(135deg, #1e3c72, #2a5298);
     padding: 10px 20px;
     border-radius: 8px;
-    font-weight: bold;
-    cursor: pointer;
 }
 </style>
 </head>
@@ -193,34 +213,29 @@ button {
     <div class="header">
         <h1>🎮 Admin Dashboard</h1>
         <div style="display: flex; gap: 10px;">
-            <button class="refresh-btn" onclick="loadAllData()">🔄 Refresh</button>
             <button class="logout-btn" onclick="adminLogout()">Logout</button>
         </div>
     </div>
 
     <div class="stats">
-        <div class="stat-card" style="background: linear-gradient(135deg, #667eea, #764ba2);">
+        <div class="stat-card" style="background: linear-gradient(135deg, #667eea, #764ba2);" onclick="showTab('users', event)">
             <div class="stat-label">Total Users</div>
             <div class="stat-value" id="totalUsers">0</div>
         </div>
+        <div class="stat-card" style="background: linear-gradient(135deg, #43e97b, #38f9d7);" onclick="showPlayersModal()">
+            <div class="stat-label">👥 Players</div>
+            <div class="stat-value">💰</div>
+        </div>
         <div class="stat-card" style="background: linear-gradient(135deg, #f093fb, #f5576c);">
-            <div class="stat-label">Pending Deposits</div>
-            <div class="stat-value" id="pendingDeposits">0</div>
-        </div>
-        <div class="stat-card" style="background: linear-gradient(135deg, #4facfe, #00f2fe);">
-            <div class="stat-label">Pending Withdrawals</div>
-            <div class="stat-value" id="pendingWithdraws">0</div>
-        </div>
-        <div class="stat-card" style="background: linear-gradient(135deg, #43e97b, #38f9d7);">
-            <div class="stat-label">Total Balance</div>
-            <div class="stat-value">Rs <span id="totalBalance">0</span></div>
+            <div class="stat-label">Total Withdrawals</div>
+            <div class="stat-value">Rs <span id="totalWithdrawals">0</span></div>
         </div>
     </div>
 
     <div class="tabs">
-        <button class="tab active" onclick="showTab('users')">👥 Users</button>
-        <button class="tab" onclick="showTab('deposits')">💰 Deposits</button>
-        <button class="tab" onclick="showTab('withdraws')">💸 Withdrawals</button>
+        <button class="tab active" onclick="showTab('users', event)">👥 Users</button>
+        <button class="tab" onclick="showTab('deposits', event)">💰 Deposits</button>
+        <button class="tab" onclick="showTab('withdraws', event)">💸 Withdrawals</button>
     </div>
 
     <div id="users" class="tab-content active">
@@ -239,77 +254,72 @@ button {
     </div>
 </div>
 
-<div id="editBalanceModal" class="modal">
+<!-- Players Modal -->
+<div id="playersModal" class="modal">
     <div class="modal-content">
-        <div class="modal-title">Edit Balance</div>
-        <p><strong>User:</strong> <span id="editUserName"></span></p>
-        <p><strong>Phone:</strong> <span id="editUserPhone"></span></p>
-        <p><strong>Current:</strong> Rs <span id="editCurrentBalance"></span></p>
-        <input type="number" id="editNewBalance" class="modal-input" placeholder="New balance">
-        <div style="display: flex; gap: 10px; margin-top: 20px;">
-            <button class="btn-approve" style="flex: 1;" onclick="saveBalance()">Save</button>
-            <button class="btn-reject" style="flex: 1;" onclick="closeModal()">Cancel</button>
-        </div>
+        <div class="modal-title">👥 Players - Live Balances</div>
+        <div class="players-list" id="playersContent"></div>
+        <button class="btn-reject" style="width: 100%; margin-top: 20px;" onclick="closePlayersModal()">Close</button>
     </div>
 </div>
 
-<!-- Firebase SDK -->
+<!-- Edit Balance Modal -->
+<div id="editBalanceModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-title">✏️ Edit Balance</div>
+        <div style="margin-bottom: 20px;">
+            <strong>User:</strong> <span id="editUserName"></span><br>
+            <strong>Phone:</strong> <span id="editUserPhone"></span><br>
+            <strong>Current Balance:</strong> Rs <span id="editCurrentBalance"></span>
+        </div>
+        <input type="number" id="editNewBalance" class="modal-input" placeholder="New Balance" min="0" step="0.01">
+        <button class="btn-approve" style="width: 100%; margin: 10px 0;" onclick="saveBalance()">Save Balance</button>
+        <button class="btn-reject" style="width: 100%;" onclick="closeModal()">Cancel</button>
+    </div>
+</div>
+
 <script type="module">
 // ============================================
-// FIREBASE CONFIGURATION - YOUR PROJECT
+// FIREBASE CONFIG
 // ============================================
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-import { getDatabase, ref, get, update, onValue } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js';
+import { getDatabase, ref, set, get, update, remove } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js';
 
 const firebaseConfig = {
-    apiKey: "AIzaSyA8C1-TpsRo0UsATshlI8Dy0v40PnLRlc4",
-    authDomain: "mines-67d8c.firebaseapp.com",
-    databaseURL: "https://mines-67d8c-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "mines-67d8c",
-    storageBucket: "mines-67d8c.firebasestorage.app",
-    messagingSenderId: "918317634273",
-    appId: "1:918317634273:web:8527c0d58a1f3de0371da0",
-    measurementId: "G-NHC6K1X3KZ"
+    apiKey: "AIzaSyDOVSOWKPA5y4EYQa4YPQVRi3BWH6tCqn4",
+    authDomain: "mines-game-e18cc.firebaseapp.com",
+    databaseURL: "https://mines-game-e18cc-default-rtdb.firebaseio.com",
+    projectId: "mines-game-e18cc",
+    storageBucket: "mines-game-e18cc.firebasestorage.app",
+    messagingSenderId: "739240698071",
+    appId: "1:739240698071:web:a8a25f8a3c7f1b5f8d3e7c"
 };
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const database = getDatabase(app);
+const db = getDatabase(app);
 
-// Make Firebase available globally
-window.db = database;
+window.db = db;
 window.dbRef = ref;
+window.dbSet = set;
 window.dbGet = get;
 window.dbUpdate = update;
-window.dbOnValue = onValue;
-
-console.log('✅ Firebase initialized successfully!');
+window.dbRemove = remove;
 </script>
 
 <script>
-// ============================================
-// ADMIN PASSWORD
-// ============================================
 const ADMIN_PASSWORD = 'admin123';
-
 let currentEditUser = null;
-let usersListener = null;
-let depositsListener = null;
-let withdrawsListener = null;
 
 // ============================================
-// ADMIN LOGIN
+// LOGIN/LOGOUT
 // ============================================
 function adminLogin() {
     const password = document.getElementById('adminPassword').value;
-    
     if (password === ADMIN_PASSWORD) {
+        localStorage.setItem('adminLoggedIn', 'true');
         document.getElementById('loginScreen').style.display = 'none';
         document.getElementById('dashboard').classList.add('active');
         loadAllData();
-        
-        // Setup real-time listeners
-        setupRealTimeListeners();
     } else {
         alert('❌ Wrong password!');
     }
@@ -317,44 +327,29 @@ function adminLogin() {
 
 function adminLogout() {
     if (confirm('Logout?')) {
+        localStorage.removeItem('adminLoggedIn');
         location.reload();
     }
 }
 
-// ============================================
-// REAL-TIME LISTENERS
-// ============================================
-function setupRealTimeListeners() {
-    // Listen to users
-    const usersRef = window.dbRef(window.db, 'users');
-    usersListener = window.dbOnValue(usersRef, (snapshot) => {
-        loadUsers();
-        updateStats();
-    });
-    
-    // Listen to deposits
-    const depositsRef = window.dbRef(window.db, 'depositRequests');
-    depositsListener = window.dbOnValue(depositsRef, (snapshot) => {
-        loadDeposits();
-        updateStats();
-    });
-    
-    // Listen to withdrawals
-    const withdrawsRef = window.dbRef(window.db, 'withdrawRequests');
-    withdrawsListener = window.dbOnValue(withdrawsRef, (snapshot) => {
-        loadWithdraws();
-        updateStats();
-    });
-}
+window.addEventListener('load', () => {
+    if (localStorage.getItem('adminLoggedIn') === 'true') {
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('dashboard').classList.add('active');
+        loadAllData();
+    }
+});
 
 // ============================================
-// LOAD DATA
+// DATA LOADING
 // ============================================
 async function loadAllData() {
-    await loadUsers();
-    await loadDeposits();
-    await loadWithdraws();
-    updateStats();
+    await Promise.all([
+        loadUsers(),
+        loadDeposits(),
+        loadWithdraws(),
+        updateStats()
+    ]);
 }
 
 async function loadUsers() {
@@ -369,22 +364,30 @@ async function loadUsers() {
         }
         
         const users = snapshot.val();
-        let html = '';
+        let usersArray = Object.entries(users).map(([phone, data]) => ({...data, phone}));
+        usersArray.sort((a, b) => (b.lastLogin || 0) - (a.lastLogin || 0));
         
-        Object.entries(users).forEach(([phone, user]) => {
+        let html = '';
+        usersArray.forEach(user => {
+            const joinDate = user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A';
+            const lastLogin = user.lastLogin ? new Date(user.lastLogin).toLocaleString() : 'N/A';
+            
             html += `
                 <div class="card">
                     <div class="card-header">
                         <div>
                             <div class="card-title">${user.name}</div>
-                            <div class="card-info">📱 ${phone}</div>
+                            <div class="card-info">📱 ${user.phone}</div>
+                            <div class="card-info">📅 Joined: ${joinDate}</div>
+                            <div class="card-info">🕒 Last Login: ${lastLogin}</div>
+                            <div class="card-info">💰 Total Deposit: Rs ${user.totalDeposit || 0}</div>
+                            <div class="card-info">💸 Total Withdraw: Rs ${user.totalWithdraw || 0}</div>
                         </div>
-                        <button class="btn-edit" onclick="editBalance('${phone}', '${user.name}', ${user.balance || 0})">
-                            Edit Balance
-                        </button>
                     </div>
-                    <div class="card-amount">Rs ${(user.balance || 0).toFixed(2)}</div>
-                    <div class="card-info">Deposit: Rs ${(user.totalDeposit || 0).toFixed(2)} | Withdraw: Rs ${(user.totalWithdraw || 0).toFixed(2)}</div>
+                    <div class="card-amount">Balance: Rs ${(user.balance || 0).toFixed(2)}</div>
+                    <button class="btn-edit" onclick="editBalance('${user.phone}', '${user.name}', ${user.balance || 0})">
+                        ✏️ Edit Balance
+                    </button>
                 </div>
             `;
         });
@@ -427,12 +430,13 @@ async function loadDeposits() {
                         <span class="${statusClass}">${(dep.status || 'pending').toUpperCase()}</span>
                     </div>
                     <div class="card-amount">Rs ${dep.amount}</div>
-                    ${dep.status === 'pending' ? `
-                        <div style="margin-top: 10px;">
+                    <div style="margin-top: 10px;">
+                        ${dep.status === 'pending' ? `
                             <button class="btn-approve" onclick="approveDeposit('${dep.firebaseKey}', '${dep.phone}', ${dep.amount})">✓ Approve</button>
                             <button class="btn-reject" onclick="rejectDeposit('${dep.firebaseKey}')">✗ Reject</button>
-                        </div>
-                    ` : ''}
+                        ` : ''}
+                        <button class="btn-delete" onclick="deleteRequest('depositRequests', '${dep.firebaseKey}', '${dep.phone}')">🗑️ Delete</button>
+                    </div>
                 </div>
             `;
         });
@@ -476,12 +480,13 @@ async function loadWithdraws() {
                         <span class="${statusClass}">${(wit.status || 'pending').toUpperCase()}</span>
                     </div>
                     <div class="card-amount">Rs ${wit.amount}</div>
-                    ${wit.status === 'pending' ? `
-                        <div style="margin-top: 10px;">
+                    <div style="margin-top: 10px;">
+                        ${wit.status === 'pending' ? `
                             <button class="btn-approve" onclick="approveWithdraw('${wit.firebaseKey}', '${wit.phone}', ${wit.amount})">✓ Approve</button>
                             <button class="btn-reject" onclick="rejectWithdraw('${wit.firebaseKey}')">✗ Reject</button>
-                        </div>
-                    ` : ''}
+                        ` : ''}
+                        <button class="btn-delete" onclick="deleteRequest('withdrawRequests', '${wit.firebaseKey}', '${wit.phone}')">🗑️ Delete</button>
+                    </div>
                 </div>
             `;
         });
@@ -499,29 +504,77 @@ async function updateStats() {
         const usersSnapshot = await window.dbGet(usersRef);
         const users = usersSnapshot.exists() ? usersSnapshot.val() : {};
         
-        // Get deposits
-        const depositsRef = window.dbRef(window.db, 'depositRequests');
-        const depositsSnapshot = await window.dbGet(depositsRef);
-        const deposits = depositsSnapshot.exists() ? Object.values(depositsSnapshot.val()) : [];
-        
-        // Get withdrawals
-        const withdrawsRef = window.dbRef(window.db, 'withdrawRequests');
-        const withdrawsSnapshot = await window.dbGet(withdrawsRef);
-        const withdraws = withdrawsSnapshot.exists() ? Object.values(withdrawsSnapshot.val()) : [];
-        
         // Calculate stats
         const totalUsers = Object.keys(users).length;
-        const pendingDep = deposits.filter(d => d.status === 'pending').length;
-        const pendingWith = withdraws.filter(w => w.status === 'pending').length;
-        const totalBalance = Object.values(users).reduce((sum, u) => sum + (u.balance || 0), 0);
+        const totalWithdrawals = Object.values(users).reduce((sum, u) => sum + (u.totalWithdraw || 0), 0);
         
         // Update UI
         document.getElementById('totalUsers').textContent = totalUsers;
-        document.getElementById('totalBalance').textContent = totalBalance.toFixed(2);
-        document.getElementById('pendingDeposits').textContent = pendingDep;
-        document.getElementById('pendingWithdraws').textContent = pendingWith;
+        document.getElementById('totalWithdrawals').textContent = totalWithdrawals.toFixed(2);
     } catch (error) {
         console.error('Error updating stats:', error);
+    }
+}
+
+// ============================================
+// PLAYERS MODAL
+// ============================================
+async function showPlayersModal() {
+    try {
+        const usersRef = window.dbRef(window.db, 'users');
+        const snapshot = await window.dbGet(usersRef);
+        const content = document.getElementById('playersContent');
+        
+        if (!snapshot.exists()) {
+            content.innerHTML = '<div class="no-data">No players yet</div>';
+            document.getElementById('playersModal').classList.add('active');
+            return;
+        }
+        
+        const users = snapshot.val();
+        let usersArray = Object.entries(users).map(([phone, data]) => ({...data, phone}));
+        usersArray.sort((a, b) => (b.balance || 0) - (a.balance || 0));
+        
+        let html = '';
+        usersArray.forEach(user => {
+            html += `
+                <div class="player-card">
+                    <div class="player-info">
+                        <div class="player-name">${user.name}</div>
+                        <div class="player-phone">${user.phone}</div>
+                    </div>
+                    <div class="player-balance">Rs ${(user.balance || 0).toFixed(2)}</div>
+                </div>
+            `;
+        });
+        
+        content.innerHTML = html;
+        document.getElementById('playersModal').classList.add('active');
+    } catch (error) {
+        console.error('Error loading players:', error);
+    }
+}
+
+function closePlayersModal() {
+    document.getElementById('playersModal').classList.remove('active');
+}
+
+// ============================================
+// DELETE REQUEST
+// ============================================
+async function deleteRequest(requestType, requestKey, phone) {
+    if (!confirm('Delete this request? User will be moved to Players section.')) return;
+    
+    try {
+        // Remove the request
+        const requestRef = window.dbRef(window.db, `${requestType}/${requestKey}`);
+        await window.dbRemove(requestRef);
+        
+        alert('✅ Request deleted!');
+        loadAllData();
+    } catch (error) {
+        console.error('Error deleting request:', error);
+        alert('❌ Error! Try again.');
     }
 }
 
@@ -671,15 +724,35 @@ function closeModal() {
     document.getElementById('editBalanceModal').classList.remove('active');
 }
 
-function showTab(tabName) {
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+function showTab(tabName, event) {
+    if (event) {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        if (event.target.classList.contains('tab')) {
+            event.target.classList.add('active');
+        }
+    }
     document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-    event.target.classList.add('active');
     document.getElementById(tabName).classList.add('active');
 }
 
+// Make functions global
+window.adminLogin = adminLogin;
+window.adminLogout = adminLogout;
+window.loadAllData = loadAllData;
+window.showPlayersModal = showPlayersModal;
+window.closePlayersModal = closePlayersModal;
+window.deleteRequest = deleteRequest;
+window.approveDeposit = approveDeposit;
+window.rejectDeposit = rejectDeposit;
+window.approveWithdraw = approveWithdraw;
+window.rejectWithdraw = rejectWithdraw;
+window.editBalance = editBalance;
+window.saveBalance = saveBalance;
+window.closeModal = closeModal;
+window.showTab = showTab;
+
 // Auto-refresh every 30 seconds
-setInterval(updateStats, 30000);
+setInterval(loadAllData, 30000);
 </script>
 
 </body>
