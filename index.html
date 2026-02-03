@@ -182,9 +182,39 @@
             text-align: center;
             font-size: 14px;
         }
+        .kicked-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+        }
+        .kicked-overlay.active { display: flex; }
+        .kicked-box {
+            background: #1e3c72;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 350px;
+            color: white;
+        }
+        .kicked-box h2 { color: #f44336; font-size: 28px; margin-bottom: 15px; }
+        .kicked-box p { color: #ccc; margin-bottom: 20px; font-size: 16px; }
     </style>
 </head>
 <body>
+
+<!-- KICKED OVERLAY (shown when admin kicks this user) -->
+<div id="kickedOverlay" class="kicked-overlay">
+    <div class="kicked-box">
+        <h2>⚡ Session Terminated</h2>
+        <p>آپ کو Admin نے لاگ آؤٹ کیا گیا ہے۔</p>
+        <button class="btn-green" onclick="location.reload()" style="width:auto; padding:12px 30px;">لاگ ان دوبارہ</button>
+    </div>
+</div>
 
 <!-- LOGIN SCREEN -->
 <div id="loginScreen" class="container">
@@ -274,7 +304,9 @@
     </div>
 </div>
 
-<!-- Firebase SDK -->
+<!-- =============================================
+     FIREBASE MODULE SCRIPT
+     ============================================= -->
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
 import { getDatabase, ref, set, get, update, onValue, push, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
@@ -293,63 +325,57 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
 
-window.db = database;
-window.dbRef = ref;
-window.dbSet = set;
-window.dbGet = get;
-window.dbUpdate = update;
-window.dbOnValue = onValue;
-window.dbPush = push;
+window.db               = database;
+window.dbRef            = ref;
+window.dbSet            = set;
+window.dbGet            = get;
+window.dbUpdate         = update;
+window.dbOnValue        = onValue;
+window.dbPush           = push;
 window.dbServerTimestamp = serverTimestamp;
 
+// Signal ready
+if (window._fbResolve) window._fbResolve();
 console.log('✅ Firebase initialized successfully!');
 </script>
 
+<!-- =============================================
+     MAIN GAME SCRIPT
+     ============================================= -->
 <script>
+// -----------------------------------------------
+// Firebase Ready Promise (same pattern as Admin)
+// -----------------------------------------------
+window._fbReady  = new Promise(r => { window._fbResolve = r; });
+
+async function fbReady() { await window._fbReady; }
+
 // ============================================
 // DEVICE FINGERPRINT & LOGIN LIMITS
 // ============================================
 function getDeviceFingerprint() {
-    const nav = navigator;
+    const nav    = navigator;
     const screen = window.screen;
-    const fingerprint = `${nav.userAgent}_${screen.width}x${screen.height}_${screen.colorDepth}_${nav.language}`;
-    return btoa(fingerprint).substring(0, 32);
-}
-
-function checkDeviceLoginLimit() {
-    const deviceId = getDeviceFingerprint();
-    const deviceLogins = JSON.parse(localStorage.getItem('deviceLogins') || '{}');
-    const currentLogins = deviceLogins[deviceId] || [];
-    return { deviceId, currentLogins, limit: currentLogins.length < 2 };
-}
-
-function saveDeviceLogin(deviceId, phone) {
-    const deviceLogins = JSON.parse(localStorage.getItem('deviceLogins') || '{}');
-    if (!deviceLogins[deviceId]) deviceLogins[deviceId] = [];
-    if (!deviceLogins[deviceId].includes(phone)) {
-        if (deviceLogins[deviceId].length < 2) {
-            deviceLogins[deviceId].push(phone);
-        }
-    }
-    localStorage.setItem('deviceLogins', JSON.stringify(deviceLogins));
+    const fp     = `${nav.userAgent}_${screen.width}x${screen.height}_${screen.colorDepth}_${nav.language}`;
+    return btoa(fp).substring(0, 32);
 }
 
 // ============================================
 // GAME STATE
 // ============================================
 let gameState = {
-    userId: null,
-    userName: '',
-    userPhone: '',
-    balance: 0,
-    currentBet: 0,
-    currentWin: 0,
-    minesCount: 3,
-    gameActive: false,
+    userId:       null,
+    userName:      '',
+    userPhone:     '',
+    balance:       0,
+    currentBet:    0,
+    currentWin:    0,
+    minesCount:    3,
+    gameActive:    false,
     minePositions: [],
     revealedTiles: [],
-    betSet: false,
-    tilesClicked: false
+    betSet:        false,
+    tilesClicked:  false
 };
 
 // ============================================
@@ -358,7 +384,7 @@ let gameState = {
 function checkDepositCooldown() {
     const lastDeposit = localStorage.getItem(`lastDeposit_${gameState.userPhone}`);
     if (lastDeposit) {
-        const elapsed = Date.now() - parseInt(lastDeposit);
+        const elapsed  = Date.now() - parseInt(lastDeposit);
         const cooldown = 5 * 60 * 1000; // 5 minutes
         if (elapsed < cooldown) {
             const remaining = Math.ceil((cooldown - elapsed) / 1000 / 60);
@@ -371,7 +397,7 @@ function checkDepositCooldown() {
 function checkWithdrawCooldown() {
     const lastWithdraw = localStorage.getItem(`lastWithdraw_${gameState.userPhone}`);
     if (lastWithdraw) {
-        const elapsed = Date.now() - parseInt(lastWithdraw);
+        const elapsed  = Date.now() - parseInt(lastWithdraw);
         const cooldown = 2 * 60 * 60 * 1000; // 2 hours
         if (elapsed < cooldown) {
             const remaining = Math.ceil((cooldown - elapsed) / 1000 / 60);
@@ -385,6 +411,7 @@ function checkWithdrawCooldown() {
 // FIREBASE HELPER FUNCTIONS
 // ============================================
 async function saveUserData(phone, data) {
+    await fbReady();
     try {
         const userRef = window.dbRef(window.db, `users/${phone}`);
         await window.dbSet(userRef, {
@@ -399,8 +426,9 @@ async function saveUserData(phone, data) {
 }
 
 async function getUserData(phone) {
+    await fbReady();
     try {
-        const userRef = window.dbRef(window.db, `users/${phone}`);
+        const userRef  = window.dbRef(window.db, `users/${phone}`);
         const snapshot = await window.dbGet(userRef);
         return snapshot.exists() ? snapshot.val() : null;
     } catch (error) {
@@ -410,10 +438,11 @@ async function getUserData(phone) {
 }
 
 async function updateUserBalance(phone, newBalance) {
+    await fbReady();
     try {
         const userRef = window.dbRef(window.db, `users/${phone}`);
         await window.dbUpdate(userRef, {
-            balance: newBalance,
+            balance:     newBalance,
             lastUpdated: window.dbServerTimestamp()
         });
         return true;
@@ -423,27 +452,38 @@ async function updateUserBalance(phone, newBalance) {
     }
 }
 
-function listenToUserBalance(phone, callback) {
+// -----------------------------------------------
+// Listen to user data (balance + kick signal)
+// -----------------------------------------------
+function listenToUserData(phone) {
     const userRef = window.dbRef(window.db, `users/${phone}`);
-    return window.dbOnValue(userRef, (snapshot) => {
-        if (snapshot.exists()) {
-            const data = snapshot.val();
-            callback(data.balance);
+    window.dbOnValue(userRef, (snapshot) => {
+        if (!snapshot.exists()) return;
+        const data = snapshot.val();
+
+        // ── Balance sync ──
+        gameState.balance = data.balance || 0;
+        updateDisplay();
+
+        // ── Kick check: admin sets kickedAt > lastLogin ──
+        if (data.kickedAt && data.lastLogin && data.kickedAt > data.lastLogin) {
+            showKickedScreen();
         }
     });
 }
 
 async function submitDepositRequest(userId, name, phone, amount) {
+    await fbReady();
     try {
-        const depositsRef = window.dbRef(window.db, 'depositRequests');
-        const newDepositRef = window.dbPush(depositsRef);
+        const depositsRef    = window.dbRef(window.db, 'depositRequests');
+        const newDepositRef  = window.dbPush(depositsRef);
         await window.dbSet(newDepositRef, {
-            id: newDepositRef.key,
-            userId: userId,
-            name: name,
-            phone: phone,
-            amount: amount,
-            status: 'pending',
+            id:        newDepositRef.key,
+            userId:   userId,
+            name:      name,
+            phone:     phone,
+            amount:    amount,
+            status:    'pending',
             timestamp: window.dbServerTimestamp()
         });
         return true;
@@ -454,17 +494,18 @@ async function submitDepositRequest(userId, name, phone, amount) {
 }
 
 async function submitWithdrawRequest(userId, name, phone, jazzCash, amount) {
+    await fbReady();
     try {
-        const withdrawsRef = window.dbRef(window.db, 'withdrawRequests');
-        const newWithdrawRef = window.dbPush(withdrawsRef);
+        const withdrawsRef    = window.dbRef(window.db, 'withdrawRequests');
+        const newWithdrawRef  = window.dbPush(withdrawsRef);
         await window.dbSet(newWithdrawRef, {
-            id: newWithdrawRef.key,
-            userId: userId,
-            name: name,
-            phone: phone,
-            jazzCash: jazzCash,
-            amount: amount,
-            status: 'pending',
+            id:        newWithdrawRef.key,
+            userId:   userId,
+            name:      name,
+            phone:     phone,
+            jazzCash:  jazzCash,
+            amount:    amount,
+            status:    'pending',
             timestamp: window.dbServerTimestamp()
         });
         return true;
@@ -478,91 +519,107 @@ async function submitWithdrawRequest(userId, name, phone, jazzCash, amount) {
 // LOGIN & AUTHENTICATION
 // ============================================
 async function handleLogin() {
-    const name = document.getElementById('loginName').value.trim();
+    await fbReady();
+
+    const name  = document.getElementById('loginName').value.trim();
     const phone = document.getElementById('loginPhone').value.trim();
-    
+
     if (!name) {
         showMessage('loginMsg', 'Please enter your name!', 'error');
         return;
     }
-    
+
     if (!/^03[0-9]{9}$/.test(phone)) {
         showMessage('loginMsg', 'Invalid phone number! Must be 03XXXXXXXXX', 'error');
         return;
     }
-    
-    // Check device login limit
-    const deviceCheck = checkDeviceLoginLimit();
-    if (!deviceCheck.limit && !deviceCheck.currentLogins.includes(phone)) {
-        showMessage('loginMsg', 'Device limit reached! Maximum 2 logins per device.', 'error');
-        return;
-    }
-    
+
     showMessage('loginMsg', 'Logging in...', 'success');
-    
-    // Check if user exists
+
+    const deviceId = getDeviceFingerprint();
+
+    // ── Check Firebase for existing user ──
     let userData = await getUserData(phone);
-    
-    // Check single device login
-    if (userData && userData.deviceId && userData.deviceId !== deviceCheck.deviceId) {
-        showMessage('loginMsg', 'This account is already logged in on another device!', 'error');
+
+    // ── Single-device check:
+    //    If user exists AND is marked online AND on a DIFFERENT device → block
+    // ──
+    if (userData && userData.isOnline && userData.deviceId && userData.deviceId !== deviceId) {
+        showMessage('loginMsg', 'یہ اکاؤنٹ پہلے سے کسی اور ڈیوائس پر لاگ ان ہے!', 'error');
         return;
     }
-    
+
+    const now = Date.now();
+
     if (!userData) {
-        // New user
+        // ── New user ──
         userData = {
-            name: name,
-            phone: phone,
-            balance: 0,
-            totalDeposit: 0,
+            name:          name,
+            phone:         phone,
+            balance:       0,
+            totalDeposit:  0,
             totalWithdraw: 0,
-            createdAt: Date.now(),
-            deviceId: deviceCheck.deviceId
+            createdAt:     now,
+            deviceId:      deviceId,
+            isOnline:      true,
+            lastLogin:     now
         };
-        
+
         const saved = await saveUserData(phone, userData);
         if (!saved) {
             showMessage('loginMsg', 'Connection error! Try again.', 'error');
             return;
         }
-        
         showMessage('loginMsg', '✅ Account created!', 'success');
     } else {
-        // Update device ID
+        // ── Existing user – update session info ──
         const userRef = window.dbRef(window.db, `users/${phone}`);
-        await window.dbUpdate(userRef, { deviceId: deviceCheck.deviceId });
+        await window.dbUpdate(userRef, {
+            deviceId:  deviceId,
+            isOnline:  true,
+            lastLogin: now,
+            name:      name   // update name in case changed
+        });
     }
-    
-    // Save device login
-    saveDeviceLogin(deviceCheck.deviceId, phone);
-    
-    // Load user session
-    gameState.userId = phone;
-    gameState.userName = userData.name;
-    gameState.userPhone = phone;
-    gameState.balance = userData.balance || 0;
-    
-    // Listen to balance updates
-    listenToUserBalance(phone, (newBalance) => {
-        gameState.balance = newBalance;
-        updateDisplay();
-    });
-    
-    // Show game screen
-    document.getElementById('displayName').textContent = userData.name;
+
+    // ── Load game UI ──
+    gameState.userId    = phone;
+    gameState.userName   = userData.name || name;
+    gameState.userPhone  = phone;
+    gameState.balance    = userData.balance || 0;
+
+    document.getElementById('displayName').textContent  = gameState.userName;
     document.getElementById('displayPhone').textContent = phone;
     document.getElementById('loginScreen').classList.add('hidden');
     document.getElementById('gameScreen').classList.remove('hidden');
-    
+
+    // Listen for balance changes AND kick signals
+    listenToUserData(phone);
+
     initializeGrid();
     updateDisplay();
 }
 
-function handleLogout() {
+// -----------------------------------------------
+// Logout – clear online flag
+// -----------------------------------------------
+async function handleLogout() {
     if (confirm('Are you sure you want to logout?')) {
+        // Mark user offline
+        try {
+            await fbReady();
+            const userRef = window.dbRef(window.db, `users/${gameState.userPhone}`);
+            await window.dbUpdate(userRef, { isOnline: false, deviceId: null });
+        } catch(e) { /* best effort */ }
         location.reload();
     }
+}
+
+// -----------------------------------------------
+// Kicked by admin – show overlay
+// -----------------------------------------------
+function showKickedScreen() {
+    document.getElementById('kickedOverlay').classList.add('active');
 }
 
 // ============================================
@@ -570,26 +627,25 @@ function handleLogout() {
 // ============================================
 async function submitDeposit() {
     const amount = parseInt(document.getElementById('depositAmount').value);
-    
+
     if (!amount || amount < 300) {
         alert('Minimum deposit Rs 300!');
         return;
     }
-    
-    // Check cooldown
+
     const cooldown = checkDepositCooldown();
     if (!cooldown.allowed) {
         alert(`⏳ Please wait ${cooldown.remaining} more minutes before next deposit.`);
         return;
     }
-    
+
     const success = await submitDepositRequest(
         gameState.userId,
         gameState.userName,
         gameState.userPhone,
         amount
     );
-    
+
     if (success) {
         localStorage.setItem(`lastDeposit_${gameState.userPhone}`, Date.now().toString());
         alert('✅ Deposit request submitted! Admin will approve soon.');
@@ -602,32 +658,31 @@ async function submitDeposit() {
 
 async function submitWithdraw() {
     const jazzCash = document.getElementById('withdrawJazz').value.trim();
-    const amount = parseInt(document.getElementById('withdrawAmount').value);
-    
+    const amount   = parseInt(document.getElementById('withdrawAmount').value);
+
     if (!/^03[0-9]{9}$/.test(jazzCash)) {
         alert('Invalid JazzCash number!');
         return;
     }
-    
+
     if (!amount || amount < 1000) {
         alert('Minimum withdraw Rs 1000!');
         return;
     }
-    
+
     if (amount > gameState.balance) {
         alert('Insufficient balance!');
         return;
     }
-    
-    // Check cooldown
+
     const cooldown = checkWithdrawCooldown();
     if (!cooldown.allowed) {
         const hours = Math.floor(cooldown.remaining / 60);
-        const mins = cooldown.remaining % 60;
+        const mins  = cooldown.remaining % 60;
         alert(`⏳ Please wait ${hours}h ${mins}m before next withdrawal.`);
         return;
     }
-    
+
     const success = await submitWithdrawRequest(
         gameState.userId,
         gameState.userName,
@@ -635,12 +690,12 @@ async function submitWithdraw() {
         jazzCash,
         amount
     );
-    
+
     if (success) {
         localStorage.setItem(`lastWithdraw_${gameState.userPhone}`, Date.now().toString());
         alert('✅ Withdraw request submitted! Admin will process soon.');
         closeModal('withdrawModal');
-        document.getElementById('withdrawJazz').value = '';
+        document.getElementById('withdrawJazz').value   = '';
         document.getElementById('withdrawAmount').value = '';
     } else {
         alert('❌ Request failed! Try again.');
@@ -664,7 +719,7 @@ function initializeGrid() {
 
 function clickTile(index) {
     if (gameState.revealedTiles.includes(index)) return;
-    
+
     if (!gameState.gameActive) {
         if (gameState.currentBet === 0) {
             showMessage('gameMsg', 'Set bet first!', 'error');
@@ -672,17 +727,19 @@ function clickTile(index) {
         }
         startGame();
     }
-    
+
     gameState.tilesClicked = true;
     gameState.revealedTiles.push(index);
     const tiles = document.querySelectorAll('.tile');
-    
+
     if (gameState.minePositions.includes(index)) {
+        // ── MINE HIT ──
         tiles[index].textContent = '💣';
         tiles[index].style.background = 'linear-gradient(135deg, #DC143C, #8B0000)';
         tiles[index].classList.add('revealed');
         gameOver(false);
     } else {
+        // ── SAFE TILE ──
         tiles[index].textContent = '🪙';
         tiles[index].style.background = 'linear-gradient(135deg, #FFD700, #FFA500)';
         tiles[index].classList.add('revealed');
@@ -693,31 +750,34 @@ function clickTile(index) {
 }
 
 function startGame() {
-    gameState.gameActive = true;
+    gameState.gameActive   = true;
     gameState.minePositions = [];
     gameState.revealedTiles = [];
-    gameState.currentWin = 0;
-    
+    gameState.currentWin    = 0;
+
     while (gameState.minePositions.length < gameState.minesCount) {
         const pos = Math.floor(Math.random() * 25);
         if (!gameState.minePositions.includes(pos)) gameState.minePositions.push(pos);
     }
-    
+
     updateDisplay();
 }
 
+// -----------------------------------------------
+// Cash Out – bet + win added to balance
+// -----------------------------------------------
 async function cashout() {
     if (!gameState.gameActive || gameState.currentWin === 0) return;
-    
+
     const totalReturn = gameState.currentBet + gameState.currentWin;
     gameState.balance += totalReturn;
-    
+
     await updateUserBalance(gameState.userPhone, gameState.balance);
-    
-    gameState.currentBet = 0;
-    gameState.currentWin = 0;
-    gameState.gameActive = false;
-    gameState.betSet = false;
+
+    gameState.currentBet  = 0;
+    gameState.currentWin  = 0;
+    gameState.gameActive  = false;
+    gameState.betSet      = false;
     gameState.tilesClicked = false;
     document.getElementById('cashoutBtn').disabled = true;
     updateDisplay();
@@ -725,11 +785,14 @@ async function cashout() {
     showMessage('gameMsg', `Cashed out Rs ${totalReturn}! 🎉`, 'success');
 }
 
+// -----------------------------------------------
+// Game Over (hit mine) – bet is lost, win is lost
+// -----------------------------------------------
 function gameOver(won) {
-    gameState.gameActive = false;
-    gameState.currentBet = 0;
-    gameState.currentWin = 0;
-    gameState.betSet = false;
+    gameState.gameActive  = false;
+    gameState.currentBet  = 0;
+    gameState.currentWin  = 0;
+    gameState.betSet      = false;
     gameState.tilesClicked = false;
     document.getElementById('cashoutBtn').disabled = true;
     updateDisplay();
@@ -753,20 +816,32 @@ function revealAllTiles() {
     });
 }
 
+// -----------------------------------------------
+// Reset – returns (bet + currentWin) to balance
+//   • If tiles not clicked → only bet is returned (no win yet)
+//   • If tiles clicked      → bet + currentWin returned
+// -----------------------------------------------
 async function resetGame() {
-    // Return bet if tiles not clicked
-    if (gameState.betSet && !gameState.tilesClicked && gameState.currentBet > 0) {
-        gameState.balance += gameState.currentBet;
+    if (gameState.betSet && gameState.currentBet > 0) {
+        // Calculate what to return
+        const returnAmount = gameState.currentBet + gameState.currentWin;
+        gameState.balance += returnAmount;
         await updateUserBalance(gameState.userPhone, gameState.balance);
-        showMessage('gameMsg', `Rs ${gameState.currentBet} returned to balance!`, 'success');
+
+        if (gameState.tilesClicked) {
+            showMessage('gameMsg', `Rs ${gameState.currentBet} (bet) + Rs ${gameState.currentWin} (win) واپس ہو گئے!`, 'success');
+        } else {
+            showMessage('gameMsg', `Rs ${gameState.currentBet} واپس ہو گیا!`, 'success');
+        }
     }
-    
-    gameState.gameActive = false;
-    gameState.currentWin = 0;
-    gameState.currentBet = 0;
+
+    // ── Reset all state ──
+    gameState.gameActive   = false;
+    gameState.currentWin   = 0;
+    gameState.currentBet   = 0;
     gameState.minePositions = [];
     gameState.revealedTiles = [];
-    gameState.betSet = false;
+    gameState.betSet       = false;
     gameState.tilesClicked = false;
     document.getElementById('cashoutBtn').disabled = true;
     initializeGrid();
@@ -774,9 +849,9 @@ async function resetGame() {
 }
 
 function updateDisplay() {
-    document.getElementById('balance').textContent = gameState.balance;
-    document.getElementById('win').textContent = gameState.currentWin;
-    document.getElementById('betDisplay').textContent = gameState.currentBet;
+    document.getElementById('balance').textContent     = gameState.balance;
+    document.getElementById('win').textContent         = gameState.currentWin;
+    document.getElementById('betDisplay').textContent  = gameState.currentBet;
     document.getElementById('minesDisplay').textContent = gameState.minesCount;
 }
 
@@ -793,24 +868,24 @@ function openBetModal() {
 
 async function setBet() {
     const amount = parseInt(document.getElementById('betInput').value);
-    
+
     if (!amount || amount < 100 || amount > 10000) {
         alert('Bet must be Rs 100 - Rs 10,000');
         return;
     }
-    
+
     if (amount > gameState.balance) {
         alert('Insufficient balance!');
         return;
     }
-    
-    gameState.balance -= amount;
-    gameState.currentBet = amount;
-    gameState.betSet = true;
+
+    gameState.balance    -= amount;
+    gameState.currentBet  = amount;
+    gameState.betSet      = true;
     gameState.tilesClicked = false;
-    
+
     await updateUserBalance(gameState.userPhone, gameState.balance);
-    
+
     updateDisplay();
     closeModal('betModal');
     showMessage('gameMsg', 'Bet set! Start playing!', 'success');
@@ -853,7 +928,7 @@ function openWithdrawModal() {
     const cooldown = checkWithdrawCooldown();
     if (!cooldown.allowed) {
         const hours = Math.floor(cooldown.remaining / 60);
-        const mins = cooldown.remaining % 60;
+        const mins  = cooldown.remaining % 60;
         document.getElementById('withdrawCooldown').textContent = `⏳ Wait ${hours}h ${mins}m`;
         document.getElementById('withdrawCooldown').style.display = 'block';
     } else {
@@ -869,7 +944,7 @@ function closeModal(id) {
 function showMessage(elementId, text, type) {
     const el = document.getElementById(elementId);
     el.textContent = text;
-    el.className = 'msg ' + type;
+    el.className   = 'msg ' + type;
     el.style.display = 'block';
     setTimeout(() => el.style.display = 'none', 3000);
 }
