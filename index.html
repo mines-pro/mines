@@ -25,7 +25,6 @@
   --text-muted:    #9aa0b8;
   --radius:        16px;
   --radius-sm:     10px;
-  /* adaptive blur — JS overrides on low-end devices */
   --blur-main:     24px;
   --blur-modal:    30px;
   --blur-tile:     6px;
@@ -298,14 +297,12 @@ button:disabled { opacity:.38; cursor:not-allowed; }
               box-shadow .28s, background .25s, border-color .25s;
   position:relative; overflow:hidden; user-select:none;
 }
-/* top shimmer line */
 .tile::before {
   content:'';
   position:absolute; top:0; left:8%; right:8%; height:1px;
   background: linear-gradient(90deg, transparent, rgba(255,255,255,.2), transparent);
   pointer-events:none;
 }
-/* hover */
 .tile:hover:not(.revealed) {
   transform: scale(1.09);
   border-color: rgba(34,211,238,.6);
@@ -315,7 +312,6 @@ button:disabled { opacity:.38; cursor:not-allowed; }
 }
 .tile.revealed { cursor:default; }
 
-/* SAFE tile */
 .tile.safe {
   background: linear-gradient(150deg, rgba(240,192,64,.32), rgba(251,191,36,.16));
   border-color: rgba(240,192,64,.65);
@@ -323,7 +319,6 @@ button:disabled { opacity:.38; cursor:not-allowed; }
               inset 0 0 10px rgba(240,192,64,.1);
   animation: tileIn .28s cubic-bezier(.34,1.56,.64,1);
 }
-/* MINE tile (passive reveal) */
 .tile.mine {
   background: linear-gradient(150deg, rgba(251,113,133,.34), rgba(220,20,60,.18));
   border-color: rgba(251,113,133,.7);
@@ -331,7 +326,6 @@ button:disabled { opacity:.38; cursor:not-allowed; }
               inset 0 0 12px rgba(251,60,80,.12);
   animation: tileIn .28s cubic-bezier(.34,1.56,.64,1);
 }
-/* MINE-HIT (the one you clicked) */
 .tile.mine-hit {
   animation: mineFlash .5s ease-out forwards;
 }
@@ -379,7 +373,7 @@ button:disabled { opacity:.38; cursor:not-allowed; }
 }
 
 /* ═══════════════════════════════════════════════
-   INFO BOX (deposit instructions)
+   INFO BOX
    ═══════════════════════════════════════════════ */
 .info-box {
   background: rgba(240,192,64,.08);
@@ -393,7 +387,6 @@ button:disabled { opacity:.38; cursor:not-allowed; }
   text-shadow: 0 0 6px rgba(240,192,64,.25);
 }
 
-/* ── Payment method label badge ── */
 .pay-label {
   display:inline-flex; align-items:center; gap:7px;
   margin-bottom:6px; margin-top:10px;
@@ -417,7 +410,6 @@ button:disabled { opacity:.38; cursor:not-allowed; }
   box-shadow: 0 0 8px rgba(251,191,36,.18);
 }
 
-/* ── Number display box ── */
 .pay-number {
   font-family:'Orbitron', sans-serif;
   font-size:20px; font-weight:700;
@@ -433,7 +425,7 @@ button:disabled { opacity:.38; cursor:not-allowed; }
 .pay-number.easy-num { border-color: rgba(251,191,36,.3); }
 
 /* ═══════════════════════════════════════════════
-   WITHDRAW TOGGLE (JazzCash | Easypaisa)
+   WITHDRAW TOGGLE
    ═══════════════════════════════════════════════ */
 .withdraw-toggle {
   display:flex; gap:0; margin:14px 0 10px;
@@ -464,7 +456,6 @@ button:disabled { opacity:.38; cursor:not-allowed; }
   color: var(--neon-amber);
   box-shadow: inset 0 0 12px rgba(251,191,36,.1);
 }
-/* divider between tabs */
 .withdraw-toggle button + button {
   border-left: 1px solid var(--glass-border);
 }
@@ -630,20 +621,14 @@ button:disabled { opacity:.38; cursor:not-allowed; }
 
 </div><!-- /page-wrap -->
 
-<!-- ═══════════════════════════════════════════════
-     DEPOSIT MODAL  – JazzCash + Easypaisa
-     ═══════════════════════════════════════════════ -->
+<!-- ═══ DEPOSIT MODAL ═══ -->
 <div id="depositModal" class="modal">
   <div class="modal-content">
     <div class="modal-title">Deposit Request</div>
     <div class="info-box">
       <div class="info-title">براہِ مہربانی اس نمبر پر رقم سینڈ کریں</div>
-
-      <!-- JazzCash -->
       <div class="pay-label"><span class="badge jazz">JazzCash</span></div>
       <div class="pay-number jazz-num">03266916283</div>
-
-      <!-- Easypaisa -->
       <div class="pay-label"><span class="badge easy">Easypaisa</span></div>
       <div class="pay-number easy-num">03193433587</div>
     </div>
@@ -654,19 +639,14 @@ button:disabled { opacity:.38; cursor:not-allowed; }
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════════════
-     WITHDRAW MODAL  – JazzCash / Easypaisa toggle
-     ═══════════════════════════════════════════════ -->
+<!-- ═══ WITHDRAW MODAL ═══ -->
 <div id="withdrawModal" class="modal">
   <div class="modal-content">
     <div class="modal-title">Withdraw Request</div>
-
-    <!-- toggle tabs -->
     <div class="withdraw-toggle">
       <button id="tabJazz"  class="active-tab"  onclick="switchWithdrawTab('jazz')">JazzCash</button>
       <button id="tabEasy"  onclick="switchWithdrawTab('easy')">Easypaisa</button>
     </div>
-
     <input type="tel" id="withdrawJazz" placeholder="JazzCash 03XXXXXXXXX" maxlength="11">
     <input type="number" id="withdrawAmount" placeholder="Amount (Minimum Rs 1000)" min="1000">
     <div id="withdrawCooldown" style="display:none;" class="timer-msg"></div>
@@ -695,23 +675,15 @@ button:disabled { opacity:.38; cursor:not-allowed; }
   </div>
 </div>
 
-
-<!-- ═══════════════════════════════════════════════
-     ADAPTIVE PERFORMANCE DETECTION  (runs first)
-     ═══════════════════════════════════════════════ -->
+<!-- ═══ ADAPTIVE PERFORMANCE ═══ -->
 <script>
 (function(){
-  // Expose config so the particle engine reads it
   const cores  = navigator.hardwareConcurrency || 4;
   const dpr    = window.devicePixelRatio || 1;
   const w      = screen.width;
-  // low-end = ≤2 cores OR high-dpr on small screen (mobile flag) OR very small viewport
   const isLow  = cores <= 2 || (dpr >= 3 && w < 400) || (w < 320);
-
   window._perfTier = isLow ? 'low' : 'high';
-
   if(isLow){
-    // soften blur via CSS custom properties — glass stays, just lighter
     document.documentElement.style.setProperty('--blur-main',  '14px');
     document.documentElement.style.setProperty('--blur-modal', '18px');
     document.documentElement.style.setProperty('--blur-tile',  '3px');
@@ -719,15 +691,12 @@ button:disabled { opacity:.38; cursor:not-allowed; }
 })();
 </script>
 
-<!-- ═══════════════════════════════════════════════
-     BACKGROUND PARTICLE + LIGHT-SHARD ENGINE
-     ═══════════════════════════════════════════════ -->
+<!-- ═══ BACKGROUND PARTICLE ENGINE ═══ -->
 <script>
 (function(){
   const canvas = document.getElementById('bgCanvas');
   const ctx    = canvas.getContext('2d');
   let W, H;
-
   function resize(){
     W = canvas.width  = window.innerWidth;
     H = canvas.height = window.innerHeight;
@@ -735,21 +704,15 @@ button:disabled { opacity:.38; cursor:not-allowed; }
   window.addEventListener('resize', resize);
   resize();
 
-  /* ─── adaptive counts ─── */
   const isLow       = window._perfTier === 'low';
   const PART_COUNT  = isLow ? 55  : 120;
   const SHARD_COUNT = isLow ? 8   : 20;
 
   const PALETTE = [
-    [34,211,238],
-    [96,165,250],
-    [52,211,153],
-    [240,192,64],
-    [251,191,36],
-    [180,195,240],
+    [34,211,238],[96,165,250],[52,211,153],
+    [240,192,64],[251,191,36],[180,195,240],
   ];
 
-  /* ─── Particle ─── */
   class Particle {
     constructor(){ this.reset(true); }
     reset(init){
@@ -772,7 +735,6 @@ button:disabled { opacity:.38; cursor:not-allowed; }
       const [r,g,b] = this.col;
       ctx.beginPath(); ctx.arc(this.x, this.y, this.r, 0, Math.PI*2);
       ctx.fillStyle = `rgba(${r},${g},${b},${a})`; ctx.fill();
-      // glow halo — skip on low-end for perf
       if(!isLow){
         ctx.beginPath(); ctx.arc(this.x, this.y, this.r*3.5, 0, Math.PI*2);
         ctx.fillStyle = `rgba(${r},${g},${b},${a*.16})`; ctx.fill();
@@ -780,7 +742,6 @@ button:disabled { opacity:.38; cursor:not-allowed; }
     }
   }
 
-  /* ─── Light Shard ─── */
   class Shard {
     constructor(){ this.reset(true); }
     reset(init){
@@ -810,12 +771,10 @@ button:disabled { opacity:.38; cursor:not-allowed; }
     }
   }
 
-  /* ─── Pools ─── */
   const particles = [], shards = [];
   for(let i=0; i<PART_COUNT;  i++) particles.push(new Particle());
   for(let i=0; i<SHARD_COUNT; i++) shards.push(new Shard());
 
-  /* ─── Background gradient + blobs ─── */
   function drawBg(){
     const g = ctx.createLinearGradient(0,0, W*.55, H);
     g.addColorStop(0,   '#0a0c14');
@@ -824,8 +783,6 @@ button:disabled { opacity:.38; cursor:not-allowed; }
     g.addColorStop(1,   '#0c1118');
     ctx.fillStyle = g;
     ctx.fillRect(0,0,W,H);
-
-    // radial accent blobs — skip on low-end
     if(!isLow){
       [
         { x:W*.12, y:H*.28, r:W*.24, c:'rgba(34,211,238,.032)' },
@@ -843,7 +800,6 @@ button:disabled { opacity:.38; cursor:not-allowed; }
     }
   }
 
-  /* ─── RAF loop ─── */
   function loop(){
     drawBg();
     shards.forEach(s=>{ s.update(); s.draw(); });
@@ -854,9 +810,7 @@ button:disabled { opacity:.38; cursor:not-allowed; }
 })();
 </script>
 
-<!-- ═══════════════════════════════════════════════
-     FIREBASE MODULE  (untouched)
-     ═══════════════════════════════════════════════ -->
+<!-- ═══ FIREBASE MODULE ═══ -->
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
 import { getDatabase, ref, set, get, update, onValue, push, serverTimestamp }
@@ -889,9 +843,7 @@ if (window._fbResolve) window._fbResolve();
 console.log('✅ Firebase initialized successfully!');
 </script>
 
-<!-- ═══════════════════════════════════════════════
-     MAIN GAME SCRIPT
-     ═══════════════════════════════════════════════ -->
+<!-- ═══ MAIN GAME SCRIPT ═══ -->
 <script>
 window._fbReady = new Promise(r => { window._fbResolve = r; });
 async function fbReady(){ await window._fbReady; }
@@ -911,44 +863,24 @@ let gameState = {
   betSet:false, tilesClicked:false
 };
 
-/* ─── Win-rate table: mines → fraction of bet earned per safe tile ─── */
+/* ─── Win-rate table ─── */
 const WIN_RATES = {
-   1: 0.02,   // 2 %
-   2: 0.05,   // 5 %
-   3: 0.10,   // 10 %
-   4: 0.20,   // 20 %
-   5: 0.40,   // 40 %
-   6: 0.60,   // 60 %
-   7: 0.70,   // 70 %
-   8: 0.80,   // 80 %
-   9: 0.90,   // 90 %
-  10: 1.00,   // 100 %
-  11: 1.10,   // 110 %
-  12: 1.20,   // 120 %
-  13: 1.30,   // 130 %
-  14: 1.40,   // 140 %
-  15: 1.50,   // 150 %
-  16: 1.60,   // 160 %
-  17: 1.70,   // 170 %
-  18: 1.80,   // 180 %
-  19: 1.90,   // 190 %
-  20: 2.00,   // 200 %
-  21: 2.20,   // 220 %
-  22: 2.50,   // 250 %
-  23: 3.00,   // 300 %
-  24: 4.00,   // 400 %
+   1:0.02, 2:0.05, 3:0.10, 4:0.20, 5:0.40,
+   6:0.60, 7:0.70, 8:0.80, 9:0.90, 10:1.00,
+  11:1.10,12:1.20,13:1.30,14:1.40,15:1.50,
+  16:1.60,17:1.70,18:1.80,19:1.90,20:2.00,
+  21:2.20,22:2.50,23:3.00,24:4.00,
 };
 function getWinRate(){ return WIN_RATES[gameState.minesCount] || 0.10; }
 
 /* ─── Withdraw tab state ─── */
-let withdrawMethod = 'jazz'; // 'jazz' | 'easy'
+let withdrawMethod = 'jazz';
 
 function switchWithdrawTab(method){
   withdrawMethod = method;
   const tabJ = document.getElementById('tabJazz');
   const tabE = document.getElementById('tabEasy');
   const inp  = document.getElementById('withdrawJazz');
-
   if(method === 'jazz'){
     tabJ.classList.add('active-tab');
     tabJ.classList.remove('easy-active');
@@ -959,7 +891,7 @@ function switchWithdrawTab(method){
     tabJ.classList.remove('active-tab');
     inp.placeholder = 'Easypaisa 03XXXXXXXXX';
   }
-  inp.value = ''; // clear on switch
+  inp.value = '';
 }
 
 /* ─── Cooldowns ─── */
@@ -1020,7 +952,7 @@ async function submitWithdrawRequest(uid,name,phone,jazz,amount,method){
     await window.dbSet(r,{
       id:r.key, userId:uid, name, phone,
       jazzCash: jazz,
-      withdrawMethod: method,   // 'jazz' or 'easy'
+      withdrawMethod: method,
       amount, status:'pending',
       timestamp:window.dbServerTimestamp()
     });
@@ -1256,7 +1188,6 @@ function openWithdrawModal(){
     const h=Math.floor(cd.remaining/60), m=cd.remaining%60;
     document.getElementById('withdrawCooldown').textContent = `⏳ Wait ${h}h ${m}m`;
   }
-  // reset toggle to Jazz by default each open
   switchWithdrawTab('jazz');
   document.getElementById('withdrawModal').classList.add('active');
 }
