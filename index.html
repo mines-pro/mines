@@ -700,9 +700,12 @@ button:disabled { opacity:.38; cursor:not-allowed; }
       </button>
     </div>
     
-    <input type="number" id="depositAmount" placeholder="Amount (Minimum Rs 500)" min="500">
+    <input type="number" id="depositAmount" placeholder="Amount (Minimum Rs 500)" min="500" oninput="checkDepositAmount()">
+    <div style="font-size:12px; color:var(--text-muted); text-align:center; margin:8px 0;">
+      ⚠️ First send money via app, then click Submit
+    </div>
     <div id="depositCooldown" style="display:none;" class="timer-msg"></div>
-    <button class="btn-green" onclick="submitDeposit()">Submit Request</button>
+    <button class="btn-green" id="depositSubmitBtn" onclick="submitDeposit()" disabled style="opacity:0.5;">Submit Request</button>
     <button class="btn-red"   onclick="closeModal('depositModal')">Cancel</button>
   </div>
 </div>
@@ -740,6 +743,52 @@ button:disabled { opacity:.38; cursor:not-allowed; }
     <input type="number" id="minesInput" placeholder="Mines (1–24)" min="1" max="24" value="3">
     <button class="btn-red"  onclick="setMines()">Set Mines</button>
     <button class="btn-blue" onclick="closeModal('minesModal')">Cancel</button>
+  </div>
+</div>
+
+<!-- ═══ PENDING DEPOSIT STATUS MODAL ═══ -->
+<div id="pendingDepositModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-title">⏳ Deposit Request Pending</div>
+    <div class="info-box" style="background:rgba(52,211,153,0.08);">
+      <div style="text-align:center; margin-bottom:16px;">
+        <div style="font-size:14px; color:var(--text-muted); margin-bottom:8px;">Amount</div>
+        <div style="font-size:28px; font-weight:700; color:var(--neon-emerald);" id="pendingDepAmount">Rs 0</div>
+      </div>
+      <div style="font-size:13px; color:var(--text-muted); text-align:center; margin-bottom:12px;" id="pendingDepDate">
+        Submitted: --
+      </div>
+      <div style="font-size:14px; color:var(--gold); text-align:center; direction:rtl;">
+        Admin جلد منظور کریں گے
+      </div>
+    </div>
+    <button class="btn-blue" onclick="closeModal('pendingDepositModal')">OK</button>
+  </div>
+</div>
+
+<!-- ═══ PENDING WITHDRAW STATUS MODAL ═══ -->
+<div id="pendingWithdrawModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-title">⏳ Withdraw Request Pending</div>
+    <div class="info-box" style="background:rgba(251,191,36,0.08);">
+      <div style="text-align:center; margin-bottom:16px;">
+        <div style="font-size:14px; color:var(--text-muted); margin-bottom:8px;">Amount</div>
+        <div style="font-size:28px; font-weight:700; color:var(--neon-amber);" id="pendingWdAmount">Rs 0</div>
+      </div>
+      <div style="font-size:13px; color:var(--text-muted); margin-bottom:4px;">
+        <span style="color:var(--text-primary);">Method:</span> <span id="pendingWdMethod">--</span>
+      </div>
+      <div style="font-size:13px; color:var(--text-muted); margin-bottom:12px;">
+        <span style="color:var(--text-primary);">Number:</span> <span id="pendingWdNumber">--</span>
+      </div>
+      <div style="font-size:13px; color:var(--text-muted); text-align:center; margin-bottom:12px;" id="pendingWdDate">
+        Submitted: --
+      </div>
+      <div style="font-size:14px; color:var(--gold); text-align:center; direction:rtl;">
+        Admin جلد process کریں گے
+      </div>
+    </div>
+    <button class="btn-blue" onclick="closeModal('pendingWithdrawModal')">OK</button>
   </div>
 </div>
 
@@ -961,43 +1010,31 @@ function playSound(soundName){
 function openJazzCashApp(){
   playSound('click');
   const phoneNumber = '03266916283';
-  // JazzCash deep link
-  const jazzCashUrl = `jazzcash://sendmoney?phone=${phoneNumber}`;
-  const fallbackUrl = `https://apps.apple.com/pk/app/jazzcash/id1234567890`; // iOS fallback
+  const amount = document.getElementById('depositAmount').value;
   
-  // Show number in alert
-  alert('JazzCash Number:\n' + phoneNumber + '\n\nApp opening...');
+  // Build deep link with amount if available
+  let jazzCashUrl = `jazzcash://sendmoney?to=${phoneNumber}`;
+  if(amount && amount >= 500){
+    jazzCashUrl += `&amount=${amount}`;
+  }
   
-  // Try to open app
+  // Direct app opening - no alert/popup
   window.location.href = jazzCashUrl;
-  
-  // Fallback after 2 seconds if app didn't open
-  setTimeout(() => {
-    if(confirm('JazzCash app not opening?\nCopy number: ' + phoneNumber)){
-      copyToClipboard(phoneNumber);
-    }
-  }, 2000);
 }
 
 function openEasypaisaApp(){
   playSound('click');
   const phoneNumber = '03193433587';
-  // Easypaisa deep link
-  const easypaisaUrl = `easypaisa://transfer?phone=${phoneNumber}`;
-  const fallbackUrl = `https://easypaisa.com.pk/app-download`;
+  const amount = document.getElementById('depositAmount').value;
   
-  // Show number in alert
-  alert('Easypaisa Number:\n' + phoneNumber + '\n\nApp opening...');
+  // Build deep link with amount if available
+  let easypaisaUrl = `easypaisa://sendmoney?to=${phoneNumber}`;
+  if(amount && amount >= 500){
+    easypaisaUrl += `&amount=${amount}`;
+  }
   
-  // Try to open app
+  // Direct app opening - no alert/popup
   window.location.href = easypaisaUrl;
-  
-  // Fallback after 2 seconds if app didn't open
-  setTimeout(() => {
-    if(confirm('Easypaisa app not opening?\nCopy number: ' + phoneNumber)){
-      copyToClipboard(phoneNumber);
-    }
-  }, 2000);
 }
 
 function copyToClipboard(text){
@@ -1180,34 +1217,34 @@ function updateWithdrawButtonState(phone, snapshot){
 function showPendingDepositStatus(request){
   playSound('click');
   if(!request){
-    alert('⏳ Your deposit request is pending.\nPlease wait for admin approval.');
-    return;
+    // Fallback if no request data
+    document.getElementById('pendingDepAmount').textContent = 'Rs --';
+    document.getElementById('pendingDepDate').textContent = 'Submitted: --';
+  } else {
+    const date = request.timestamp ? new Date(request.timestamp).toLocaleString() : 'N/A';
+    document.getElementById('pendingDepAmount').textContent = 'Rs ' + request.amount;
+    document.getElementById('pendingDepDate').textContent = 'Submitted: ' + date;
   }
-  const date = request.timestamp ? new Date(request.timestamp).toLocaleString() : 'N/A';
-  alert(
-    '⏳ DEPOSIT REQUEST PENDING\n\n' +
-    '💰 Amount: Rs ' + request.amount + '\n' +
-    '📅 Submitted: ' + date + '\n\n' +
-    'Admin will approve soon. Please wait...'
-  );
+  document.getElementById('pendingDepositModal').classList.add('active');
 }
 
 function showPendingWithdrawStatus(request){
   playSound('click');
   if(!request){
-    alert('⏳ Your withdraw request is pending.\nPlease wait for admin approval.');
-    return;
+    // Fallback if no request data
+    document.getElementById('pendingWdAmount').textContent = 'Rs --';
+    document.getElementById('pendingWdMethod').textContent = '--';
+    document.getElementById('pendingWdNumber').textContent = '--';
+    document.getElementById('pendingWdDate').textContent = 'Submitted: --';
+  } else {
+    const date = request.timestamp ? new Date(request.timestamp).toLocaleString() : 'N/A';
+    const method = request.withdrawMethod === 'jazz' ? 'JazzCash' : 'Easypaisa';
+    document.getElementById('pendingWdAmount').textContent = 'Rs ' + request.amount;
+    document.getElementById('pendingWdMethod').textContent = method;
+    document.getElementById('pendingWdNumber').textContent = request.jazzCash || '--';
+    document.getElementById('pendingWdDate').textContent = 'Submitted: ' + date;
   }
-  const date = request.timestamp ? new Date(request.timestamp).toLocaleString() : 'N/A';
-  const method = request.withdrawMethod === 'jazz' ? 'JazzCash' : 'Easypaisa';
-  alert(
-    '⏳ WITHDRAW REQUEST PENDING\n\n' +
-    '💰 Amount: Rs ' + request.amount + '\n' +
-    '💳 Method: ' + method + '\n' +
-    '📱 Number: ' + request.jazzCash + '\n' +
-    '📅 Submitted: ' + date + '\n\n' +
-    'Admin will process soon. Please wait...'
-  );
+  document.getElementById('pendingWithdrawModal').classList.add('active');
 }
 async function submitDepositRequest(uid,name,phone,amount){
   await fbReady();
@@ -1587,9 +1624,33 @@ function setMines(){
   gameState.minesCount=c; updateDisplay(); closeModal('minesModal');
 }
 
+/* ─── Check Deposit Amount to Enable Submit ─── */
+function checkDepositAmount(){
+  const amount = parseInt(document.getElementById('depositAmount').value);
+  const btn = document.getElementById('depositSubmitBtn');
+  
+  if(amount && amount >= 500){
+    // Enable submit button
+    btn.disabled = false;
+    btn.style.opacity = '1';
+    btn.style.cursor = 'pointer';
+  } else {
+    // Disable submit button
+    btn.disabled = true;
+    btn.style.opacity = '0.5';
+    btn.style.cursor = 'not-allowed';
+  }
+}
+
 /* ─── UI helpers ─── */
 function openDepositModal(){
   playSound('click');
+  // Reset amount input and button state
+  document.getElementById('depositAmount').value = '';
+  const btn = document.getElementById('depositSubmitBtn');
+  btn.disabled = true;
+  btn.style.opacity = '0.5';
+  
   const cd = checkDepositCooldown();
   document.getElementById('depositCooldown').style.display = cd.allowed ? 'none' : 'block';
   if(!cd.allowed) document.getElementById('depositCooldown').textContent = `⏳ Wait ${cd.remaining} minutes`;
