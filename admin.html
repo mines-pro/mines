@@ -994,6 +994,14 @@ async function banUser(phone){
     updates[`users/${phone}/deviceId`] = null;
     updates[`users/${phone}/bannedAt`] = Date.now();
     
+    // Add to permanent banned phones list
+    updates[`bannedPhones/${phone}`] = {
+      banned: true,
+      bannedAt: Date.now(),
+      name: userData.name || 'Unknown',
+      bannedBy: 'admin'
+    };
+    
     // Remove from device tracking
     if(userData.deviceId){
       updates[`deviceTracking/${userData.deviceId}/users/${phone}`] = null;
@@ -1007,7 +1015,7 @@ async function banUser(phone){
     
     await db.ref().update(updates);
     
-    alert('✅ User permanently banned!');
+    alert('✅ User permanently banned! Phone number: ' + phone + ' can never login again.');
   } catch(e){ 
     console.error(e); 
     alert('❌ Error: ' + e.message); 
