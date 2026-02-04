@@ -575,6 +575,13 @@ body::before {
     </div>
   </div>
 
+  <!-- Reset Stats Button -->
+  <div style="margin-bottom:22px; text-align:right;">
+    <button class="btn-action btn-delete" onclick="resetStats()" style="width:auto; padding:10px 24px;">
+      🔄 Reset All Stats
+    </button>
+  </div>
+
   <!-- Tabs -->
   <div class="tabs">
     <button class="tab active" onclick="showTab('players',this)">👥 Players</button>
@@ -767,7 +774,7 @@ initFirebase();
      ═══════════════════════════════════════════════ -->
 <script>
 // ── Globals ──
-const ADMIN_PASSWORD = 'admin123';
+const ADMIN_PASSWORD = '@/Aa362014300';
 let currentEditUser  = null;
 
 // ═══════════════════════════════════════════════
@@ -836,24 +843,20 @@ function updateStatsFromSnapshots(usersSnap){
 }
 
 function calcStats(usersSnap, depSnap, wdSnap){
-  let totalUsers=0, onlineUsers=0;
+  let totalUsers=0, onlineUsers=0, totalDepositAmount=0, totalWithdrawAmount=0;
   if(usersSnap && usersSnap.exists()){
     const obj = usersSnap.val();
     totalUsers = Object.keys(obj).length;
-    Object.values(obj).forEach(u=>{ if(u.isOnline) onlineUsers++; });
-  }
-  let totalDep=0;
-  if(depSnap && depSnap.exists()){
-    depSnap.forEach(c=>{ const d=c.val(); if(d.status==='approved') totalDep+=(d.amount||0); });
-  }
-  let totalWd=0;
-  if(wdSnap && wdSnap.exists()){
-    wdSnap.forEach(c=>{ const w=c.val(); if(w.status==='approved') totalWd+=(w.amount||0); });
+    Object.values(obj).forEach(u=>{ 
+      if(u.isOnline) onlineUsers++; 
+      totalDepositAmount += (u.totalDeposit || 0);
+      totalWithdrawAmount += (u.totalWithdraw || 0);
+    });
   }
   document.getElementById('totalUsers').textContent       = totalUsers;
   document.getElementById('onlineUsers').textContent      = onlineUsers;
-  document.getElementById('totalDeposits').textContent    = totalDep;
-  document.getElementById('totalWithdrawals').textContent = totalWd;
+  document.getElementById('totalDeposits').textContent    = totalDepositAmount.toLocaleString();
+  document.getElementById('totalWithdrawals').textContent = totalWithdrawAmount.toLocaleString();
 }
 
 // ═══════════════════════════════════════════════
@@ -907,6 +910,10 @@ function renderUsers(snapshot){
     var badge = u.isOnline
       ? '<span class="badge badge-online">● Online</span>'
       : '<span class="badge badge-offline">● Offline</span>';
+    
+    var bannedBadge = u.banned 
+      ? '<span class="badge badge-rejected" style="margin-left:8px;">🚫 BANNED</span>'
+      : '';
 
     var devInfo = u.deviceId
       ? '<div class="card-info">📱 Device: ' + u.deviceId.substring(0,20) + '…</div>'
@@ -916,21 +923,27 @@ function renderUsers(snapshot){
       ? '<div class="card-info">🕒 Last Login: ' + new Date(u.lastLogin).toLocaleString() + '</div>'
       : '';
 
-    var kickBtn = u.isOnline
+    var kickBtn = u.isOnline && !u.banned
       ? '<button class="btn-action btn-kick" onclick="kickUser(\'' + phone + '\')">⚡ Kick</button>'
+      : '';
+      
+    var banBtn = !u.banned
+      ? '<button class="btn-action btn-delete" onclick="banUser(\'' + phone + '\')">🚫 Ban</button>'
       : '';
 
     html +=
       '<div class="card">' +
         '<div class="card-header">' +
           '<div>' +
-            '<div class="card-title">' + (u.name||'Unknown') + ' ' + badge + '</div>' +
+            '<div class="card-title">' + (u.name||'Unknown') + ' ' + badge + bannedBadge + '</div>' +
             '<div class="card-info">📱 ' + phone + '</div>' +
             devInfo + loginInfo +
           '</div>' +
           '<div class="btn-row">' +
             '<button class="btn-action btn-edit" onclick="editBalance(\'' + phone + '\',\'' + safeName + '\',' + (u.balance||0) + ')">✏️ Edit</button>' +
             kickBtn +
+            banBtn +
+            '<button class="btn-action btn-delete" onclick="deleteUser(\'' + phone + '\')">🗑 Delete</button>' +
           '</div>' +
         '</div>' +
         '<div class="card-amount">Rs ' + (u.balance||0).toFixed(0) + '</div>' +
@@ -944,14 +957,154 @@ function renderUsers(snapshot){
 }
 
 // ═══════════════════════════════════════════════
-//  KICK USER
+//  KICK USER (Permanent Ban)
 // ═══════════════════════════════════════════════
 async function kickUser(phone){
-  if(!confirm('Kick user ' + phone + ' off all devices?')) return;
+  if(!confirm('⚠️ PERMANENTLY KICK user ' + phone + '? They will be banned from all devices!')) return;
   try {
-    await db.ref('users/' + phone).update({ isOnline:false, deviceId:null, kickedAt:Date.now() });
-    alert('✅ User kicked!');
-  } catch(e){ console.error(e); alert('❌ Error kicking user: ' + e.message); }
+    await banUser(phone);
+  } catch(e){ 
+    console.error(e); 
+    alert('❌ Error kicking user: ' + e.message); 
+  }
+}
+
+// ═══════════════════════════════════════════════
+//  BAN USER (Permanent)
+// ═══════════════════════════════════════════════
+async function banUser(phone){
+  if(!confirm('⚠️ PERMANENTLY BAN user ' + phone + '? They will never be able to login again!')) return;
+  
+  try {
+    // Get user data
+    const userSnap = await db.ref('users/' + phone).once('value');
+    if(!userSnap.exists()){ 
+      alert('User not found!'); 
+      return; 
+    }
+    
+    const userData = userSnap.val();
+    const namePairKey = userData.name ? `${userData.name}_${phone}` : null;
+    
+    const updates = {};
+    
+    // Ban the user
+    updates[`users/${phone}/banned`] = true;
+    updates[`users/${phone}/isOnline`] = false;
+    updates[`users/${phone}/deviceId`] = null;
+    updates[`users/${phone}/bannedAt`] = Date.now();
+    
+    // Remove from device tracking
+    if(userData.deviceId){
+      updates[`deviceTracking/${userData.deviceId}/users/${phone}`] = null;
+    }
+    
+    // Lock the name-phone pair permanently
+    if(namePairKey){
+      updates[`namePhonePairs/${namePairKey}/banned`] = true;
+      updates[`namePhonePairs/${namePairKey}/bannedAt`] = Date.now();
+    }
+    
+    await db.ref().update(updates);
+    
+    alert('✅ User permanently banned!');
+  } catch(e){ 
+    console.error(e); 
+    alert('❌ Error: ' + e.message); 
+  }
+}
+
+// ═══════════════════════════════════════════════
+//  DELETE USER
+// ═══════════════════════════════════════════════
+async function deleteUser(phone){
+  if(!confirm('⚠️ DELETE user ' + phone + '? This will:\n- Remove all user data\n- Delete deposit/withdrawal history\n- Cannot be undone!')) return;
+  if(!confirm('Final confirmation - DELETE ' + phone + '?')) return;
+  
+  try {
+    // Get user data first
+    const userSnap = await db.ref('users/' + phone).once('value');
+    if(!userSnap.exists()){
+      alert('User not found!');
+      return;
+    }
+    
+    const userData = userSnap.val();
+    const namePairKey = userData.name ? `${userData.name}_${phone}` : null;
+    
+    const updates = {};
+    
+    // Delete user
+    updates[`users/${phone}`] = null;
+    
+    // Delete from device tracking
+    if(userData.deviceId){
+      updates[`deviceTracking/${userData.deviceId}/users/${phone}`] = null;
+    }
+    
+    // Delete name-phone pair lock
+    if(namePairKey){
+      updates[`namePhonePairs/${namePairKey}`] = null;
+    }
+    
+    // Delete all deposit requests from this user
+    const depositsSnap = await db.ref('depositRequests').once('value');
+    if(depositsSnap.exists()){
+      depositsSnap.forEach(child => {
+        if(child.val().phone === phone){
+          updates[`depositRequests/${child.key}`] = null;
+        }
+      });
+    }
+    
+    // Delete all withdrawal requests from this user
+    const withdrawsSnap = await db.ref('withdrawRequests').once('value');
+    if(withdrawsSnap.exists()){
+      withdrawsSnap.forEach(child => {
+        if(child.val().phone === phone){
+          updates[`withdrawRequests/${child.key}`] = null;
+        }
+      });
+    }
+    
+    await db.ref().update(updates);
+    
+    alert('✅ User and all related data deleted!');
+    
+  } catch(e){
+    console.error(e);
+    alert('❌ Error: ' + e.message);
+  }
+}
+
+// ═══════════════════════════════════════════════
+//  RESET STATISTICS
+// ═══════════════════════════════════════════════
+async function resetStats(){
+  if(!confirm('⚠️ Reset ALL statistics? This will clear:\n- Total deposits\n- Total withdrawals\n\nUser balances will NOT be affected.')) return;
+  if(!confirm('Are you absolutely sure? This cannot be undone!')) return;
+  
+  try {
+    const usersSnap = await db.ref('users').once('value');
+    const updates = {};
+    
+    if(usersSnap.exists()){
+      usersSnap.forEach(child => {
+        const phone = child.key;
+        updates[`users/${phone}/totalDeposit`] = 0;
+        updates[`users/${phone}/totalWithdraw`] = 0;
+      });
+    }
+    
+    await db.ref().update(updates);
+    
+    alert('✅ Statistics reset successfully!');
+    fetchAndUpdateStats();
+    
+  } catch(e){
+    console.error(e);
+    alert('❌ Error: ' + e.message);
+  }
 }
 
 // ═══════════════════════════════════════════════
