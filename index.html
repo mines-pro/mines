@@ -674,8 +674,31 @@ button:disabled { opacity:.38; cursor:not-allowed; }
 <div id="depositModal" class="modal">
   <div class="modal-content">
     <div class="modal-title">Deposit Request</div>
-    <div class="info-box">
-      <div class="info-title">براہِ مہربانی رقم بھیجیں</div>
+    
+    <!-- Step 1: Enter Amount -->
+    <div id="depositStep1">
+      <div class="info-box">
+        <div class="info-title">رقم لکھیں</div>
+      </div>
+      <input type="number" id="depositAmount" placeholder="Amount (Minimum Rs 500)" min="500" oninput="checkDepositAmount()">
+      <div id="depositCooldown" style="display:none;" class="timer-msg"></div>
+      <button class="btn-blue" id="depositNextBtn" onclick="showPaymentMethods()" disabled style="opacity:0.5;">Next - Payment Method</button>
+      <button class="btn-red" onclick="closeModal('depositModal')">Cancel</button>
+    </div>
+    
+    <!-- Step 2: Select Payment Method -->
+    <div id="depositStep2" style="display:none;">
+      <div class="info-box">
+        <div class="info-title">Payment Method منتخب کریں</div>
+        <div style="text-align:center; margin:12px 0;">
+          <div style="font-size:22px; font-weight:700; color:var(--gold);">
+            Rs <span id="depositAmountDisplay">0</span>
+          </div>
+          <div style="font-size:13px; color:var(--text-muted); margin-top:4px;">
+            Amount to send
+          </div>
+        </div>
+      </div>
       
       <!-- JazzCash Button -->
       <button class="payment-app-btn jazzcash-btn" onclick="openJazzCashApp()">
@@ -683,7 +706,7 @@ button:disabled { opacity:.38; cursor:not-allowed; }
           <span class="app-icon">📱</span>
           <div class="app-details">
             <div class="app-name">JazzCash</div>
-            <div class="app-hint">Click to open app</div>
+            <div class="app-hint">Tap to open app</div>
           </div>
         </div>
       </button>
@@ -694,21 +717,21 @@ button:disabled { opacity:.38; cursor:not-allowed; }
           <span class="app-icon">📱</span>
           <div class="app-details">
             <div class="app-name">Easypaisa</div>
-            <div class="app-hint">Click to open app</div>
+            <div class="app-hint">Tap to open app</div>
           </div>
         </div>
       </button>
+      
+      <div style="font-size:12px; color:var(--gold); text-align:center; margin:12px 0; direction:rtl;">
+        ⚠️ ایپ سے رقم بھیجنے کے بعد نیچے Submit دبائیں
+      </div>
+      
+      <button class="btn-green" id="depositSubmitBtn" onclick="submitDeposit()">✅ I Sent Money - Submit Request</button>
+      <button class="btn-red" onclick="backToAmountStep()">← Back</button>
     </div>
-    
-    <input type="number" id="depositAmount" placeholder="Amount (Minimum Rs 500)" min="500" oninput="checkDepositAmount()">
-    <div style="font-size:12px; color:var(--text-muted); text-align:center; margin:8px 0;">
-      ⚠️ First send money via app, then click Submit
-    </div>
-    <div id="depositCooldown" style="display:none;" class="timer-msg"></div>
-    <button class="btn-green" id="depositSubmitBtn" onclick="submitDeposit()" disabled style="opacity:0.5;">Submit Request</button>
-    <button class="btn-red"   onclick="closeModal('depositModal')">Cancel</button>
   </div>
 </div>
+
 
 <!-- ═══ WITHDRAW MODAL ═══ -->
 <div id="withdrawModal" class="modal">
@@ -1012,14 +1035,36 @@ function openJazzCashApp(){
   const phoneNumber = '03266916283';
   const amount = document.getElementById('depositAmount').value;
   
-  // Build deep link with amount if available
-  let jazzCashUrl = `jazzcash://sendmoney?to=${phoneNumber}`;
-  if(amount && amount >= 500){
-    jazzCashUrl += `&amount=${amount}`;
-  }
+  // Try multiple deep link formats
+  const deepLinks = [
+    `jazzcash://sendmoney?to=${phoneNumber}&amount=${amount}`,
+    `jazzcash://transfer?phone=${phoneNumber}&amount=${amount}`,
+    `jazzcash://payment?number=${phoneNumber}&amount=${amount}`,
+    `intent://sendmoney?to=${phoneNumber}&amount=${amount}#Intent;scheme=jazzcash;package=com.techlogix.mobilinkcustomer;end`
+  ];
   
-  // Direct app opening - no alert/popup
-  window.location.href = jazzCashUrl;
+  // Try first deep link
+  const iframe = document.createElement('iframe');
+  iframe.style.display = 'none';
+  iframe.src = deepLinks[0];
+  document.body.appendChild(iframe);
+  
+  // Fallback after 1.5 seconds
+  setTimeout(() => {
+    document.body.removeChild(iframe);
+    
+    // Show manual option
+    if(confirm(
+      `JazzCash App Opening...\n\n` +
+      `If app didn't open:\n` +
+      `Number: ${phoneNumber}\n` +
+      `Amount: Rs ${amount}\n\n` +
+      `Copy number to clipboard?`
+    )){
+      copyToClipboard(phoneNumber);
+      alert(`Number copied: ${phoneNumber}\n\nPlease:\n1. Open JazzCash app manually\n2. Send Rs ${amount}\n3. Return here and click Submit`);
+    }
+  }, 1500);
 }
 
 function openEasypaisaApp(){
@@ -1027,14 +1072,36 @@ function openEasypaisaApp(){
   const phoneNumber = '03193433587';
   const amount = document.getElementById('depositAmount').value;
   
-  // Build deep link with amount if available
-  let easypaisaUrl = `easypaisa://sendmoney?to=${phoneNumber}`;
-  if(amount && amount >= 500){
-    easypaisaUrl += `&amount=${amount}`;
-  }
+  // Try multiple deep link formats
+  const deepLinks = [
+    `easypaisa://sendmoney?to=${phoneNumber}&amount=${amount}`,
+    `easypaisa://transfer?phone=${phoneNumber}&amount=${amount}`,
+    `easypaisa://payment?number=${phoneNumber}&amount=${amount}`,
+    `intent://sendmoney?to=${phoneNumber}&amount=${amount}#Intent;scheme=easypaisa;package=pk.com.telenor.easypaisa;end`
+  ];
   
-  // Direct app opening - no alert/popup
-  window.location.href = easypaisaUrl;
+  // Try first deep link
+  const iframe = document.createElement('iframe');
+  iframe.style.display = 'none';
+  iframe.src = deepLinks[0];
+  document.body.appendChild(iframe);
+  
+  // Fallback after 1.5 seconds
+  setTimeout(() => {
+    document.body.removeChild(iframe);
+    
+    // Show manual option
+    if(confirm(
+      `Easypaisa App Opening...\n\n` +
+      `If app didn't open:\n` +
+      `Number: ${phoneNumber}\n` +
+      `Amount: Rs ${amount}\n\n` +
+      `Copy number to clipboard?`
+    )){
+      copyToClipboard(phoneNumber);
+      alert(`Number copied: ${phoneNumber}\n\nPlease:\n1. Open Easypaisa app manually\n2. Send Rs ${amount}\n3. Return here and click Submit`);
+    }
+  }, 1500);
 }
 
 function copyToClipboard(text){
@@ -1624,32 +1691,63 @@ function setMines(){
   gameState.minesCount=c; updateDisplay(); closeModal('minesModal');
 }
 
-/* ─── Check Deposit Amount to Enable Submit ─── */
+/* ─── Check Deposit Amount to Enable Next Button ─── */
 function checkDepositAmount(){
   const amount = parseInt(document.getElementById('depositAmount').value);
-  const btn = document.getElementById('depositSubmitBtn');
+  const btn = document.getElementById('depositNextBtn');
   
   if(amount && amount >= 500){
-    // Enable submit button
+    // Enable next button
     btn.disabled = false;
     btn.style.opacity = '1';
     btn.style.cursor = 'pointer';
   } else {
-    // Disable submit button
+    // Disable next button
     btn.disabled = true;
     btn.style.opacity = '0.5';
     btn.style.cursor = 'not-allowed';
   }
 }
 
+/* ─── Show Payment Methods Step ─── */
+function showPaymentMethods(){
+  playSound('click');
+  const amount = parseInt(document.getElementById('depositAmount').value);
+  
+  if(!amount || amount < 500){
+    playSound('error');
+    alert('Please enter minimum Rs 500');
+    return;
+  }
+  
+  // Show amount on payment screen
+  document.getElementById('depositAmountDisplay').textContent = amount;
+  
+  // Hide step 1, show step 2
+  document.getElementById('depositStep1').style.display = 'none';
+  document.getElementById('depositStep2').style.display = 'block';
+}
+
+/* ─── Back to Amount Step ─── */
+function backToAmountStep(){
+  playSound('click');
+  document.getElementById('depositStep2').style.display = 'none';
+  document.getElementById('depositStep1').style.display = 'block';
+}
+
 /* ─── UI helpers ─── */
 function openDepositModal(){
   playSound('click');
-  // Reset amount input and button state
+  
+  // Reset to step 1
+  document.getElementById('depositStep1').style.display = 'block';
+  document.getElementById('depositStep2').style.display = 'none';
+  
+  // Reset amount input and next button state
   document.getElementById('depositAmount').value = '';
-  const btn = document.getElementById('depositSubmitBtn');
-  btn.disabled = true;
-  btn.style.opacity = '0.5';
+  const nextBtn = document.getElementById('depositNextBtn');
+  nextBtn.disabled = true;
+  nextBtn.style.opacity = '0.5';
   
   const cd = checkDepositCooldown();
   document.getElementById('depositCooldown').style.display = cd.allowed ? 'none' : 'block';
