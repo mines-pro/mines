@@ -424,6 +424,59 @@ button:disabled { opacity:.38; cursor:not-allowed; }
 .pay-number.jazz-num { border-color: rgba(52,211,153,.3); }
 .pay-number.easy-num { border-color: rgba(251,191,36,.3); }
 
+/* Payment App Buttons */
+.payment-app-btn {
+  width:100%; padding:16px 20px; margin:8px 0;
+  border-radius: var(--radius-sm);
+  font-family:'Rajdhani', sans-serif;
+  cursor:pointer; border:none;
+  transition: all 0.3s ease;
+  position:relative; overflow:hidden;
+}
+.payment-app-btn:active { transform: scale(0.98); }
+
+.jazzcash-btn {
+  background: linear-gradient(135deg, rgba(220,38,38,0.2), rgba(239,68,68,0.15));
+  border: 2px solid rgba(220,38,38,0.5);
+  box-shadow: 0 0 20px rgba(220,38,38,0.2);
+}
+.jazzcash-btn:hover {
+  background: linear-gradient(135deg, rgba(220,38,38,0.3), rgba(239,68,68,0.25));
+  box-shadow: 0 0 30px rgba(220,38,38,0.4);
+}
+
+.easypaisa-btn {
+  background: linear-gradient(135deg, rgba(34,197,94,0.2), rgba(52,211,153,0.15));
+  border: 2px solid rgba(34,197,94,0.5);
+  box-shadow: 0 0 20px rgba(34,197,94,0.2);
+}
+.easypaisa-btn:hover {
+  background: linear-gradient(135deg, rgba(34,197,94,0.3), rgba(52,211,153,0.25));
+  box-shadow: 0 0 30px rgba(34,197,94,0.4);
+}
+
+.app-btn-content {
+  display:flex; align-items:center; gap:16px;
+  justify-content:center;
+}
+.app-icon {
+  font-size:32px;
+  filter: drop-shadow(0 0 8px rgba(255,255,255,0.3));
+}
+.app-details {
+  text-align:left;
+}
+.app-name {
+  font-size:20px; font-weight:700;
+  color:var(--text-primary); letter-spacing:1px;
+  margin-bottom:2px;
+  font-family:'Orbitron', sans-serif;
+}
+.app-hint {
+  font-size:12px; color:var(--text-muted);
+  letter-spacing:0.5px;
+}
+
 /* ═══════════════════════════════════════════════
    WITHDRAW TOGGLE
    ═══════════════════════════════════════════════ */
@@ -622,12 +675,31 @@ button:disabled { opacity:.38; cursor:not-allowed; }
   <div class="modal-content">
     <div class="modal-title">Deposit Request</div>
     <div class="info-box">
-      <div class="info-title">براہِ مہربانی اس نمبر پر رقم سینڈ کریں</div>
-      <div class="pay-label"><span class="badge jazz">JazzCash</span></div>
-      <div class="pay-number jazz-num">03266916283</div>
-      <div class="pay-label"><span class="badge easy">Easypaisa</span></div>
-      <div class="pay-number easy-num">03193433587</div>
+      <div class="info-title">براہِ مہربانی رقم بھیجیں</div>
+      
+      <!-- JazzCash Button -->
+      <button class="payment-app-btn jazzcash-btn" onclick="openJazzCashApp()">
+        <div class="app-btn-content">
+          <span class="app-icon">📱</span>
+          <div class="app-details">
+            <div class="app-name">JazzCash</div>
+            <div class="app-hint">Click to open app</div>
+          </div>
+        </div>
+      </button>
+      
+      <!-- Easypaisa Button -->
+      <button class="payment-app-btn easypaisa-btn" onclick="openEasypaisaApp()">
+        <div class="app-btn-content">
+          <span class="app-icon">📱</span>
+          <div class="app-details">
+            <div class="app-name">Easypaisa</div>
+            <div class="app-hint">Click to open app</div>
+          </div>
+        </div>
+      </button>
     </div>
+    
     <input type="number" id="depositAmount" placeholder="Amount (Minimum Rs 500)" min="500">
     <div id="depositCooldown" style="display:none;" class="timer-msg"></div>
     <button class="btn-green" onclick="submitDeposit()">Submit Request</button>
@@ -859,6 +931,92 @@ let gameState = {
   betSet:false, tilesClicked:false
 };
 
+/* ─── Sound Effects ─── */
+const sounds = {
+  click: new Audio('data:audio/wav;base64,UklGRhIAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU4AAAB/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/'),
+  success: new Audio('data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YWAAAAB/gH+Af4B/gH+Af4B/gH+Af4B/gH+Af4B/gH+Af4B/gH+Af4B/gH+Af4B/gH+Af4B/'),
+  error: new Audio('data:audio/wav;base64,UklGRh4AAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YVoAAACAf39/gICAf39/gIB/f39/f4CAf39/gH+Af4B/gH+Af39/f3+Af4B/gH+Af39/'),
+  win: new Audio('data:audio/wav;base64,UklGRjIAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YW4AAAB/gICAgICBgYGCgoKDg4OEhISFhYWGhoaHh4eIiIiJiYmKioqLi4uMjIyNjY2Ojo6Pj4+QkJCRkZGSkpI='),
+  mine: new Audio('data:audio/wav;base64,UklGRiYAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YWIAAACAfn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+')
+};
+
+// Preload sounds
+Object.values(sounds).forEach(sound => {
+  sound.volume = 0.3;
+  sound.load();
+});
+
+function playSound(soundName){
+  try {
+    if(sounds[soundName]){
+      sounds[soundName].currentTime = 0;
+      sounds[soundName].play().catch(e => console.log('Sound blocked:', e));
+    }
+  } catch(e) {
+    console.log('Sound error:', e);
+  }
+}
+
+/* ─── Payment App Functions ─── */
+function openJazzCashApp(){
+  playSound('click');
+  const phoneNumber = '03266916283';
+  // JazzCash deep link
+  const jazzCashUrl = `jazzcash://sendmoney?phone=${phoneNumber}`;
+  const fallbackUrl = `https://apps.apple.com/pk/app/jazzcash/id1234567890`; // iOS fallback
+  
+  // Show number in alert
+  alert('JazzCash Number:\n' + phoneNumber + '\n\nApp opening...');
+  
+  // Try to open app
+  window.location.href = jazzCashUrl;
+  
+  // Fallback after 2 seconds if app didn't open
+  setTimeout(() => {
+    if(confirm('JazzCash app not opening?\nCopy number: ' + phoneNumber)){
+      copyToClipboard(phoneNumber);
+    }
+  }, 2000);
+}
+
+function openEasypaisaApp(){
+  playSound('click');
+  const phoneNumber = '03193433587';
+  // Easypaisa deep link
+  const easypaisaUrl = `easypaisa://transfer?phone=${phoneNumber}`;
+  const fallbackUrl = `https://easypaisa.com.pk/app-download`;
+  
+  // Show number in alert
+  alert('Easypaisa Number:\n' + phoneNumber + '\n\nApp opening...');
+  
+  // Try to open app
+  window.location.href = easypaisaUrl;
+  
+  // Fallback after 2 seconds if app didn't open
+  setTimeout(() => {
+    if(confirm('Easypaisa app not opening?\nCopy number: ' + phoneNumber)){
+      copyToClipboard(phoneNumber);
+    }
+  }, 2000);
+}
+
+function copyToClipboard(text){
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(text).then(() => {
+      alert('✅ Number copied: ' + text);
+    });
+  } else {
+    // Fallback for older browsers
+    const input = document.createElement('input');
+    input.value = text;
+    document.body.appendChild(input);
+    input.select();
+    document.execCommand('copy');
+    document.body.removeChild(input);
+    alert('✅ Number copied: ' + text);
+  }
+}
+
 /* ─── Win-rate table ─── */
 const WIN_RATES = {
    1:0.02, 2:0.05, 3:0.10, 4:0.20, 5:0.40,
@@ -962,25 +1120,29 @@ function updateDepositButtonState(phone, snapshot){
   if(!btn) return;
   
   let hasPending = false;
+  let pendingRequest = null;
   if(snapshot && snapshot.exists()){
     snapshot.forEach(child => {
       const req = child.val();
       if(req.phone === phone && req.status === 'pending'){
         hasPending = true;
+        pendingRequest = req;
       }
     });
   }
   
   if(hasPending){
     btn.textContent = '⏳ PENDING';
-    btn.disabled = true;
-    btn.style.opacity = '0.6';
-    btn.style.cursor = 'not-allowed';
+    btn.disabled = false; // Make clickable
+    btn.style.opacity = '0.8';
+    btn.style.cursor = 'pointer';
+    btn.onclick = () => showPendingDepositStatus(pendingRequest);
   } else {
     btn.textContent = 'DEPOSIT';
     btn.disabled = false;
     btn.style.opacity = '1';
     btn.style.cursor = 'pointer';
+    btn.onclick = openDepositModal;
   }
 }
 
@@ -989,26 +1151,63 @@ function updateWithdrawButtonState(phone, snapshot){
   if(!btn) return;
   
   let hasPending = false;
+  let pendingRequest = null;
   if(snapshot && snapshot.exists()){
     snapshot.forEach(child => {
       const req = child.val();
       if(req.phone === phone && req.status === 'pending'){
         hasPending = true;
+        pendingRequest = req;
       }
     });
   }
   
   if(hasPending){
     btn.textContent = '⏳ PENDING';
-    btn.disabled = true;
-    btn.style.opacity = '0.6';
-    btn.style.cursor = 'not-allowed';
+    btn.disabled = false; // Make clickable
+    btn.style.opacity = '0.8';
+    btn.style.cursor = 'pointer';
+    btn.onclick = () => showPendingWithdrawStatus(pendingRequest);
   } else {
     btn.textContent = 'WITHDRAW';
     btn.disabled = false;
     btn.style.opacity = '1';
     btn.style.cursor = 'pointer';
+    btn.onclick = openWithdrawModal;
   }
+}
+
+function showPendingDepositStatus(request){
+  playSound('click');
+  if(!request){
+    alert('⏳ Your deposit request is pending.\nPlease wait for admin approval.');
+    return;
+  }
+  const date = request.timestamp ? new Date(request.timestamp).toLocaleString() : 'N/A';
+  alert(
+    '⏳ DEPOSIT REQUEST PENDING\n\n' +
+    '💰 Amount: Rs ' + request.amount + '\n' +
+    '📅 Submitted: ' + date + '\n\n' +
+    'Admin will approve soon. Please wait...'
+  );
+}
+
+function showPendingWithdrawStatus(request){
+  playSound('click');
+  if(!request){
+    alert('⏳ Your withdraw request is pending.\nPlease wait for admin approval.');
+    return;
+  }
+  const date = request.timestamp ? new Date(request.timestamp).toLocaleString() : 'N/A';
+  const method = request.withdrawMethod === 'jazz' ? 'JazzCash' : 'Easypaisa';
+  alert(
+    '⏳ WITHDRAW REQUEST PENDING\n\n' +
+    '💰 Amount: Rs ' + request.amount + '\n' +
+    '💳 Method: ' + method + '\n' +
+    '📱 Number: ' + request.jazzCash + '\n' +
+    '📅 Submitted: ' + date + '\n\n' +
+    'Admin will process soon. Please wait...'
+  );
 }
 async function submitDepositRequest(uid,name,phone,amount){
   await fbReady();
@@ -1241,7 +1440,11 @@ function initializeGrid(){
 function clickTile(index){
   if(gameState.revealedTiles.includes(index)) return;
   if(!gameState.gameActive){
-    if(gameState.currentBet===0){ showMessage('gameMsg','Set bet first!','error'); return; }
+    if(gameState.currentBet===0){ 
+      playSound('error');
+      showMessage('gameMsg','Set bet first!','error'); 
+      return; 
+    }
     startGame();
   }
   gameState.tilesClicked = true;
@@ -1249,10 +1452,12 @@ function clickTile(index){
   const tiles = document.querySelectorAll('.tile');
 
   if(gameState.minePositions.includes(index)){
+    playSound('mine');
     tiles[index].textContent = '💣';
     tiles[index].classList.add('revealed','mine','mine-hit');
     gameOver(false);
   } else {
+    playSound('success');
     tiles[index].textContent = '💎';
     tiles[index].classList.add('revealed','safe');
     gameState.currentWin += Math.floor(gameState.currentBet * getWinRate());
@@ -1262,6 +1467,7 @@ function clickTile(index){
 }
 
 function startGame(){
+  playSound('click');
   gameState.gameActive    = true;
   gameState.minePositions = [];
   gameState.revealedTiles = [];
@@ -1275,6 +1481,7 @@ function startGame(){
 
 async function cashout(){
   if(!gameState.gameActive || gameState.currentWin===0) return;
+  playSound('win');
   const total = gameState.currentBet + gameState.currentWin;
   gameState.balance += total;
   await updateUserBalance(gameState.userPhone, gameState.balance);
@@ -1286,6 +1493,7 @@ async function cashout(){
 }
 
 function gameOver(won){
+  if(!won) playSound('error');
   gameState.gameActive=false; gameState.currentBet=0; gameState.currentWin=0;
   gameState.betSet=false; gameState.tilesClicked=false;
   document.getElementById('cashoutBtn').disabled=true;
@@ -1333,36 +1541,62 @@ function updateDisplay(){
 
 /* ─── Bet / Mines modals ─── */
 function openBetModal(){
-  if(gameState.gameActive){ alert('Cannot change bet during active game!'); return; }
+  playSound('click');
+  if(gameState.gameActive){ 
+    playSound('error');
+    alert('Cannot change bet during active game!'); 
+    return; 
+  }
   document.getElementById('betModal').classList.add('active');
 }
 async function setBet(){
   const a = parseInt(document.getElementById('betInput').value);
-  if(!a||a<100||a>10000){ alert('Bet must be Rs 100–10,000'); return; }
-  if(a>gameState.balance){ alert('Insufficient balance!'); return; }
+  if(!a||a<100||a>10000){ 
+    playSound('error');
+    alert('Bet must be Rs 100–10,000'); 
+    return; 
+  }
+  if(a>gameState.balance){ 
+    playSound('error');
+    alert('Insufficient balance!'); 
+    return; 
+  }
+  playSound('success');
   gameState.balance-=a; gameState.currentBet=a; gameState.betSet=true; gameState.tilesClicked=false;
   await updateUserBalance(gameState.userPhone,gameState.balance);
   updateDisplay(); closeModal('betModal');
   showMessage('gameMsg','Bet set! Start playing!','success');
 }
 function openMinesModal(){
-  if(gameState.gameActive){ alert('Cannot change mines during game!'); return; }
+  playSound('click');
+  if(gameState.gameActive){ 
+    playSound('error');
+    alert('Cannot change mines during game!'); 
+    return; 
+  }
   document.getElementById('minesModal').classList.add('active');
 }
 function setMines(){
   const c = parseInt(document.getElementById('minesInput').value);
-  if(!c||c<1||c>24){ alert('Mines must be 1–24'); return; }
+  if(!c||c<1||c>24){ 
+    playSound('error');
+    alert('Mines must be 1–24'); 
+    return; 
+  }
+  playSound('click');
   gameState.minesCount=c; updateDisplay(); closeModal('minesModal');
 }
 
 /* ─── UI helpers ─── */
 function openDepositModal(){
+  playSound('click');
   const cd = checkDepositCooldown();
   document.getElementById('depositCooldown').style.display = cd.allowed ? 'none' : 'block';
   if(!cd.allowed) document.getElementById('depositCooldown').textContent = `⏳ Wait ${cd.remaining} minutes`;
   document.getElementById('depositModal').classList.add('active');
 }
 function openWithdrawModal(){
+  playSound('click');
   const cd = checkWithdrawCooldown();
   document.getElementById('withdrawCooldown').style.display = cd.allowed ? 'none' : 'block';
   if(!cd.allowed){
@@ -1372,7 +1606,10 @@ function openWithdrawModal(){
   switchWithdrawTab('jazz');
   document.getElementById('withdrawModal').classList.add('active');
 }
-function closeModal(id){ document.getElementById(id).classList.remove('active'); }
+function closeModal(id){ 
+  playSound('click');
+  document.getElementById(id).classList.remove('active'); 
+}
 function showMessage(elId, text, type){
   const el = document.getElementById(elId);
   el.textContent=text; el.className='msg '+type; el.style.display='block';
