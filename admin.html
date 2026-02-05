@@ -3,1382 +3,930 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin – Mines Game</title>
-
-<!-- Firebase Compat SDK — loaded in <head> so they are 100% ready before any script in <body> -->
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
-
+<title>Admin Panel - Mines Game</title>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
 <style>
-/* ═══════════════════════════════════════════════
-   VARIABLES & RESET
-   ═══════════════════════════════════════════════ */
 :root {
-  --gold:          #f0c040;
-  --neon-cyan:     #22d3ee;
-  --neon-emerald:  #34d399;
-  --neon-amber:    #fbbf24;
-  --neon-rose:     #fb7185;
-  --neon-blue:     #60a5fa;
-  --neon-purple:   #a78bfa;
-  --bg-deep:       #0a0c14;
-  --glass-bg:      rgba(18, 22, 40, 0.72);
-  --glass-border:  rgba(255,255,255,0.11);
-  --glass-border2: rgba(255,255,255,0.20);
-  --text-primary:  #f0f0f5;
-  --text-muted:    #9aa0b8;
-  --radius:        16px;
-  --radius-sm:     10px;
-  --blur-main:     22px;
+  --gold: #f0c040;
+  --neon-emerald: #34d399;
+  --neon-rose: #fb7185;
+  --neon-amber: #fbbf24;
+  --neon-blue: #60a5fa;
+  --bg-deep: #0a0c14;
+  --glass-bg: rgba(18, 22, 40, 0.85);
+  --glass-border: rgba(255,255,255,0.11);
 }
-*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
 
-html, body {
-  min-height:100vh;
-  font-family:'Rajdhani', sans-serif;
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: 'Rajdhani', sans-serif;
   background: var(--bg-deep);
-  color: var(--text-primary);
-  overflow-x: hidden;
-  -webkit-font-smoothing: antialiased;
+  color: #fff;
+  min-height: 100vh;
+  padding: 20px;
 }
 
-/* ─── Canvas BG ─── */
-#bgCanvas {
-  position:fixed; top:0; left:0;
-  width:100%; height:100%;
-  z-index:0; pointer-events:none;
-}
-body::before {
-  content:'';
-  position:fixed; inset:0; z-index:1;
-  pointer-events:none; opacity:.035;
-  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  background-size:200px 200px;
+.admin-container {
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
-/* ═══════════════════════════════════════════════
-   SCROLLBAR
-   ═══════════════════════════════════════════════ */
-::-webkit-scrollbar       { width:6px; }
-::-webkit-scrollbar-track { background:transparent; }
-::-webkit-scrollbar-thumb { background:rgba(255,255,255,.14); border-radius:3px; }
+.admin-header {
+  text-align: center;
+  margin-bottom: 30px;
+  padding: 20px;
+  background: var(--glass-bg);
+  border-radius: 16px;
+  border: 1.5px solid var(--glass-border);
+}
 
-/* ═══════════════════════════════════════════════
-   LOGIN SCREEN
-   ═══════════════════════════════════════════════ */
-.login-screen {
-  position:relative; z-index:2;
-  display:flex; justify-content:center; align-items:center;
-  min-height:100vh; padding:20px;
+.admin-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 36px;
+  font-weight: 900;
+  color: var(--gold);
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 8px;
 }
-.login-box {
-  background: rgba(18,22,40,0.78);
-  backdrop-filter: blur(var(--blur-main)) saturate(1.4);
-  -webkit-backdrop-filter: blur(var(--blur-main)) saturate(1.4);
-  border: 1.5px solid var(--glass-border2);
-  border-radius: var(--radius);
-  box-shadow: 0 8px 44px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.07);
-  padding:44px 36px 40px;
-  max-width:380px; width:100%;
-  text-align:center;
-}
-.login-title {
-  font-family:'Orbitron', sans-serif;
-  font-size:28px; font-weight:900;
-  letter-spacing:6px;
-  background: linear-gradient(135deg, #f0c040, #fbbf24, #f59e0b);
-  -webkit-background-clip:text;
-  -webkit-text-fill-color:transparent;
-  background-clip:text;
-  filter: drop-shadow(0 0 16px rgba(240,192,64,.4));
-  margin-bottom:6px;
-}
-.login-sub {
-  font-size:13px; color:var(--text-muted);
-  letter-spacing:2px; margin-bottom:28px;
-}
-.login-input {
-  width:100%; padding:14px 18px; margin:10px 0;
-  background: rgba(12,15,26,0.78);
-  border: 1.5px solid var(--glass-border2);
-  border-radius: var(--radius-sm);
-  font-family:'Rajdhani', sans-serif;
-  font-size:17px; font-weight:500;
-  color: var(--text-primary); outline:none;
-  transition: border-color .25s, box-shadow .25s;
-}
-.login-input::placeholder { color:var(--text-muted); }
-.login-input:focus {
-  border-color: var(--neon-cyan);
-  box-shadow: 0 0 14px rgba(34,211,238,.25);
-}
-.login-btn {
-  width:100%; padding:15px; margin-top:14px;
-  background: rgba(52,211,153,.18);
-  border: 1.5px solid rgba(52,211,153,.55);
-  border-radius: var(--radius-sm);
-  font-family:'Rajdhani', sans-serif;
-  font-size:18px; font-weight:700;
-  letter-spacing:2px; color: var(--neon-emerald);
-  cursor:pointer; text-transform:uppercase;
-  box-shadow: 0 0 14px rgba(52,211,153,.18);
-  transition: transform .18s, box-shadow .25s, background .22s;
-}
-.login-btn:hover { transform:translateY(-2px); box-shadow:0 0 26px rgba(52,211,153,.4); background:rgba(52,211,153,.28); }
-.login-btn:active { transform:translateY(0); }
 
-/* ── Firebase status pill (visible on login screen) ── */
-.fb-status {
-  margin-top:18px; font-size:13px; font-weight:600;
-  letter-spacing:1px; color:var(--text-muted);
+.tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 30px;
+  justify-content: center;
 }
-.fb-status .dot { display:inline-block; width:9px; height:9px; border-radius:50%; margin-right:6px; }
-.fb-status.connected .dot { background:var(--neon-emerald); box-shadow:0 0 6px rgba(52,211,153,.5); }
-.fb-status.connected { color:var(--neon-emerald); }
-.fb-status.failed .dot { background:var(--neon-rose); box-shadow:0 0 6px rgba(251,113,133,.5); }
-.fb-status.failed { color:var(--neon-rose); }
 
-/* ═══════════════════════════════════════════════
-   DASHBOARD WRAPPER
-   ═══════════════════════════════════════════════ */
-.dashboard {
-  position:relative; z-index:2;
-  display:none;
-  max-width:1120px; margin:0 auto;
-  padding:22px 18px 48px;
+.tab-btn {
+  padding: 12px 24px;
+  background: rgba(255,255,255,0.1);
+  border: 1.5px solid var(--glass-border);
+  border-radius: 10px;
+  color: #fff;
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
 }
-.dashboard.active { display:block; }
 
-/* ─── Header ─── */
-.dash-header {
-  display:flex; justify-content:space-between; align-items:center;
-  flex-wrap:wrap; gap:12px;
-  margin-bottom:22px;
+.tab-btn.active {
+  background: rgba(52,211,153,0.2);
+  border-color: var(--neon-emerald);
+  color: var(--neon-emerald);
 }
-.dash-title {
-  font-family:'Orbitron', sans-serif;
-  font-size:24px; font-weight:900;
-  letter-spacing:5px;
-  background: linear-gradient(135deg, #f0c040, #fbbf24);
-  -webkit-background-clip:text;
-  -webkit-text-fill-color:transparent;
-  background-clip:text;
-  filter: drop-shadow(0 0 12px rgba(240,192,64,.35));
-}
-.dash-logout {
-  padding:10px 22px; border-radius: var(--radius-sm);
-  background: rgba(251,113,133,.15);
-  border: 1.5px solid rgba(251,113,133,.5);
-  color: var(--neon-rose);
-  font-family:'Rajdhani', sans-serif;
-  font-size:15px; font-weight:700;
-  letter-spacing:1px; cursor:pointer;
-  text-transform:uppercase;
-  transition: background .2s, box-shadow .2s;
-}
-.dash-logout:hover { background:rgba(251,113,133,.26); box-shadow:0 0 18px rgba(251,113,133,.3); }
 
-/* ═══════════════════════════════════════════════
-   STAT CARDS ROW
-   ═══════════════════════════════════════════════ */
-.stats-row {
-  display:grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap:14px; margin-bottom:22px;
+.tab-btn:hover {
+  transform: translateY(-2px);
 }
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
 .stat-card {
-  background: rgba(18,22,40,0.72);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1.5px solid var(--glass-border2);
-  border-radius: var(--radius);
-  box-shadow: 0 6px 28px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.06);
-  padding:20px 16px; text-align:center;
-  position:relative; overflow:hidden;
+  background: var(--glass-bg);
+  border-radius: 16px;
+  padding: 20px;
+  border: 1.5px solid var(--glass-border);
+  text-align: center;
 }
-.stat-card::before {
-  content:'';
-  position:absolute; top:0; left:10%; right:10%; height:2px;
-  background: var(--card-glow, var(--neon-cyan));
-  filter: blur(3px);
-  opacity:.7;
+
+.stat-value {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--gold);
+  margin: 10px 0;
 }
-.stat-card[data-color="cyan"]   { --card-glow: var(--neon-cyan); }
-.stat-card[data-color="emerald"]{ --card-glow: var(--neon-emerald); }
-.stat-card[data-color="amber"]  { --card-glow: var(--neon-amber); }
-.stat-card[data-color="purple"] { --card-glow: var(--neon-purple); }
 
 .stat-label {
-  font-size:11px; color:var(--text-muted);
-  letter-spacing:2.2px; text-transform:uppercase; margin-bottom:8px;
+  color: #9aa0b8;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
 }
-.stat-value {
-  font-family:'Orbitron', sans-serif;
-  font-size:28px; font-weight:700;
+
+.requests-container {
+  background: var(--glass-bg);
+  border-radius: 16px;
+  padding: 25px;
+  border: 1.5px solid var(--glass-border);
+  margin-bottom: 30px;
+}
+
+.section-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 24px;
   color: var(--gold);
-  text-shadow: 0 0 10px rgba(240,192,64,.4);
+  margin-bottom: 20px;
+  border-bottom: 2px solid rgba(240,192,64,0.3);
+  padding-bottom: 10px;
 }
 
-/* ═══════════════════════════════════════════════
-   TABS
-   ═══════════════════════════════════════════════ */
-.tabs {
-  display:flex; gap:8px; margin-bottom:18px;
-  flex-wrap:wrap;
+.requests-list {
+  display: grid;
+  gap: 15px;
+  max-height: 500px;
+  overflow-y: auto;
+  padding-right: 10px;
 }
-.tab {
-  padding:11px 22px; border-radius: var(--radius-sm);
-  background: rgba(18,22,40,0.65);
-  border: 1.5px solid var(--glass-border);
-  color: var(--text-muted);
-  font-family:'Rajdhani', sans-serif;
-  font-size:15px; font-weight:600;
-  letter-spacing:1px; cursor:pointer;
-  text-transform:uppercase;
-  transition: background .22s, border-color .22s, color .22s, box-shadow .25s;
+
+.request-item {
+  background: rgba(12,15,26,0.6);
+  border-radius: 12px;
+  padding: 20px;
+  border: 1.5px solid rgba(255,255,255,0.1);
+  transition: all 0.3s ease;
 }
-.tab:hover { border-color: rgba(255,255,255,.25); color:var(--text-primary); }
-.tab.active {
-  background: rgba(240,192,64,.15);
-  border-color: rgba(240,192,64,.55);
+
+.request-item:hover {
+  border-color: var(--neon-blue);
+  transform: translateY(-2px);
+}
+
+.request-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.request-name {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 18px;
   color: var(--gold);
-  box-shadow: 0 0 16px rgba(240,192,64,.22);
 }
 
-/* ═══════════════════════════════════════════════
-   TAB CONTENT PANELS
-   ═══════════════════════════════════════════════ */
-.tab-content { display:none; }
-.tab-content.active { display:block; }
-
-.tab-heading {
-  font-family:'Orbitron', sans-serif;
-  font-size:14px; font-weight:600;
-  letter-spacing:3px; color:var(--text-muted);
-  text-transform:uppercase;
-  margin-bottom:14px; padding-bottom:10px;
-  border-bottom:1px solid var(--glass-border);
+.request-phone {
+  color: #9aa0b8;
+  font-size: 14px;
 }
 
-/* ═══════════════════════════════════════════════
-   CARDS
-   ═══════════════════════════════════════════════ */
-.card {
-  background: rgba(14,18,32,0.72);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1.5px solid var(--glass-border);
-  border-radius: var(--radius-sm);
-  box-shadow: 0 4px 20px rgba(0,0,0,.38), inset 0 1px 0 rgba(255,255,255,.05);
-  padding:18px 18px 16px;
-  margin-bottom:12px;
-  transition: border-color .22s;
-}
-.card:hover { border-color: var(--glass-border2); }
-
-.card-header {
-  display:flex; justify-content:space-between;
-  align-items:flex-start; flex-wrap:wrap; gap:10px;
-  margin-bottom:10px;
-}
-.card-title {
-  font-family:'Orbitron', sans-serif;
-  font-size:14px; font-weight:700;
-  color:var(--text-primary); letter-spacing:1px;
-}
-.card-info {
-  font-size:14px; color:var(--text-muted);
-  margin:4px 0; line-height:1.5;
-}
-.card-amount {
-  font-family:'Orbitron', sans-serif;
-  font-size:22px; font-weight:700;
-  color:var(--gold);
-  text-shadow: 0 0 8px rgba(240,192,64,.35);
-  margin:8px 0;
-}
-
-/* ═══════════════════════════════════════════════
-   PLAYER CARDS
-   ═══════════════════════════════════════════════ */
-.player-card {
-  background: rgba(14,18,32,0.75);
-  backdrop-filter: blur(12px);
-  border: 1.5px solid var(--glass-border);
-  border-radius: var(--radius-sm);
-  box-shadow: 0 4px 20px rgba(0,0,0,.38), inset 0 1px 0 rgba(255,255,255,.05);
-  padding:16px 18px;
-  margin-bottom:10px;
-  display:flex; justify-content:space-between; align-items:center;
-  gap:12px;
-  transition: border-color .22s;
-}
-.player-card:hover { border-color: rgba(240,192,64,.3); }
-
-.player-left { display:flex; align-items:center; gap:14px; }
-.player-avatar {
-  width:42px; height:42px; border-radius:50%;
-  background: rgba(240,192,64,.15);
-  border: 1.5px solid rgba(240,192,64,.4);
-  display:flex; align-items:center; justify-content:center;
-  font-family:'Orbitron', sans-serif;
-  font-size:16px; font-weight:700;
-  color:var(--gold);
-  flex-shrink:0;
-}
-.player-name {
-  font-family:'Orbitron', sans-serif;
-  font-size:14px; font-weight:700;
-  color:var(--text-primary); letter-spacing:.8px;
-  margin-bottom:3px;
-}
-.player-phone { font-size:13px; color:var(--text-muted); }
-
-.player-balance {
-  font-family:'Orbitron', sans-serif;
-  font-size:20px; font-weight:700;
-  color:var(--gold);
-  text-shadow: 0 0 8px rgba(240,192,64,.35);
-  white-space:nowrap;
-}
-
-/* ═══════════════════════════════════════════════
-   STATUS BADGES
-   ═══════════════════════════════════════════════ */
-.badge {
-  display:inline-block;
-  font-size:11px; font-weight:700;
-  letter-spacing:1px; text-transform:uppercase;
-  padding:4px 10px; border-radius:20px;
-}
-.badge-online {
+.request-amount {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 24px;
   color: var(--neon-emerald);
-  background: rgba(52,211,153,.14);
-  border: 1px solid rgba(52,211,153,.4);
-  box-shadow: 0 0 6px rgba(52,211,153,.18);
-}
-.badge-offline {
-  color: var(--text-muted);
-  background: rgba(150,150,150,.1);
-  border: 1px solid rgba(150,150,150,.2);
-}
-.badge-pending {
-  color: var(--neon-amber);
-  background: rgba(251,191,36,.12);
-  border: 1px solid rgba(251,191,36,.4);
-  box-shadow: 0 0 6px rgba(251,191,36,.15);
-}
-.badge-approved {
-  color: var(--neon-emerald);
-  background: rgba(52,211,153,.14);
-  border: 1px solid rgba(52,211,153,.4);
-}
-.badge-rejected {
-  color: var(--neon-rose);
-  background: rgba(251,113,133,.14);
-  border: 1px solid rgba(251,113,133,.4);
+  margin: 10px 0;
 }
 
-/* ═══════════════════════════════════════════════
-   ACTION BUTTONS
-   ═══════════════════════════════════════════════ */
-.btn-row { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
-.btn-action {
-  padding:9px 18px; border-radius: var(--radius-sm);
-  font-family:'Rajdhani', sans-serif;
-  font-size:14px; font-weight:700;
-  letter-spacing:1px; cursor:pointer;
-  border:1.5px solid; text-transform:uppercase;
-  transition: transform .18s, box-shadow .25s, background .22s;
+.request-method {
+  display: inline-block;
+  padding: 5px 12px;
+  background: rgba(96,165,250,0.2);
+  border-radius: 20px;
+  font-size: 12px;
+  color: var(--neon-blue);
+  margin-bottom: 10px;
 }
-.btn-action:hover { transform:translateY(-1px); }
-.btn-action:active { transform:translateY(0); }
+
+.request-time {
+  font-size: 12px;
+  color: #9aa0b8;
+  margin-bottom: 15px;
+}
+
+.request-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.btn {
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: none;
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  flex: 1;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
 
 .btn-approve {
-  color:var(--neon-emerald);
-  background:rgba(52,211,153,.16);
-  border-color:rgba(52,211,153,.5);
-  box-shadow:0 0 10px rgba(52,211,153,.15);
+  background: rgba(52,211,153,0.2);
+  border: 1.5px solid var(--neon-emerald);
+  color: var(--neon-emerald);
 }
-.btn-approve:hover { box-shadow:0 0 20px rgba(52,211,153,.35); background:rgba(52,211,153,.24); }
+
+.btn-approve:hover {
+  background: rgba(52,211,153,0.3);
+  transform: translateY(-2px);
+}
 
 .btn-reject {
-  color:var(--neon-rose);
-  background:rgba(251,113,133,.15);
-  border-color:rgba(251,113,133,.5);
-  box-shadow:0 0 10px rgba(251,113,133,.15);
-}
-.btn-reject:hover { box-shadow:0 0 20px rgba(251,113,133,.35); background:rgba(251,113,133,.24); }
-
-.btn-delete {
-  color:var(--neon-amber);
-  background:rgba(251,191,36,.13);
-  border-color:rgba(251,191,36,.45);
-  box-shadow:0 0 10px rgba(251,191,36,.13);
-}
-.btn-delete:hover { box-shadow:0 0 20px rgba(251,191,36,.3); background:rgba(251,191,36,.22); }
-
-.btn-edit {
-  color:var(--neon-blue);
-  background:rgba(96,165,250,.15);
-  border-color:rgba(96,165,250,.48);
-  box-shadow:0 0 10px rgba(96,165,250,.13);
-}
-.btn-edit:hover { box-shadow:0 0 20px rgba(96,165,250,.32); background:rgba(96,165,250,.24); }
-
-.btn-kick {
-  color:var(--neon-purple);
-  background:rgba(167,139,250,.14);
-  border-color:rgba(167,139,250,.48);
-  box-shadow:0 0 10px rgba(167,139,250,.13);
-}
-.btn-kick:hover { box-shadow:0 0 20px rgba(167,139,250,.32); background:rgba(167,139,250,.24); }
-
-/* ═══════════════════════════════════════════════
-   AMOUNT COLORS
-   ═══════════════════════════════════════════════ */
-.amount-green { color:var(--neon-emerald); }
-.amount-rose  { color:var(--neon-rose); }
-
-/* ═══════════════════════════════════════════════
-   NO DATA
-   ═══════════════════════════════════════════════ */
-.no-data {
-  text-align:center; padding:48px 20px;
-  color:var(--text-muted); font-size:16px;
-  letter-spacing:1px;
+  background: rgba(251,113,133,0.2);
+  border: 1.5px solid var(--neon-rose);
+  color: var(--neon-rose);
 }
 
-/* ═══════════════════════════════════════════════
-   MODAL
-   ═══════════════════════════════════════════════ */
-.modal-overlay {
-  display:none; position:fixed; inset:0;
-  background: rgba(4,5,10,0.78);
+.btn-reject:hover {
+  background: rgba(251,113,133,0.3);
+  transform: translateY(-2px);
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-left: 10px;
+}
+
+.status-pending {
+  background: rgba(251,191,36,0.2);
+  color: var(--neon-amber);
+  border: 1px solid rgba(251,191,36,0.3);
+}
+
+.status-approved {
+  background: rgba(52,211,153,0.2);
+  color: var(--neon-emerald);
+  border: 1px solid rgba(52,211,153,0.3);
+}
+
+.status-rejected {
+  background: rgba(251,113,133,0.2);
+  color: var(--neon-rose);
+  border: 1px solid rgba(251,113,133,0.3);
+}
+
+.user-list {
+  display: grid;
+  gap: 15px;
+}
+
+.user-item {
+  background: rgba(12,15,26,0.6);
+  border-radius: 12px;
+  padding: 20px;
+  border: 1.5px solid rgba(255,255,255,0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.user-info h4 {
+  font-family: 'Orbitron', sans-serif;
+  color: var(--gold);
+  margin-bottom: 5px;
+}
+
+.user-stats {
+  display: flex;
+  gap: 20px;
+  color: #9aa0b8;
+  font-size: 14px;
+}
+
+.locked-users {
+  margin-top: 30px;
+}
+
+.locked-user {
+  background: rgba(251,113,133,0.1);
+  border: 1.5px solid rgba(251,113,133,0.3);
+}
+
+.lock-info {
+  color: var(--neon-rose);
+  font-size: 13px;
+  margin-top: 5px;
+}
+
+.modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.8);
   backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  z-index:1000;
-  justify-content:center; align-items:center;
-  padding:20px;
+  z-index: 1000;
+  justify-content: center;
+  align-items: center;
 }
-.modal-overlay.active { display:flex; }
 
-.modal-box {
-  background: rgba(14,18,32,0.88);
-  backdrop-filter: blur(28px) saturate(1.3);
-  -webkit-backdrop-filter: blur(28px) saturate(1.3);
-  border: 1.5px solid var(--glass-border2);
-  box-shadow: 0 14px 52px rgba(0,0,0,.58), inset 0 1px 0 rgba(255,255,255,.07);
-  padding:32px 28px;
-  border-radius: var(--radius);
-  max-width:420px; width:100%;
+.modal.active {
+  display: flex;
 }
+
+.modal-content {
+  background: var(--glass-bg);
+  border-radius: 16px;
+  padding: 30px;
+  border: 1.5px solid var(--glass-border);
+  max-width: 500px;
+  width: 90%;
+}
+
 .modal-title {
-  font-family:'Orbitron', sans-serif;
-  font-size:18px; font-weight:700;
-  color:var(--gold); text-align:center;
-  letter-spacing:2px; margin-bottom:22px;
-  text-shadow: 0 0 12px rgba(240,192,64,.35);
+  font-family: 'Orbitron', sans-serif;
+  font-size: 24px;
+  color: var(--gold);
+  margin-bottom: 20px;
 }
-.modal-row {
-  display:flex; justify-content:space-between;
-  padding:8px 0; border-bottom:1px solid rgba(255,255,255,.06);
-}
-.modal-row:last-of-type { border-bottom:none; }
-.modal-row-label { color:var(--text-muted); font-size:14px; }
-.modal-row-value { color:var(--text-primary); font-weight:600; font-size:14px; }
 
-.modal-input {
-  width:100%; padding:14px 16px; margin:18px 0 10px;
-  background: rgba(12,15,26,0.78);
-  border: 1.5px solid var(--glass-border2);
-  border-radius: var(--radius-sm);
-  font-family:'Rajdhani', sans-serif;
-  font-size:18px; font-weight:600;
-  color:var(--text-primary); outline:none;
-  transition: border-color .25s, box-shadow .25s;
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
 }
-.modal-input:focus {
-  border-color:var(--neon-cyan);
-  box-shadow:0 0 14px rgba(34,211,238,.25);
-}
-.modal-btns { display:flex; gap:10px; margin-top:8px; }
-.modal-btns .btn-action { flex:1; text-align:center; }
 
-/* ═══════════════════════════════════════════════
-   RESPONSIVE
-   ═══════════════════════════════════════════════ */
-@media(max-width:540px){
-  .dashboard      { padding:16px 12px 40px; }
-  .dash-title     { font-size:18px; letter-spacing:3px; }
-  .stat-value     { font-size:22px; }
-  .tab            { padding:9px 16px; font-size:13px; }
-  .player-card    { flex-direction:column; align-items:flex-start; }
-  .player-balance { font-size:18px; }
-  .card-amount    { font-size:19px; }
-  .modal-box      { padding:24px 18px; }
+.loading {
+  text-align: center;
+  padding: 40px;
+  color: var(--neon-amber);
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255,255,255,0.05);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(240,192,64,0.3);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(240,192,64,0.5);
 }
 </style>
 </head>
 <body>
 
-<!-- ═══ PARTICLE CANVAS ═══ -->
-<canvas id="bgCanvas"></canvas>
-
-<!-- ═══════════════════════════════════════════════
-     LOGIN
-     ═══════════════════════════════════════════════ -->
-<div id="loginScreen" class="login-screen">
-  <div class="login-box">
-    <div class="login-title">ADMIN</div>
-    <div class="login-sub">🔐 SECURE ACCESS</div>
-    <input type="password" id="adminPassword" class="login-input"
-           placeholder="Enter Password"
-           onkeydown="if(event.key==='Enter') adminLogin()">
-    <button class="login-btn" onclick="adminLogin()">Login</button>
-    <div id="fbStatus" class="fb-status">
-      <span class="dot"></span><span id="fbStatusText">Connecting…</span>
-    </div>
-  </div>
-</div>
-
-<!-- ═══════════════════════════════════════════════
-     DASHBOARD
-     ═══════════════════════════════════════════════ -->
-<div id="dashboard" class="dashboard">
-
-  <!-- Header -->
-  <div class="dash-header">
-    <div class="dash-title">🎮 ADMIN DASHBOARD</div>
-    <button class="dash-logout" onclick="adminLogout()">Logout</button>
+<div class="admin-container">
+  <div class="admin-header">
+    <h1 class="admin-title">MINES ADMIN PANEL</h1>
+    <p>Manage deposits, withdrawals, and user accounts</p>
   </div>
 
-  <!-- Stat Cards -->
-  <div class="stats-row">
-    <div class="stat-card" data-color="cyan">
-      <div class="stat-label">Total Users</div>
-      <div class="stat-value" id="totalUsers">0</div>
-    </div>
-    <div class="stat-card" data-color="emerald">
-      <div class="stat-label">Online Now</div>
-      <div class="stat-value" id="onlineUsers">0</div>
-    </div>
-    <div class="stat-card" data-color="amber">
-      <div class="stat-label">Total Deposits</div>
-      <div class="stat-value">Rs <span id="totalDeposits">0</span></div>
-    </div>
-    <div class="stat-card" data-color="purple">
-      <div class="stat-label">Total Withdrawals</div>
-      <div class="stat-value">Rs <span id="totalWithdrawals">0</span></div>
-    </div>
-  </div>
-
-  <!-- Reset Stats Button -->
-  <div style="margin-bottom:22px; text-align:right;">
-    <button class="btn-action btn-delete" onclick="resetStats()" style="width:auto; padding:10px 24px;">
-      🔄 Reset All Stats
-    </button>
-  </div>
-
-  <!-- Tabs -->
   <div class="tabs">
-    <button class="tab active" onclick="showTab('players',this)">👥 Players</button>
-    <button class="tab"        onclick="showTab('users',this)">📋 Users</button>
-    <button class="tab"        onclick="showTab('deposits',this)">💰 Deposits</button>
-    <button class="tab"        onclick="showTab('withdraws',this)">💸 Withdrawals</button>
+    <button class="tab-btn active" onclick="showTab('deposits')">Deposits</button>
+    <button class="tab-btn" onclick="showTab('withdrawals')">Withdrawals</button>
+    <button class="tab-btn" onclick="showTab('users')">Users</button>
   </div>
 
-  <!-- ── PLAYERS TAB ── -->
-  <div id="players" class="tab-content active">
-    <div class="tab-heading">Live Player Balances</div>
-    <div id="playersContent"><div class="no-data">Loading…</div></div>
-  </div>
-
-  <!-- ── USERS TAB ── -->
-  <div id="users" class="tab-content">
-    <div class="tab-heading">All Users – Manage & Kick</div>
-    <div id="usersContent"><div class="no-data">Loading…</div></div>
-  </div>
-
-  <!-- ── DEPOSITS TAB ── -->
-  <div id="deposits" class="tab-content">
-    <div class="tab-heading">Deposit Requests</div>
-    <div id="depositsContent"><div class="no-data">Loading…</div></div>
-  </div>
-
-  <!-- ── WITHDRAWALS TAB ── -->
-  <div id="withdraws" class="tab-content">
-    <div class="tab-heading">Withdrawal Requests</div>
-    <div id="withdrawsContent"><div class="no-data">Loading…</div></div>
-  </div>
-</div>
-
-<!-- ═══ EDIT BALANCE MODAL ═══ -->
-<div id="editBalanceModal" class="modal-overlay">
-  <div class="modal-box">
-    <div class="modal-title">✏️ Edit Balance</div>
-    <div class="modal-row">
-      <span class="modal-row-label">User</span>
-      <span class="modal-row-value" id="editUserName">─</span>
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-label">Total Pending</div>
+      <div class="stat-value" id="totalPending">0</div>
     </div>
-    <div class="modal-row">
-      <span class="modal-row-label">Phone</span>
-      <span class="modal-row-value" id="editUserPhone">─</span>
+    <div class="stat-card">
+      <div class="stat-label">Total Today</div>
+      <div class="stat-value" id="totalToday">0</div>
     </div>
-    <div class="modal-row">
-      <span class="modal-row-label">Current Balance</span>
-      <span class="modal-row-value" id="editCurrentBalance">Rs 0</span>
+    <div class="stat-card">
+      <div class="stat-label">Locked Users</div>
+      <div class="stat-value" id="lockedUsers">0</div>
     </div>
-    <input type="number" id="editNewBalance" class="modal-input" placeholder="New balance">
-    <div class="modal-btns">
-      <button class="btn-action btn-approve" onclick="saveBalance()">Save</button>
-      <button class="btn-action btn-reject"  onclick="closeModal()">Cancel</button>
+    <div class="stat-card">
+      <div class="stat-label">Total Balance</div>
+      <div class="stat-value" id="totalBalance">0</div>
     </div>
   </div>
-</div>
 
-<!-- ═══════════════════════════════════════════════
-     PARTICLE ENGINE
-     ═══════════════════════════════════════════════ -->
-<script>
-(function(){
-  const canvas = document.getElementById('bgCanvas');
-  const ctx    = canvas.getContext('2d');
-  let W, H;
-  function resize(){ W=canvas.width=window.innerWidth; H=canvas.height=window.innerHeight; }
-  window.addEventListener('resize',resize); resize();
+  <!-- Deposits Tab -->
+  <div id="depositsTab" class="requests-container">
+    <h2 class="section-title">Pending Deposit Requests</h2>
+    <div class="requests-list" id="depositsList">
+      <div class="loading">Loading deposits...</div>
+    </div>
+  </div>
 
-  const PART_COUNT=90, SHARD_COUNT=16;
-  const PALETTE=[[34,211,238],[96,165,250],[52,211,153],[240,192,64],[251,191,36],[180,195,240]];
+  <!-- Withdrawals Tab -->
+  <div id="withdrawalsTab" class="requests-container" style="display: none;">
+    <h2 class="section-title">Pending Withdrawal Requests</h2>
+    <div class="requests-list" id="withdrawalsList">
+      <div class="loading">Loading withdrawals...</div>
+    </div>
+  </div>
 
-  class Particle {
-    constructor(){ this.reset(true); }
-    reset(i){
-      this.x=i?Math.random()*W:(Math.random()<.5?-12:W+12);
-      this.y=i?Math.random()*H:Math.random()*H;
-      this.r=.5+Math.random()*2.4;
-      this.vx=(Math.random()-.5)*.38; this.vy=(Math.random()-.5)*.38;
-      this.col=PALETTE[Math.floor(Math.random()*PALETTE.length)];
-      this.alpha=.12+Math.random()*.5;
-      this.phase=Math.random()*Math.PI*2; this.freq=.35+Math.random()*.55;
-    }
-    update(){ this.x+=this.vx; this.y+=this.vy; this.phase+=this.freq*.016; if(this.x<-30||this.x>W+30||this.y<-30||this.y>H+30) this.reset(false); }
-    draw(){
-      const a=this.alpha+Math.sin(this.phase)*.13, [r,g,b]=this.col;
-      ctx.beginPath(); ctx.arc(this.x,this.y,this.r,0,Math.PI*2);
-      ctx.fillStyle=`rgba(${r},${g},${b},${a})`; ctx.fill();
-      ctx.beginPath(); ctx.arc(this.x,this.y,this.r*3.5,0,Math.PI*2);
-      ctx.fillStyle=`rgba(${r},${g},${b},${a*.16})`; ctx.fill();
-    }
-  }
-  class Shard {
-    constructor(){ this.reset(true); }
-    reset(i){
-      this.x=i?Math.random()*W:-70; this.y=i?Math.random()*H:Math.random()*H;
-      this.w=2.5+Math.random()*4; this.h=28+Math.random()*75;
-      this.angle=-.52+Math.random()*.25; this.speed=.28+Math.random()*.32;
-      this.alpha=.028+Math.random()*.065;
-      this.col=[195+Math.random()*60,210+Math.random()*45,255];
-    }
-    update(){ this.x+=this.speed; if(this.x>W+100)this.reset(false); }
-    draw(){
-      ctx.save(); ctx.translate(this.x,this.y); ctx.rotate(this.angle);
-      const g=ctx.createLinearGradient(0,0,0,this.h), [r,gr,b]=this.col;
-      g.addColorStop(0,`rgba(${r},${gr},${b},0)`);
-      g.addColorStop(.28,`rgba(${r},${gr},${b},${this.alpha})`);
-      g.addColorStop(.72,`rgba(${r},${gr},${b},${this.alpha})`);
-      g.addColorStop(1,`rgba(${r},${gr},${b},0)`);
-      ctx.fillStyle=g; ctx.fillRect(-this.w*.5,0,this.w,this.h); ctx.restore();
-    }
-  }
-
-  const particles=[], shards=[];
-  for(let i=0;i<PART_COUNT;i++) particles.push(new Particle());
-  for(let i=0;i<SHARD_COUNT;i++) shards.push(new Shard());
-
-  function drawBg(){
-    const g=ctx.createLinearGradient(0,0,W*.55,H);
-    g.addColorStop(0,'#0a0c14'); g.addColorStop(.4,'#0e1320');
-    g.addColorStop(.72,'#111a2e'); g.addColorStop(1,'#0c1118');
-    ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
-    [
-      {x:W*.12,y:H*.28,r:W*.24,c:'rgba(34,211,238,.032)'},
-      {x:W*.82,y:H*.68,r:W*.21,c:'rgba(96,165,250,.028)'},
-      {x:W*.48,y:H*.88,r:W*.19,c:'rgba(52,211,153,.022)'},
-      {x:W*.72,y:H*.12,r:W*.17,c:'rgba(240,192,64,.020)'},
-      {x:W*.25,y:H*.75,r:W*.15,c:'rgba(251,191,36,.018)'},
-    ].forEach(b=>{
-      const rg=ctx.createRadialGradient(b.x,b.y,0,b.x,b.y,b.r);
-      rg.addColorStop(0,b.c); rg.addColorStop(1,'transparent');
-      ctx.fillStyle=rg; ctx.fillRect(0,0,W,H);
-    });
-  }
-  function loop(){ drawBg(); shards.forEach(s=>{s.update();s.draw();}); particles.forEach(p=>{p.update();p.draw();}); requestAnimationFrame(loop); }
-  loop();
-})();
-</script>
-
-<!-- ═══════════════════════════════════════════════
-     FIREBASE INIT  —  runs AFTER compat SDK is guaranteed loaded
-     ═══════════════════════════════════════════════ -->
-<script>
-// ── guard: only init once ──
-let db = null;
-
-function initFirebase(){
-  try {
-    if(!firebase.apps.length){
-      firebase.initializeApp({
-        apiKey:"AIzaSyA8C1-TpsRo0UsATshlI8Dy0v40PnLRlc4",
-        authDomain:"mines-67d8c.firebaseapp.com",
-        databaseURL:"https://mines-67d8c-default-rtdb.asia-southeast1.firebasedatabase.app",
-        projectId:"mines-67d8c",
-        storageBucket:"mines-67d8c.firebasestorage.app",
-        messagingSenderId:"918317634273",
-        appId:"1:918317634273:web:8527c0d58a1f3de0371da0",
-        measurementId:"G-NHC6K1X3KZ"
-      });
-    }
-    db = firebase.database();
-
-    // ── connectivity test: read users (lightweight, no write needed) ──
-    db.ref('users').once('value').then(()=>{
-      setFbStatus(true);
-      console.log('✅ Firebase connected');
-    }).catch(err=>{
-      setFbStatus(false);
-      console.error('❌ Firebase connection failed:', err);
-    });
-
-  } catch(err){
-    setFbStatus(false);
-    console.error('❌ Firebase init error:', err);
-  }
-}
-
-function setFbStatus(ok){
-  const el   = document.getElementById('fbStatus');
-  const txt  = document.getElementById('fbStatusText');
-  el.className = 'fb-status ' + (ok ? 'connected' : 'failed');
-  txt.textContent = ok ? 'Firebase Connected ✓' : 'Firebase Failed ✗';
-}
-
-// run immediately — compat SDK scripts are in <head> so they are loaded by now
-initFirebase();
-</script>
-
-<!-- ═══════════════════════════════════════════════
-     ADMIN LOGIC
-     ═══════════════════════════════════════════════ -->
-<script>
-// ── Globals ──
-const ADMIN_PASSWORD = '@/Aa362014300';
-let currentEditUser  = null;
-
-// ═══════════════════════════════════════════════
-//  LOGIN / LOGOUT
-// ═══════════════════════════════════════════════
-function adminLogin(){
-  const pw = document.getElementById('adminPassword').value;
-  if(pw === ADMIN_PASSWORD){
-    document.getElementById('loginScreen').style.display = 'none';
-    document.getElementById('dashboard').classList.add('active');
-    setupRealTimeListeners();
-  } else {
-    alert('❌ Wrong password!');
-  }
-}
-function adminLogout(){ if(confirm('Logout?')) location.reload(); }
-
-// ═══════════════════════════════════════════════
-//  REAL-TIME LISTENERS
-// ═══════════════════════════════════════════════
-function setupRealTimeListeners(){
-  if(!db){ alert('Firebase not connected!'); return; }
-
-  db.ref('users').on('value', function(snapshot){
-    renderPlayers(snapshot);
-    renderUsers(snapshot);
-    updateStatsFromSnapshots(snapshot);
-  });
-
-  db.ref('depositRequests').on('value', function(snapshot){
-    renderDeposits(snapshot);
-  });
-
-  db.ref('withdrawRequests').on('value', function(snapshot){
-    renderWithdraws(snapshot);
-  });
-
-  // also fetch deposit+withdraw snapshots for stats immediately
-  fetchAndUpdateStats();
-}
-
-// ═══════════════════════════════════════════════
-//  STATS
-// ═══════════════════════════════════════════════
-async function fetchAndUpdateStats(){
-  if(!db) return;
-  try {
-    const [usersSnap, depSnap, wdSnap] = await Promise.all([
-      db.ref('users').once('value'),
-      db.ref('depositRequests').once('value'),
-      db.ref('withdrawRequests').once('value')
-    ]);
-    calcStats(usersSnap, depSnap, wdSnap);
-  } catch(e){ console.error('fetchAndUpdateStats:', e); }
-}
-
-function updateStatsFromSnapshots(usersSnap){
-  // called from users listener — re-fetch dep+wd for full stats
-  if(!db) return;
-  Promise.all([
-    db.ref('depositRequests').once('value'),
-    db.ref('withdrawRequests').once('value')
-  ]).then(([depSnap, wdSnap])=>{
-    calcStats(usersSnap, depSnap, wdSnap);
-  }).catch(e=> console.error('updateStats:', e));
-}
-
-function calcStats(usersSnap, depSnap, wdSnap){
-  let totalUsers=0, onlineUsers=0, totalDepositAmount=0, totalWithdrawAmount=0;
-  if(usersSnap && usersSnap.exists()){
-    const obj = usersSnap.val();
-    totalUsers = Object.keys(obj).length;
-    Object.values(obj).forEach(u=>{ 
-      if(u.isOnline) onlineUsers++; 
-      totalDepositAmount += (u.totalDeposit || 0);
-      totalWithdrawAmount += (u.totalWithdraw || 0);
-    });
-  }
-  document.getElementById('totalUsers').textContent       = totalUsers;
-  document.getElementById('onlineUsers').textContent      = onlineUsers;
-  document.getElementById('totalDeposits').textContent    = totalDepositAmount.toLocaleString();
-  document.getElementById('totalWithdrawals').textContent = totalWithdrawAmount.toLocaleString();
-}
-
-// ═══════════════════════════════════════════════
-//  PLAYERS TAB  —  receives snapshot directly from listener
-// ═══════════════════════════════════════════════
-function renderPlayers(snapshot){
-  const content = document.getElementById('playersContent');
-  if(!snapshot.exists()){ content.innerHTML='<div class="no-data">No players yet</div>'; return; }
-
-  const users = snapshot.val();
-  let arr = Object.entries(users).map(function([phone, data]){
-    return { phone:phone, name:(data.name||'Unknown'), balance:(data.balance||0), isOnline:!!data.isOnline };
-  });
-  arr.sort(function(a,b){ return b.balance - a.balance; });
-
-  let html = '';
-  arr.forEach(function(u){
-    var initials = u.name.charAt(0).toUpperCase();
-    var badge    = u.isOnline
-      ? '<span class="badge badge-online">● Online</span>'
-      : '<span class="badge badge-offline">● Offline</span>';
-    html +=
-      '<div class="player-card">' +
-        '<div class="player-left">' +
-          '<div class="player-avatar">' + initials + '</div>' +
-          '<div>' +
-            '<div class="player-name">' + u.name + ' ' + badge + '</div>' +
-            '<div class="player-phone">📱 ' + u.phone + '</div>' +
-          '</div>' +
-        '</div>' +
-        '<div class="player-balance">Rs ' + u.balance.toFixed(0) + '</div>' +
-      '</div>';
-  });
-  content.innerHTML = html;
-}
-
-// ═══════════════════════════════════════════════
-//  USERS TAB
-// ═══════════════════════════════════════════════
-function renderUsers(snapshot){
-  const content = document.getElementById('usersContent');
-  if(!snapshot.exists()){ content.innerHTML='<div class="no-data">No users yet</div>'; return; }
-
-  const users = snapshot.val();
-  let html = '';
-
-  Object.keys(users).forEach(function(phone){
-    var u = users[phone];
-    var safeName = (u.name || 'Unknown').replace(/'/g, "\\'");
-
-    var badge = u.isOnline
-      ? '<span class="badge badge-online">● Online</span>'
-      : '<span class="badge badge-offline">● Offline</span>';
+  <!-- Users Tab -->
+  <div id="usersTab" class="requests-container" style="display: none;">
+    <h2 class="section-title">All Users</h2>
+    <div class="user-list" id="usersList">
+      <div class="loading">Loading users...</div>
+    </div>
     
-    var bannedBadge = u.banned 
-      ? '<span class="badge badge-rejected" style="margin-left:8px;">🚫 BANNED</span>'
-      : '';
+    <div class="locked-users">
+      <h2 class="section-title">Locked Users (3+ Rejections)</h2>
+      <div class="user-list" id="lockedUsersList">
+        <div class="loading">Checking locked users...</div>
+      </div>
+    </div>
+  </div>
 
-    var devInfo = u.deviceId
-      ? '<div class="card-info">📱 Device: ' + u.deviceId.substring(0,20) + '…</div>'
-      : '<div class="card-info">📱 Device: N/A</div>';
+  <!-- Reject Modal -->
+  <div id="rejectModal" class="modal">
+    <div class="modal-content">
+      <h2 class="modal-title">Reject Deposit Request</h2>
+      <p id="rejectMessage">Are you sure you want to reject this deposit request?</p>
+      <div class="modal-actions">
+        <button class="btn btn-reject" onclick="confirmReject()">Confirm Reject</button>
+        <button class="btn" onclick="closeModal('rejectModal')" style="background:rgba(255,255,255,0.1); color:#fff;">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
 
-    var loginInfo = u.lastLogin
-      ? '<div class="card-info">🕒 Last Login: ' + new Date(u.lastLogin).toLocaleString() + '</div>'
-      : '';
+<!-- Firebase -->
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+import { getDatabase, ref, set, get, update, onValue, remove, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
 
-    var kickBtn = u.isOnline && !u.banned
-      ? '<button class="btn-action btn-kick" onclick="kickUser(\'' + phone + '\')">⚡ Kick</button>'
-      : '';
+const firebaseConfig = {
+  apiKey: "AIzaSyA8C1-TpsRo0UsATshlI8Dy0v40PnLRlc4",
+  authDomain: "mines-67d8c.firebaseapp.com",
+  databaseURL: "https://mines-67d8c-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "mines-67d8c",
+  storageBucket: "mines-67d8c.firebasestorage.app",
+  messagingSenderId: "918317634273",
+  appId: "1:918317634273:web:8527c0d58a1f3de0371da0",
+  measurementId: "G-NHC6K1X3KZ"
+};
+
+const app = initializeApp(firebaseConfig);
+const database = getDatabase(app);
+
+window.db = database;
+window.dbRef = ref;
+window.dbSet = set;
+window.dbGet = get;
+window.dbUpdate = update;
+window.dbOnValue = onValue;
+window.dbRemove = remove;
+window.dbServerTimestamp = serverTimestamp;
+
+console.log('✅ Admin Firebase initialized');
+</script>
+
+<script>
+let currentRejectData = null;
+let currentTab = 'deposits';
+
+function showTab(tabName) {
+  currentTab = tabName;
+  
+  // Update active tab button
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.classList.remove('active');
+  });
+  event.target.classList.add('active');
+  
+  // Show selected tab
+  document.getElementById('depositsTab').style.display = 'none';
+  document.getElementById('withdrawalsTab').style.display = 'none';
+  document.getElementById('usersTab').style.display = 'none';
+  
+  document.getElementById(tabName + 'Tab').style.display = 'block';
+  
+  // Refresh data for the tab
+  if (tabName === 'deposits') {
+    loadDeposits();
+  } else if (tabName === 'withdrawals') {
+    loadWithdrawals();
+  } else if (tabName === 'users') {
+    loadUsers();
+  }
+}
+
+function loadDeposits() {
+  const depositsList = document.getElementById('depositsList');
+  depositsList.innerHTML = '<div class="loading">Loading deposits...</div>';
+  
+  window.dbOnValue(window.dbRef(window.db, 'depositRequests'), (snapshot) => {
+    if (!snapshot.exists()) {
+      depositsList.innerHTML = '<div class="loading">No pending deposits</div>';
+      document.getElementById('totalPending').textContent = '0';
+      return;
+    }
+    
+    let html = '';
+    let pendingCount = 0;
+    let todayTotal = 0;
+    const today = new Date().toDateString();
+    
+    snapshot.forEach((child) => {
+      const deposit = child.val();
       
-    var banBtn = !u.banned
-      ? '<button class="btn-action btn-delete" onclick="banUser(\'' + phone + '\')">🚫 Ban</button>'
-      : '';
-
-    html +=
-      '<div class="card">' +
-        '<div class="card-header">' +
-          '<div>' +
-            '<div class="card-title">' + (u.name||'Unknown') + ' ' + badge + bannedBadge + '</div>' +
-            '<div class="card-info">📱 ' + phone + '</div>' +
-            devInfo + loginInfo +
-          '</div>' +
-          '<div class="btn-row">' +
-            '<button class="btn-action btn-edit" onclick="editBalance(\'' + phone + '\',\'' + safeName + '\',' + (u.balance||0) + ')">✏️ Edit</button>' +
-            kickBtn +
-            banBtn +
-            '<button class="btn-action btn-delete" onclick="deleteUser(\'' + phone + '\')">🗑 Delete</button>' +
-          '</div>' +
-        '</div>' +
-        '<div class="card-amount">Rs ' + (u.balance||0).toFixed(0) + '</div>' +
-        '<div class="card-info">' +
-          '💰 Deposited: Rs ' + (u.totalDeposit||0).toFixed(0) + ' &nbsp;|&nbsp; ' +
-          '💸 Withdrawn: Rs ' + (u.totalWithdraw||0).toFixed(0) +
-        '</div>' +
-      '</div>';
+      if (deposit.status === 'pending') {
+        pendingCount++;
+        
+        const depositDate = deposit.timestamp ? new Date(deposit.timestamp) : new Date();
+        if (depositDate.toDateString() === today) {
+          todayTotal += deposit.amount || 0;
+        }
+        
+        html += `
+          <div class="request-item">
+            <div class="request-header">
+              <div>
+                <div class="request-name">${deposit.name || 'N/A'}</div>
+                <div class="request-phone">${deposit.phone || 'N/A'}</div>
+              </div>
+              <span class="status-badge status-pending">PENDING</span>
+            </div>
+            
+            <div class="request-amount">Rs ${deposit.amount || 0}</div>
+            
+            <div class="request-method">
+              ${deposit.paymentMethod === 'jazzcash' ? 'JazzCash' : 'Easypaisa'}
+            </div>
+            
+            <div class="request-time">
+              Submitted: ${depositDate.toLocaleString()}
+            </div>
+            
+            <div class="request-actions">
+              <button class="btn btn-approve" onclick="approveDeposit('${child.key}', '${deposit.phone}', ${deposit.amount})">
+                Approve
+              </button>
+              <button class="btn btn-reject" onclick="showRejectModal('${child.key}', '${deposit.phone}', '${deposit.name}', ${deposit.amount})">
+                Reject
+              </button>
+            </div>
+          </div>
+        `;
+      }
+    });
+    
+    depositsList.innerHTML = html || '<div class="loading">No pending deposits</div>';
+    document.getElementById('totalPending').textContent = pendingCount;
+    document.getElementById('totalToday').textContent = 'Rs ' + todayTotal;
   });
-  content.innerHTML = html;
 }
 
-// ═══════════════════════════════════════════════
-//  KICK USER (Permanent Ban)
-// ═══════════════════════════════════════════════
-async function kickUser(phone){
-  if(!confirm('⚠️ PERMANENTLY KICK user ' + phone + '? They will be banned from all devices!')) return;
+function loadWithdrawals() {
+  const withdrawalsList = document.getElementById('withdrawalsList');
+  withdrawalsList.innerHTML = '<div class="loading">Loading withdrawals...</div>';
+  
+  window.dbOnValue(window.dbRef(window.db, 'withdrawRequests'), (snapshot) => {
+    if (!snapshot.exists()) {
+      withdrawalsList.innerHTML = '<div class="loading">No pending withdrawals</div>';
+      return;
+    }
+    
+    let html = '';
+    
+    snapshot.forEach((child) => {
+      const withdrawal = child.val();
+      
+      if (withdrawal.status === 'pending') {
+        const withdrawDate = withdrawal.timestamp ? new Date(withdrawal.timestamp) : new Date();
+        
+        html += `
+          <div class="request-item">
+            <div class="request-header">
+              <div>
+                <div class="request-name">${withdrawal.name || 'N/A'}</div>
+                <div class="request-phone">${withdrawal.phone || 'N/A'}</div>
+              </div>
+              <span class="status-badge status-pending">PENDING</span>
+            </div>
+            
+            <div class="request-amount">Rs ${withdrawal.amount || 0}</div>
+            
+            <div class="request-method">
+              ${withdrawal.withdrawMethod === 'jazz' ? 'JazzCash' : 'Easypaisa'}
+              <br>
+              ${withdrawal.jazzCash || 'N/A'}
+            </div>
+            
+            <div class="request-time">
+              Submitted: ${withdrawDate.toLocaleString()}
+            </div>
+            
+            <div class="request-actions">
+              <button class="btn btn-approve" onclick="approveWithdrawal('${child.key}', '${withdrawal.phone}', ${withdrawal.amount}, '${withdrawal.jazzCash}')">
+                Approve
+              </button>
+              <button class="btn btn-reject" onclick="rejectWithdrawal('${child.key}', '${withdrawal.phone}')">
+                Reject
+              </button>
+            </div>
+          </div>
+        `;
+      }
+    });
+    
+    withdrawalsList.innerHTML = html || '<div class="loading">No pending withdrawals</div>';
+  });
+}
+
+async function loadUsers() {
+  const usersList = document.getElementById('usersList');
+  const lockedUsersList = document.getElementById('lockedUsersList');
+  
+  usersList.innerHTML = '<div class="loading">Loading users...</div>';
+  lockedUsersList.innerHTML = '<div class="loading">Checking locked users...</div>';
+  
   try {
-    await banUser(phone);
-  } catch(e){ 
-    console.error(e); 
-    alert('❌ Error kicking user: ' + e.message); 
+    const snapshot = await window.dbGet(window.dbRef(window.db, 'users'));
+    
+    if (!snapshot.exists()) {
+      usersList.innerHTML = '<div class="loading">No users found</div>';
+      lockedUsersList.innerHTML = '<div class="loading">No locked users</div>';
+      return;
+    }
+    
+    let usersHtml = '';
+    let lockedUsersHtml = '';
+    let lockedCount = 0;
+    let totalBalance = 0;
+    
+    snapshot.forEach((child) => {
+      const user = child.val();
+      totalBalance += user.balance || 0;
+      
+      const userHtml = `
+        <div class="user-item ${user.depositLockUntil && user.depositLockUntil > Date.now() ? 'locked-user' : ''}">
+          <div class="user-info">
+            <h4>${user.name || 'N/A'} (${child.key})</h4>
+            <div class="user-stats">
+              <span>Balance: Rs ${user.balance || 0}</span>
+              <span>Deposits: ${user.totalDeposit || 0}</span>
+              <span>Withdrawals: ${user.totalWithdraw || 0}</span>
+            </div>
+            ${user.depositLockUntil && user.depositLockUntil > Date.now() ? 
+              `<div class="lock-info">🔒 Locked until: ${new Date(user.depositLockUntil).toLocaleString()}</div>` : ''}
+          </div>
+          <div>
+            <button class="btn" onclick="viewUserDetails('${child.key}')" style="background:rgba(96,165,250,0.2); color:var(--neon-blue);">
+              View
+            </button>
+          </div>
+        </div>
+      `;
+      
+      usersHtml += userHtml;
+      
+      // Check if user is locked (3+ rejections and still in lock period)
+      if (user.depositLockUntil && user.depositLockUntil > Date.now()) {
+        lockedCount++;
+        lockedUsersHtml += userHtml;
+      }
+    });
+    
+    usersList.innerHTML = usersHtml || '<div class="loading">No users found</div>';
+    lockedUsersList.innerHTML = lockedUsersHtml || '<div class="loading">No locked users</div>';
+    
+    document.getElementById('lockedUsers').textContent = lockedCount;
+    document.getElementById('totalBalance').textContent = 'Rs ' + totalBalance;
+    
+  } catch (error) {
+    console.error('Error loading users:', error);
+    usersList.innerHTML = '<div class="loading">Error loading users</div>';
+    lockedUsersList.innerHTML = '<div class="loading">Error loading locked users</div>';
   }
 }
 
-// ═══════════════════════════════════════════════
-//  BAN USER (Permanent)
-// ═══════════════════════════════════════════════
-async function banUser(phone){
-  if(!confirm('⚠️ PERMANENTLY BAN user ' + phone + '? They will never be able to login again!')) return;
+async function approveDeposit(requestId, userPhone, amount) {
+  if (!confirm(`Approve deposit of Rs ${amount} for ${userPhone}?`)) return;
   
   try {
-    // Get user data
-    const userSnap = await db.ref('users/' + phone).once('value');
-    if(!userSnap.exists()){ 
-      alert('User not found!'); 
-      return; 
-    }
+    // 1. Update deposit request status
+    await window.dbUpdate(window.dbRef(window.db, `depositRequests/${requestId}`), {
+      status: 'approved',
+      approvedAt: Date.now(),
+      approvedBy: 'admin'
+    });
     
-    const userData = userSnap.val();
-    const namePairKey = userData.name ? `${userData.name}_${phone}` : null;
-    
-    const updates = {};
-    
-    // Ban the user
-    updates[`users/${phone}/banned`] = true;
-    updates[`users/${phone}/isOnline`] = false;
-    updates[`users/${phone}/deviceId`] = null;
-    updates[`users/${phone}/bannedAt`] = Date.now();
-    
-    // Add to permanent banned phones list
-    updates[`bannedPhones/${phone}`] = {
-      banned: true,
-      bannedAt: Date.now(),
-      name: userData.name || 'Unknown',
-      bannedBy: 'admin'
-    };
-    
-    // Remove from device tracking
-    if(userData.deviceId){
-      updates[`deviceTracking/${userData.deviceId}/users/${phone}`] = null;
-    }
-    
-    // Lock the name-phone pair permanently
-    if(namePairKey){
-      updates[`namePhonePairs/${namePairKey}/banned`] = true;
-      updates[`namePhonePairs/${namePairKey}/bannedAt`] = Date.now();
-    }
-    
-    await db.ref().update(updates);
-    
-    alert('✅ User permanently banned! Phone number: ' + phone + ' can never login again.');
-  } catch(e){ 
-    console.error(e); 
-    alert('❌ Error: ' + e.message); 
-  }
-}
-
-// ═══════════════════════════════════════════════
-//  DELETE USER
-// ═══════════════════════════════════════════════
-async function deleteUser(phone){
-  if(!confirm('⚠️ DELETE user ' + phone + '? This will:\n- Remove all user data\n- Delete deposit/withdrawal history\n- Cannot be undone!')) return;
-  if(!confirm('Final confirmation - DELETE ' + phone + '?')) return;
-  
-  try {
-    // Get user data first
-    const userSnap = await db.ref('users/' + phone).once('value');
-    if(!userSnap.exists()){
+    // 2. Get current user balance
+    const userSnap = await window.dbGet(window.dbRef(window.db, `users/${userPhone}`));
+    if (!userSnap.exists()) {
       alert('User not found!');
       return;
     }
     
-    const userData = userSnap.val();
-    const namePairKey = userData.name ? `${userData.name}_${phone}` : null;
+    const user = userSnap.val();
+    const newBalance = (user.balance || 0) + amount;
+    const totalDeposit = (user.totalDeposit || 0) + amount;
     
-    const updates = {};
+    // 3. Update user balance and deposit history
+    await window.dbUpdate(window.dbRef(window.db, `users/${userPhone}`), {
+      balance: newBalance,
+      totalDeposit: totalDeposit,
+      depositRejections: 0, // Reset rejections on approval
+      depositLockUntil: null // Remove any lock
+    });
     
-    // Delete user
-    updates[`users/${phone}`] = null;
-    
-    // Delete from device tracking
-    if(userData.deviceId){
-      updates[`deviceTracking/${userData.deviceId}/users/${phone}`] = null;
-    }
-    
-    // Delete name-phone pair lock
-    if(namePairKey){
-      updates[`namePhonePairs/${namePairKey}`] = null;
-    }
-    
-    // Delete all deposit requests from this user
-    const depositsSnap = await db.ref('depositRequests').once('value');
-    if(depositsSnap.exists()){
-      depositsSnap.forEach(child => {
-        if(child.val().phone === phone){
-          updates[`depositRequests/${child.key}`] = null;
-        }
-      });
-    }
-    
-    // Delete all withdrawal requests from this user
-    const withdrawsSnap = await db.ref('withdrawRequests').once('value');
-    if(withdrawsSnap.exists()){
-      withdrawsSnap.forEach(child => {
-        if(child.val().phone === phone){
-          updates[`withdrawRequests/${child.key}`] = null;
-        }
-      });
-    }
-    
-    await db.ref().update(updates);
-    
-    alert('✅ User and all related data deleted!');
-    
-  } catch(e){
-    console.error(e);
-    alert('❌ Error: ' + e.message);
-  }
-}
-
-// ═══════════════════════════════════════════════
-//  RESET STATISTICS
-// ═══════════════════════════════════════════════
-async function resetStats(){
-  if(!confirm('⚠️ Reset ALL statistics? This will clear:\n- Total deposits\n- Total withdrawals\n\nUser balances will NOT be affected.')) return;
-  if(!confirm('Are you absolutely sure? This cannot be undone!')) return;
-  
-  try {
-    const usersSnap = await db.ref('users').once('value');
-    const updates = {};
-    
-    if(usersSnap.exists()){
-      usersSnap.forEach(child => {
-        const phone = child.key;
-        updates[`users/${phone}/totalDeposit`] = 0;
-        updates[`users/${phone}/totalWithdraw`] = 0;
-      });
-    }
-    
-    await db.ref().update(updates);
-    
-    alert('✅ Statistics reset successfully!');
-    fetchAndUpdateStats();
-    
-  } catch(e){
-    console.error(e);
-    alert('❌ Error: ' + e.message);
-  }
-}
-
-// ═══════════════════════════════════════════════
-//  DEPOSITS TAB
-// ═══════════════════════════════════════════════
-function renderDeposits(snapshot){
-  const content = document.getElementById('depositsContent');
-  if(!snapshot.exists()){ content.innerHTML='<div class="no-data">No deposit requests yet</div>'; return; }
-
-  var arr = [];
-  snapshot.forEach(function(child){ arr.push({ firebaseKey:child.key, ...child.val() }); });
-  arr.sort(function(a,b){ return (b.timestamp||0) - (a.timestamp||0); });
-
-  var html = '';
-  arr.forEach(function(d){
-    var date  = d.timestamp ? new Date(d.timestamp).toLocaleString() : 'N/A';
-    var badge = d.status==='pending'  ? 'badge-pending'
-              : d.status==='approved' ? 'badge-approved' : 'badge-rejected';
-    var btns  = d.status==='pending'
-      ? '<button class="btn-action btn-approve" onclick="approveDeposit(\'' + d.firebaseKey + '\',\'' + d.phone + '\',' + d.amount + ')">✓ Approve</button>' +
-        '<button class="btn-action btn-reject"  onclick="rejectDeposit(\'' + d.firebaseKey + '\')">✗ Reject</button>'
-      : '<button class="btn-action btn-delete"  onclick="deleteDeposit(\'' + d.firebaseKey + '\')">🗑 Delete</button>';
-
-    html +=
-      '<div class="card">' +
-        '<div class="card-header">' +
-          '<div>' +
-            '<div class="card-title">' + (d.name||'Unknown') + '</div>' +
-            '<div class="card-info">📱 ' + d.phone + '</div>' +
-            '<div class="card-info">🕒 ' + date + '</div>' +
-          '</div>' +
-          '<span class="badge ' + badge + '">' + (d.status||'pending').toUpperCase() + '</span>' +
-        '</div>' +
-        '<div class="card-amount amount-green">+ Rs ' + d.amount + '</div>' +
-        '<div class="btn-row">' + btns + '</div>' +
-      '</div>';
-  });
-  content.innerHTML = html;
-
-  // refresh stats after deposit list changes
-  fetchAndUpdateStats();
-}
-
-// ═══════════════════════════════════════════════
-//  WITHDRAWALS TAB
-// ═══════════════════════════════════════════════
-function renderWithdraws(snapshot){
-  const content = document.getElementById('withdrawsContent');
-  if(!snapshot.exists()){ content.innerHTML='<div class="no-data">No withdrawal requests yet</div>'; return; }
-
-  var arr = [];
-  snapshot.forEach(function(child){ arr.push({ firebaseKey:child.key, ...child.val() }); });
-  arr.sort(function(a,b){ return (b.timestamp||0) - (a.timestamp||0); });
-
-  var html = '';
-  arr.forEach(function(w){
-    var date   = w.timestamp ? new Date(w.timestamp).toLocaleString() : 'N/A';
-    var badge  = w.status==='pending'  ? 'badge-pending'
-               : w.status==='approved' ? 'badge-approved' : 'badge-rejected';
-    var method = w.withdrawMethod==='easy' ? 'Easypaisa' : 'JazzCash';
-    var btns   = w.status==='pending'
-      ? '<button class="btn-action btn-approve" onclick="approveWithdraw(\'' + w.firebaseKey + '\',\'' + w.phone + '\',' + w.amount + ')">✓ Approve</button>' +
-        '<button class="btn-action btn-reject"  onclick="rejectWithdraw(\'' + w.firebaseKey + '\')">✗ Reject</button>'
-      : '<button class="btn-action btn-delete"  onclick="deleteWithdraw(\'' + w.firebaseKey + '\')">🗑 Delete</button>';
-
-    html +=
-      '<div class="card">' +
-        '<div class="card-header">' +
-          '<div>' +
-            '<div class="card-title">' + (w.name||'Unknown') + '</div>' +
-            '<div class="card-info">📱 ' + w.phone + '</div>' +
-            '<div class="card-info">💳 ' + method + ': ' + w.jazzCash + '</div>' +
-            '<div class="card-info">🕒 ' + date + '</div>' +
-          '</div>' +
-          '<span class="badge ' + badge + '">' + (w.status||'pending').toUpperCase() + '</span>' +
-        '</div>' +
-        '<div class="card-amount amount-rose">− Rs ' + w.amount + '</div>' +
-        '<div class="btn-row">' + btns + '</div>' +
-      '</div>';
-  });
-  content.innerHTML = html;
-
-  // refresh stats
-  fetchAndUpdateStats();
-}
-
-// ═══════════════════════════════════════════════
-//  DEPOSIT ACTIONS
-// ═══════════════════════════════════════════════
-async function approveDeposit(key, phone, amount){
-  if(!confirm('Approve this deposit? Balance will be credited.')) return;
-  try {
-    var snap = await db.ref('users/' + phone).once('value');
-    if(snap.exists()){
-      var u = snap.val();
-      await db.ref('users/' + phone).update({
-        balance:      (u.balance||0) + amount,
-        totalDeposit: (u.totalDeposit||0) + amount
-      });
-    }
-    await db.ref('depositRequests/' + key).update({ status:'approved', approvedAt:Date.now() });
-    alert('✅ Deposit approved!');
-  } catch(e){ console.error(e); alert('❌ Error: ' + e.message); }
-}
-
-async function rejectDeposit(key){
-  if(!confirm('Reject this deposit?')) return;
-  try {
-    await db.ref('depositRequests/' + key).update({ status:'rejected' });
-    alert('Deposit rejected');
-  } catch(e){ console.error(e); alert('❌ Error: ' + e.message); }
-}
-
-async function deleteDeposit(key){
-  if(!confirm('Delete this deposit request?')) return;
-  try {
-    await db.ref('depositRequests/' + key).remove();
-    alert('✅ Deleted!');
-  } catch(e){ console.error(e); alert('❌ Error: ' + e.message); }
-}
-
-// ═══════════════════════════════════════════════
-//  WITHDRAWAL ACTIONS
-// ═══════════════════════════════════════════════
-async function approveWithdraw(key, phone, amount){
-  if(!confirm('Step 1: Have you sent the money to the user?')) return;
-  if(!confirm('Step 2: Confirm approval?')) return;
-  try {
-    var snap = await db.ref('users/' + phone).once('value');
-    if(snap.exists()){
-      var u = snap.val();
-      await db.ref('users/' + phone).update({
-        balance:       Math.max(0, (u.balance||0) - amount),
-        totalWithdraw: (u.totalWithdraw||0) + amount
-      });
-    }
-    await db.ref('withdrawRequests/' + key).update({ status:'approved', approvedAt:Date.now() });
-    alert('✅ Withdrawal approved!');
-  } catch(e){ console.error(e); alert('❌ Error: ' + e.message); }
-}
-
-async function rejectWithdraw(key){
-  if(!confirm('Reject this withdrawal?')) return;
-  try {
-    await db.ref('withdrawRequests/' + key).update({ status:'rejected' });
-    alert('Withdrawal rejected');
-  } catch(e){ console.error(e); alert('❌ Error: ' + e.message); }
-}
-
-async function deleteWithdraw(key){
-  if(!confirm('Delete this withdrawal request?')) return;
-  try {
-    await db.ref('withdrawRequests/' + key).remove();
-    alert('✅ Deleted!');
-  } catch(e){ console.error(e); alert('❌ Error: ' + e.message); }
-}
-
-// ═══════════════════════════════════════════════
-//  EDIT BALANCE MODAL
-// ═══════════════════════════════════════════════
-function editBalance(phone, name, balance){
-  currentEditUser = phone;
-  document.getElementById('editUserName').textContent       = name;
-  document.getElementById('editUserPhone').textContent      = phone;
-  document.getElementById('editCurrentBalance').textContent = 'Rs ' + Number(balance).toFixed(0);
-  document.getElementById('editNewBalance').value           = Number(balance).toFixed(0);
-  document.getElementById('editBalanceModal').classList.add('active');
-}
-
-async function saveBalance(){
-  var val = parseFloat(document.getElementById('editNewBalance').value);
-  if(isNaN(val) || val < 0){ alert('Invalid balance!'); return; }
-  try {
-    await db.ref('users/' + currentEditUser).update({ balance: val });
-    alert('✅ Balance updated!');
-    closeModal();
-  } catch(e){ console.error(e); alert('❌ Error: ' + e.message); }
-}
-
-function closeModal(){
-  document.getElementById('editBalanceModal').classList.remove('active');
-}
-
-// ═══════════════════════════════════════════════
-//  TAB SWITCHING
-// ═══════════════════════════════════════════════
-function showTab(tabName, btn){
-  document.querySelectorAll('.tab').forEach(function(t){ t.classList.remove('active'); });
-  document.querySelectorAll('.tab-content').forEach(function(c){ c.classList.remove('active'); });
-  btn.classList.add('active');
-  document.getElementById(tabName).classList.add('active');
-}
-
-/* ═══════════════════════════════════════════════
-   DEPOSIT ADMIN ACTIONS (Simple Like Withdraw)
-   ═══════════════════════════════════════════════ */
-
-async function approveDeposit(key, phone, amount){
-  if(!confirm('Approve this deposit?\nBalance will be added: Rs ' + amount)) return;
-  
-  try {
-    // Update request
-    await db.ref('depositRequests/' + key).update({ 
+    // 4. Log transaction
+    const transactionRef = window.dbPush(window.dbRef(window.db, 'transactions'));
+    await window.dbSet(transactionRef, {
+      id: transactionRef.key,
+      type: 'deposit',
+      userId: userPhone,
+      userName: user.name,
+      amount: amount,
       status: 'approved',
-      approvedAt: Date.now() 
+      timestamp: Date.now(),
+      requestId: requestId
     });
     
-    // Get user
-    var userSnap = await db.ref('users/' + phone).once('value');
-    if(!userSnap.exists()){ alert('✅ Approved but user not found'); return; }
+    alert('✅ Deposit approved successfully!');
+    loadDeposits();
     
-    var user = userSnap.val();
-    
-    // Add balance and reset rejections
-    await db.ref('users/' + phone).update({
-      balance: (user.balance || 0) + amount,
-      totalDeposit: (user.totalDeposit || 0) + amount,
-      depositRejections: 0,
-      depositLockUntil: null
-    });
-    
-    alert('✅ Deposit approved!\nBalance added: Rs ' + amount);
-    
-  } catch(e){ console.error(e); alert('❌ Error: ' + e.message); }
+  } catch (error) {
+    console.error('Error approving deposit:', error);
+    alert('❌ Failed to approve deposit');
+  }
 }
 
-async function rejectDeposit(key, phone){
-  if(!confirm('Reject this deposit?\nRejection counter will increase.')) return;
+function showRejectModal(requestId, userPhone, userName, amount) {
+  currentRejectData = { requestId, userPhone, userName, amount };
+  
+  document.getElementById('rejectMessage').innerHTML = `
+    Reject deposit request from <strong>${userName}</strong> (${userPhone})<br>
+    Amount: <strong>Rs ${amount}</strong><br><br>
+    This will count as a rejection. After 3 rejections, user will be locked for 30 minutes.
+  `;
+  
+  document.getElementById('rejectModal').classList.add('active');
+}
+
+async function confirmReject() {
+  if (!currentRejectData) return;
+  
+  const { requestId, userPhone, userName, amount } = currentRejectData;
   
   try {
-    // Update request
-    await db.ref('depositRequests/' + key).update({ 
+    // 1. Update deposit request status
+    await window.dbUpdate(window.dbRef(window.db, `depositRequests/${requestId}`), {
       status: 'rejected',
-      rejectedAt: Date.now() 
+      rejectedAt: Date.now(),
+      rejectedBy: 'admin',
+      reason: 'Admin rejected'
     });
     
-    // Get user
-    var userSnap = await db.ref('users/' + phone).once('value');
-    if(!userSnap.exists()){ alert('✅ Rejected'); return; }
-    
-    var user = userSnap.val();
-    var rejections = (user.depositRejections || 0) + 1;
-    var updates = { depositRejections: rejections };
-    
-    // Lock if 3 rejections
-    if(rejections >= 3){
-      updates.depositLockUntil = Date.now() + (30 * 60 * 1000);
-      alert('✅ Deposit rejected\n⚠️ User locked for 30 minutes (3 rejections)');
-    } else {
-      alert('✅ Deposit rejected\nRejections: ' + rejections + '/3');
+    // 2. Get current user data
+    const userSnap = await window.dbGet(window.dbRef(window.db, `users/${userPhone}`));
+    if (!userSnap.exists()) {
+      alert('User not found!');
+      closeModal('rejectModal');
+      return;
     }
     
-    await db.ref('users/' + phone).update(updates);
+    const user = userSnap.val();
+    const currentRejections = user.depositRejections || 0;
+    const newRejections = currentRejections + 1;
     
-  } catch(e){ console.error(e); alert('❌ Error: ' + e.message); }
+    const updates = {
+      depositRejections: newRejections
+    };
+    
+    // 3. Check if this is the 3rd rejection
+    if (newRejections >= 3) {
+      const lockUntil = Date.now() + (30 * 60 * 1000); // 30 minutes
+      updates.depositLockUntil = lockUntil;
+      
+      // Also send notification to user (optional)
+      const notificationRef = window.dbPush(window.dbRef(window.db, `notifications/${userPhone}`));
+      await window.dbSet(notificationRef, {
+        id: notificationRef.key,
+        type: 'deposit_lock',
+        message: `Your deposit requests have been rejected 3 times. Account locked for 30 minutes.`,
+        timestamp: Date.now(),
+        read: false
+      });
+    }
+    
+    // 4. Update user rejection count
+    await window.dbUpdate(window.dbRef(window.db, `users/${userPhone}`), updates);
+    
+    // 5. Log transaction
+    const transactionRef = window.dbPush(window.dbRef(window.db, 'transactions'));
+    await window.dbSet(transactionRef, {
+      id: transactionRef.key,
+      type: 'deposit',
+      userId: userPhone,
+      userName: userName,
+      amount: amount,
+      status: 'rejected',
+      timestamp: Date.now(),
+      requestId: requestId,
+      rejectionsCount: newRejections
+    });
+    
+    alert(`❌ Deposit rejected. User now has ${newRejections} rejection(s).`);
+    closeModal('rejectModal');
+    loadDeposits();
+    
+  } catch (error) {
+    console.error('Error rejecting deposit:', error);
+    alert('❌ Failed to reject deposit');
+    closeModal('rejectModal');
+  }
 }
 
-async function deleteDeposit(key){
-  if(!confirm('Delete this deposit?')) return;
+async function approveWithdrawal(requestId, userPhone, amount, accountNumber) {
+  if (!confirm(`Approve withdrawal of Rs ${amount} to ${accountNumber}?`)) return;
+  
   try {
-    await db.ref('depositRequests/' + key).remove();
-    alert('✅ Deleted');
-  } catch(e){ console.error(e); alert('❌ Error: ' + e.message); }
+    // 1. Get current user balance
+    const userSnap = await window.dbGet(window.dbRef(window.db, `users/${userPhone}`));
+    if (!userSnap.exists()) {
+      alert('User not found!');
+      return;
+    }
+    
+    const user = userSnap.val();
+    
+    if ((user.balance || 0) < amount) {
+      alert('❌ User has insufficient balance!');
+      return;
+    }
+    
+    // 2. Update user balance
+    const newBalance = (user.balance || 0) - amount;
+    const totalWithdraw = (user.totalWithdraw || 0) + amount;
+    
+    await window.dbUpdate(window.dbRef(window.db, `users/${userPhone}`), {
+      balance: newBalance,
+      totalWithdraw: totalWithdraw
+    });
+    
+    // 3. Update withdrawal request status
+    await window.dbUpdate(window.dbRef(window.db, `withdrawRequests/${requestId}`), {
+      status: 'approved',
+      approvedAt: Date.now(),
+      approvedBy: 'admin'
+    });
+    
+    // 4. Log transaction
+    const transactionRef = window.dbPush(window.dbRef(window.db, 'transactions'));
+    await window.dbSet(transactionRef, {
+      id: transactionRef.key,
+      type: 'withdrawal',
+      userId: userPhone,
+      userName: user.name,
+      amount: amount,
+      accountNumber: accountNumber,
+      status: 'approved',
+      timestamp: Date.now(),
+      requestId: requestId
+    });
+    
+    alert('✅ Withdrawal approved successfully!');
+    loadWithdrawals();
+    
+  } catch (error) {
+    console.error('Error approving withdrawal:', error);
+    alert('❌ Failed to approve withdrawal');
+  }
 }
 
+async function rejectWithdrawal(requestId, userPhone) {
+  if (!confirm('Reject this withdrawal request?')) return;
+  
+  try {
+    await window.dbUpdate(window.dbRef(window.db, `withdrawRequests/${requestId}`), {
+      status: 'rejected',
+      rejectedAt: Date.now(),
+      rejectedBy: 'admin',
+      reason: 'Admin rejected'
+    });
+    
+    alert('❌ Withdrawal rejected');
+    loadWithdrawals();
+    
+  } catch (error) {
+    console.error('Error rejecting withdrawal:', error);
+    alert('❌ Failed to reject withdrawal');
+  }
+}
 
+function viewUserDetails(userPhone) {
+  // Implement user details view
+  alert(`User details for: ${userPhone}\n\nThis feature can be expanded to show detailed transaction history.`);
+}
+
+function closeModal(modalId) {
+  document.getElementById(modalId).classList.remove('active');
+  currentRejectData = null;
+}
+
+// Initialize on load
+document.addEventListener('DOMContentLoaded', () => {
+  loadDeposits();
+  
+  // Auto-refresh every 30 seconds
+  setInterval(() => {
+    if (currentTab === 'deposits') loadDeposits();
+    else if (currentTab === 'withdrawals') loadWithdrawals();
+    else if (currentTab === 'users') loadUsers();
+  }, 30000);
+});
 </script>
 
 </body>
