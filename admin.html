@@ -1305,6 +1305,153 @@ function showTab(tabName, btn){
   btn.classList.add('active');
   document.getElementById(tabName).classList.add('active');
 }
+
+/* ═══════════════════════════════════════════════
+   DEPOSIT ADMIN ACTIONS - 2 STEP VERIFICATION
+   ═══════════════════════════════════════════════ */
+
+async function approveDepositStep1(key, phone){
+  if(!confirm('Approve this deposit (Step 1)?\nUser will be asked to confirm payment.')) return;
+  
+  try {
+    await db.ref('depositRequests/' + key).update({ 
+      status: 'approved', 
+      step: 1,
+      approvedAt: Date.now() 
+    });
+    
+    alert('✅ Deposit approved (Step 1)!\nUser will now confirm payment.');
+  } catch(e){ 
+    console.error(e); 
+    alert('❌ Error: ' + e.message); 
+  }
+}
+
+async function rejectDepositStep1(key, phone){
+  if(!confirm('Reject this deposit (Step 1)?\nRejection counter will increase.')) return;
+  
+  try {
+    // Update request status
+    await db.ref('depositRequests/' + key).update({ 
+      status: 'rejected',
+      step: 1, 
+      rejectedAt: Date.now() 
+    });
+    
+    // Get user data
+    var userSnap = await db.ref('users/' + phone).once('value');
+    if(!userSnap.exists()){
+      alert('✅ Deposit rejected (Step 1)');
+      return;
+    }
+    
+    var user = userSnap.val();
+    var rejections = (user.depositRejections || 0) + 1;
+    var updates = { depositRejections: rejections };
+    
+    // Lock if 3 rejections
+    if(rejections >= 3){
+      updates.depositLockUntil = Date.now() + (30 * 60 * 1000); // 30 minutes
+      alert('✅ Deposit rejected (Step 1)\n⚠️ User has been locked for 30 minutes (3 rejections)');
+    } else {
+      alert('✅ Deposit rejected (Step 1)\nRejection count: ' + rejections + '/3');
+    }
+    
+    await db.ref('users/' + phone).update(updates);
+    
+  } catch(e){ 
+    console.error(e); 
+    alert('❌ Error: ' + e.message); 
+  }
+}
+
+async function approveDepositStep2(key, phone, amount){
+  if(!confirm('Complete this deposit?\nBalance will be added: Rs ' + amount)) return;
+  
+  try {
+    // Update request status
+    await db.ref('depositRequests/' + key).update({ 
+      status: 'completed',
+      step: 2,
+      completedAt: Date.now() 
+    });
+    
+    // Get user data
+    var userSnap = await db.ref('users/' + phone).once('value');
+    if(!userSnap.exists()){
+      alert('✅ Deposit completed but user not found!');
+      return;
+    }
+    
+    var user = userSnap.val();
+    
+    // Add balance and reset rejections
+    await db.ref('users/' + phone).update({
+      balance: (user.balance || 0) + amount,
+      totalDeposit: (user.totalDeposit || 0) + amount,
+      depositRejections: 0,  // Reset counter on success
+      depositLockUntil: null  // Remove lock
+    });
+    
+    alert('✅ Deposit completed!\nBalance added: Rs ' + amount);
+    
+  } catch(e){ 
+    console.error(e); 
+    alert('❌ Error: ' + e.message); 
+  }
+}
+
+async function rejectDepositStep2(key, phone){
+  if(!confirm('Cancel this confirmed deposit (Step 2)?\nRejection counter will increase.')) return;
+  
+  try {
+    // Update request status
+    await db.ref('depositRequests/' + key).update({ 
+      status: 'cancelled',
+      step: 2,
+      rejectedAt: Date.now() 
+    });
+    
+    // Get user data
+    var userSnap = await db.ref('users/' + phone).once('value');
+    if(!userSnap.exists()){
+      alert('✅ Deposit cancelled (Step 2)');
+      return;
+    }
+    
+    var user = userSnap.val();
+    var rejections = (user.depositRejections || 0) + 1;
+    var updates = { depositRejections: rejections };
+    
+    // Lock if 3 rejections
+    if(rejections >= 3){
+      updates.depositLockUntil = Date.now() + (30 * 60 * 1000); // 30 minutes
+      alert('✅ Deposit cancelled (Step 2)\n⚠️ User has been locked for 30 minutes (3 rejections)');
+    } else {
+      alert('✅ Deposit cancelled (Step 2)\nRejection count: ' + rejections + '/3');
+    }
+    
+    await db.ref('users/' + phone).update(updates);
+    
+  } catch(e){ 
+    console.error(e); 
+    alert('❌ Error: ' + e.message); 
+  }
+}
+
+async function deleteDepositRequest(key){
+  if(!confirm('Delete this deposit request permanently?')) return;
+  
+  try {
+    await db.ref('depositRequests/' + key).remove();
+    alert('✅ Deposit request deleted');
+  } catch(e){ 
+    console.error(e); 
+    alert('❌ Error: ' + e.message); 
+  }
+}
+
+
 </script>
 
 </body>
