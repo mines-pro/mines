@@ -1307,7 +1307,7 @@ function showTab(tabName, btn){
 }
 
 /* ═══════════════════════════════════════════════
-   DEPOSIT ADMIN ACTIONS - SINGLE STEP
+   DEPOSIT ADMIN ACTIONS (Simple Like Withdraw)
    ═══════════════════════════════════════════════ */
 
 async function approveDeposit(key, phone, amount){
@@ -1322,10 +1322,7 @@ async function approveDeposit(key, phone, amount){
     
     // Get user
     var userSnap = await db.ref('users/' + phone).once('value');
-    if(!userSnap.exists()){
-      alert('✅ Approved but user not found');
-      return;
-    }
+    if(!userSnap.exists()){ alert('✅ Approved but user not found'); return; }
     
     var user = userSnap.val();
     
@@ -1334,16 +1331,12 @@ async function approveDeposit(key, phone, amount){
       balance: (user.balance || 0) + amount,
       totalDeposit: (user.totalDeposit || 0) + amount,
       depositRejections: 0,
-      depositLockUntil: null,
-      lastDepositRejectedAt: null
+      depositLockUntil: null
     });
     
     alert('✅ Deposit approved!\nBalance added: Rs ' + amount);
     
-  } catch(e){ 
-    console.error(e); 
-    alert('❌ Error: ' + e.message); 
-  }
+  } catch(e){ console.error(e); alert('❌ Error: ' + e.message); }
 }
 
 async function rejectDeposit(key, phone){
@@ -1358,17 +1351,11 @@ async function rejectDeposit(key, phone){
     
     // Get user
     var userSnap = await db.ref('users/' + phone).once('value');
-    if(!userSnap.exists()){
-      alert('✅ Rejected');
-      return;
-    }
+    if(!userSnap.exists()){ alert('✅ Rejected'); return; }
     
     var user = userSnap.val();
     var rejections = (user.depositRejections || 0) + 1;
-    var updates = { 
-      depositRejections: rejections,
-      lastDepositRejectedAt: Date.now()
-    };
+    var updates = { depositRejections: rejections };
     
     // Lock if 3 rejections
     if(rejections >= 3){
@@ -1380,21 +1367,15 @@ async function rejectDeposit(key, phone){
     
     await db.ref('users/' + phone).update(updates);
     
-  } catch(e){ 
-    console.error(e); 
-    alert('❌ Error: ' + e.message); 
-  }
+  } catch(e){ console.error(e); alert('❌ Error: ' + e.message); }
 }
 
-async function deleteDepositRequest(key){
-  if(!confirm('Delete this deposit request?')) return;
+async function deleteDeposit(key){
+  if(!confirm('Delete this deposit?')) return;
   try {
     await db.ref('depositRequests/' + key).remove();
     alert('✅ Deleted');
-  } catch(e){ 
-    console.error(e); 
-    alert('❌ Error: ' + e.message); 
-  }
+  } catch(e){ console.error(e); alert('❌ Error: ' + e.message); }
 }
 
 
