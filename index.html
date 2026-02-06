@@ -948,95 +948,62 @@ const sounds = {
   mine: new Audio('data:audio/wav;base64,UklGRiYAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YWIAAACAfn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+')
 };
 
-// Preload sounds
+// Preload sounds - set to 40% volume
 Object.values(sounds).forEach(sound => {
-  sound.volume = 0.3;
+  sound.volume = 0.4;
   sound.load();
 });
 
-// Background music system
+// Audio context for musical sounds
 let audioCtx;
-let backgroundMusic = null;
-let musicGainNode = null;
 
-function initBackgroundMusic(){
-  if(backgroundMusic) return; // Already initialized
+function initAudioContext(){
+  if(!audioCtx){
+    try {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    } catch(e) {
+      console.log('Audio context init failed:', e);
+    }
+  }
+}
+
+// Play button click music
+function playButtonMusic(){
+  if(!audioCtx) initAudioContext();
+  if(!audioCtx) return;
   
   try {
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
     
-    // Create oscillators for ambient background music
-    const osc1 = audioCtx.createOscillator();
-    const osc2 = audioCtx.createOscillator();
-    const osc3 = audioCtx.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.value = 800;
+    gain.gain.value = 0.16; // 40% volume
     
-    // Create gain nodes
-    const gain1 = audioCtx.createGain();
-    const gain2 = audioCtx.createGain();
-    const gain3 = audioCtx.createGain();
-    musicGainNode = audioCtx.createGain();
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
     
-    // Set frequencies for a pleasant chord
-    osc1.type = 'sine';
-    osc1.frequency.value = 220; // A3
-    
-    osc2.type = 'sine';
-    osc2.frequency.value = 330; // E4
-    
-    osc3.type = 'triangle';
-    osc3.frequency.value = 440; // A4
-    
-    // Set individual oscillator volumes
-    gain1.gain.value = 0.08;
-    gain2.gain.value = 0.06;
-    gain3.gain.value = 0.04;
-    
-    // Master music volume at 50%
-    musicGainNode.gain.value = 0.5;
-    
-    // Connect audio graph
-    osc1.connect(gain1);
-    osc2.connect(gain2);
-    osc3.connect(gain3);
-    
-    gain1.connect(musicGainNode);
-    gain2.connect(musicGainNode);
-    gain3.connect(musicGainNode);
-    
-    musicGainNode.connect(audioCtx.destination);
-    
-    // Start oscillators
-    osc1.start();
-    osc2.start();
-    osc3.start();
-    
-    backgroundMusic = { osc1, osc2, osc3 };
-    
-    // Add subtle LFO modulation
-    const lfo = audioCtx.createOscillator();
-    lfo.type = 'sine';
-    lfo.frequency.value = 0.3;
-    const lfoGain = audioCtx.createGain();
-    lfoGain.gain.value = 8;
-    lfo.connect(lfoGain);
-    lfoGain.connect(osc1.frequency);
-    lfo.start();
-    
+    osc.start();
+    osc.frequency.exponentialRampToValueAtTime(600, audioCtx.currentTime + 0.1);
+    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+    osc.stop(audioCtx.currentTime + 0.1);
   } catch(e) {
-    console.log('Background music init failed:', e);
+    console.log('Button music error:', e);
   }
 }
 
 // Play musical note on tile click/reveal
 function playMusicNote(frequency, duration = 0.15){
+  if(!audioCtx) initAudioContext();
   if(!audioCtx) return;
+  
   try {
     const osc = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
     
     osc.type = 'sine';
     osc.frequency.value = frequency;
-    gain.gain.value = 0.25; // 50% volume
+    gain.gain.value = 0.16; // 40% volume
     
     osc.connect(gain);
     gain.connect(audioCtx.destination);
@@ -1049,42 +1016,86 @@ function playMusicNote(frequency, duration = 0.15){
   }
 }
 
-// Play explosion sound for mine
-function playExplosionSound(){
+// Play realistic bomb blast sound
+function playBombBlast(){
+  if(!audioCtx) initAudioContext();
   if(!audioCtx) return;
+  
   try {
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    const filter = audioCtx.createBiquadFilter();
+    // Create multiple layers for realistic bomb blast
     
-    osc.type = 'sawtooth';
-    osc.frequency.value = 100;
-    filter.type = 'lowpass';
-    filter.frequency.value = 500;
-    gain.gain.value = 0.3; // 50% volume
+    // Layer 1: Low frequency rumble
+    const osc1 = audioCtx.createOscillator();
+    const gain1 = audioCtx.createGain();
+    osc1.type = 'sawtooth';
+    osc1.frequency.value = 80;
+    gain1.gain.value = 0.2; // 40% volume
+    osc1.connect(gain1);
+    gain1.connect(audioCtx.destination);
     
-    osc.connect(filter);
-    filter.connect(gain);
-    gain.connect(audioCtx.destination);
+    // Layer 2: Mid explosion crack
+    const osc2 = audioCtx.createOscillator();
+    const gain2 = audioCtx.createGain();
+    osc2.type = 'square';
+    osc2.frequency.value = 200;
+    gain2.gain.value = 0.12; // 40% volume
+    osc2.connect(gain2);
+    gain2.connect(audioCtx.destination);
     
-    osc.start();
-    osc.frequency.exponentialRampToValueAtTime(30, audioCtx.currentTime + 0.3);
-    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
-    osc.stop(audioCtx.currentTime + 0.3);
+    // Layer 3: High frequency debris
+    const noise = audioCtx.createBufferSource();
+    const noiseGain = audioCtx.createGain();
+    const noiseFilter = audioCtx.createBiquadFilter();
+    
+    // Create white noise
+    const bufferSize = audioCtx.sampleRate * 0.5;
+    const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for(let i = 0; i < bufferSize; i++){
+      data[i] = Math.random() * 2 - 1;
+    }
+    noise.buffer = buffer;
+    
+    noiseFilter.type = 'bandpass';
+    noiseFilter.frequency.value = 1000;
+    noiseGain.gain.value = 0.08; // 40% volume
+    
+    noise.connect(noiseFilter);
+    noiseFilter.connect(noiseGain);
+    noiseGain.connect(audioCtx.destination);
+    
+    // Start all layers
+    const now = audioCtx.currentTime;
+    osc1.start(now);
+    osc2.start(now);
+    noise.start(now);
+    
+    // Decay envelopes
+    osc1.frequency.exponentialRampToValueAtTime(20, now + 0.5);
+    gain1.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+    
+    osc2.frequency.exponentialRampToValueAtTime(50, now + 0.3);
+    gain2.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+    
+    noiseGain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+    
+    // Stop all
+    osc1.stop(now + 0.5);
+    osc2.stop(now + 0.3);
+    noise.stop(now + 0.4);
+    
   } catch(e) {
-    console.log('Explosion sound error:', e);
+    console.log('Bomb blast sound error:', e);
   }
 }
 
 function playSound(soundName){
   try {
-    // Initialize background music on first interaction
-    if(!backgroundMusic){
-      initBackgroundMusic();
-    }
+    if(!audioCtx) initAudioContext();
     
     if(sounds[soundName]){
       sounds[soundName].currentTime = 0;
+      sounds[soundName].volume = 0.4; // Ensure 40% volume
       sounds[soundName].play().catch(e => console.log('Sound blocked:', e));
     }
   } catch(e) {
@@ -1112,6 +1123,7 @@ let depositLockTimer = null;
 // Deposit method switching
 function switchDepositMethod(method){
   playSound('click');
+  playButtonMusic();
   depositMethod = method;
   const tabJ = document.getElementById('depTabJazz');
   const tabE = document.getElementById('depTabEasy');
@@ -1139,6 +1151,7 @@ function copyDepositNumber(){
       display.classList.add('copied');
       setTimeout(() => display.classList.remove('copied'), 2000);
       playSound('success');
+      playButtonMusic();
     }).catch(err => {
       console.error('Copy failed:', err);
     });
@@ -1279,6 +1292,7 @@ function listenToDepositRequests(){
 // Open deposit modal
 async function openDepositModal(){
   playSound('click');
+  playButtonMusic();
   
   // Reset form
   switchDepositMethod('jazz');
@@ -1302,6 +1316,7 @@ async function openDepositModal(){
 // Submit deposit request
 async function submitDeposit(){
   playSound('click');
+  playButtonMusic();
   
   const amount = parseInt(document.getElementById('depositAmount').value);
   const method = depositMethod === 'jazz' ? 'jazzcash' : 'easypaisa';
@@ -1365,6 +1380,7 @@ let withdrawMethod = 'jazz';
 // Withdraw method switching
 function switchWithdrawMethod(method){
   playSound('click');
+  playButtonMusic();
   withdrawMethod = method;
   const tabJ = document.getElementById('tabJazz');
   const tabE = document.getElementById('tabEasy');
@@ -1461,6 +1477,7 @@ function checkWithdrawCooldown(){
 // Open withdraw modal
 function openWithdrawModal(){
   playSound('click');
+  playButtonMusic();
   
   // Reset form
   switchWithdrawMethod('jazz');
@@ -1485,6 +1502,7 @@ function openWithdrawModal(){
 // Submit withdraw request
 async function submitWithdraw(){
   playSound('click');
+  playButtonMusic();
   
   const phone = document.getElementById('withdrawPhone').value.trim();
   const amount = parseInt(document.getElementById('withdrawAmount').value);
@@ -1605,6 +1623,7 @@ function listenToUserData(phone){
 
 /* ─── Login ─── */
 async function handleLogin(){
+  playButtonMusic();
   await fbReady();
   const name  = document.getElementById('loginName').value.trim();
   const phone = document.getElementById('loginPhone').value.trim();
@@ -1803,7 +1822,7 @@ function clickTile(index){
 
   if(gameState.minePositions.includes(index)){
     playSound('mine');
-    playExplosionSound(); // Add explosion music
+    playBombBlast(); // Realistic bomb blast sound
     tiles[index].textContent = '💣';
     tiles[index].classList.add('revealed','mine','mine-hit');
     gameOver(false);
@@ -1836,6 +1855,7 @@ function startGame(){
 async function cashout(){
   if(!gameState.gameActive || gameState.currentWin===0) return;
   playSound('win');
+  playButtonMusic();
   const total = gameState.currentBet + gameState.currentWin;
   gameState.balance += total;
   await updateUserBalance(gameState.userPhone, gameState.balance);
@@ -1869,6 +1889,7 @@ function revealAllTiles(){
 }
 
 async function resetGame(){
+  playButtonMusic();
   if(gameState.betSet && gameState.currentBet>0){
     const ret = gameState.currentBet + gameState.currentWin;
     gameState.balance += ret;
@@ -1896,6 +1917,7 @@ function updateDisplay(){
 /* ─── Bet / Mines modals ─── */
 function openBetModal(){
   playSound('click');
+  playButtonMusic();
   if(gameState.gameActive){ 
     playSound('error');
     alert('Cannot change bet during active game!'); 
@@ -1917,6 +1939,7 @@ async function setBet(){
     return; 
   }
   playSound('success');
+  playButtonMusic();
   gameState.balance-=a; gameState.currentBet=a; gameState.betSet=true; gameState.tilesClicked=false;
   await updateUserBalance(gameState.userPhone,gameState.balance);
   updateDisplay(); closeModal('betModal');
@@ -1925,6 +1948,7 @@ async function setBet(){
 
 function openMinesModal(){
   playSound('click');
+  playButtonMusic();
   if(gameState.gameActive){ 
     playSound('error');
     alert('Cannot change mines during game!'); 
@@ -1941,12 +1965,14 @@ function setMines(){
     return; 
   }
   playSound('click');
+  playButtonMusic();
   gameState.minesCount=c; updateDisplay(); closeModal('minesModal');
 }
 
 /* ─── UI helpers ─── */
 function closeModal(id){ 
   playSound('click');
+  playButtonMusic();
   document.getElementById(id).classList.remove('active'); 
 }
 
