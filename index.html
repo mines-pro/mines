@@ -573,22 +573,22 @@ button:disabled { opacity:.38; cursor:not-allowed; }
 }
 
 /* ═══════════════════════════════════════════════
-   GAME CONTROLS LAYOUT - UPDATED
+   GAME ACTION BUTTONS LAYOUT - UPDATED
    ═══════════════════════════════════════════════ */
-.game-controls {
+.game-action-buttons {
   display: flex;
   gap: 10px;
   margin-top: 20px;
 }
 
-.left-controls {
+.action-left {
   flex: 1;
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.right-controls {
+.action-right {
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -614,12 +614,12 @@ button:disabled { opacity:.38; cursor:not-allowed; }
   .payment-number-display .number { font-size:17px; }
   .pending-amount { font-size:18px; }
   
-  /* Responsive game controls */
-  .game-controls {
+  /* Responsive game buttons */
+  .game-action-buttons {
     flex-direction: column;
     gap: 12px;
   }
-  .left-controls, .right-controls {
+  .action-left, .action-right {
     width: 100%;
   }
 }
@@ -700,18 +700,18 @@ button:disabled { opacity:.38; cursor:not-allowed; }
 
   <div class="grid" id="gameGrid"></div>
 
-  <!-- UPDATED GAME CONTROLS LAYOUT -->
-  <div class="game-controls">
-    <!-- LEFT SIDE: Cashout and Reset buttons -->
-    <div class="left-controls">
-      <button class="btn-gold" id="cashoutBtn" onclick="cashout()" disabled>Cash Out</button>
-      <button class="btn-reset" onclick="resetGame()">🔄 Reset</button>
+  <!-- UPDATED GAME ACTION BUTTONS LAYOUT -->
+  <div class="game-action-buttons">
+    <!-- LEFT SIDE: Cashout and Reset buttons (Green like Deposit) -->
+    <div class="action-left">
+      <button class="btn-green" id="cashoutBtn" onclick="cashout()" disabled>CASH OUT</button>
+      <button class="btn-green" onclick="resetGame()">RESET</button>
     </div>
     
-    <!-- RIGHT SIDE: Bet and Mines buttons -->
-    <div class="right-controls">
-      <button class="btn-blue" onclick="openBetModal()">Bet Rs <span id="betDisplay">0</span></button>
-      <button class="btn-red" onclick="openMinesModal()">💣 Mines: <span id="minesDisplay">3</span></button>
+    <!-- RIGHT SIDE: Mines and Bet buttons (Orange like Withdraw) -->
+    <div class="action-right">
+      <button class="btn-orange" onclick="openMinesModal()">💣 MINES: <span id="minesDisplay">3</span></button>
+      <button class="btn-orange" onclick="openBetModal()">BET RS <span id="betDisplay">0</span></button>
     </div>
   </div>
 </div>
@@ -778,7 +778,7 @@ button:disabled { opacity:.38; cursor:not-allowed; }
   <div class="modal-content">
     <div class="modal-title">Set Bet Amount</div>
     <input type="number" id="betInput" placeholder="Amount (Rs 100 – 10,000)" min="100" max="10000">
-    <button class="btn-blue" onclick="setBet()">Set Bet</button>
+    <button class="btn-orange" onclick="setBet()">Set Bet</button>
     <button class="btn-red"  onclick="closeModal('betModal')">Cancel</button>
   </div>
 </div>
@@ -788,8 +788,8 @@ button:disabled { opacity:.38; cursor:not-allowed; }
   <div class="modal-content">
     <div class="modal-title">💣 Set Mines Count</div>
     <input type="number" id="minesInput" placeholder="Mines (1–24)" min="1" max="24" value="3">
-    <button class="btn-red"  onclick="setMines()">Set Mines</button>
-    <button class="btn-blue" onclick="closeModal('minesModal')">Cancel</button>
+    <button class="btn-orange"  onclick="setMines()">Set Mines</button>
+    <button class="btn-red" onclick="closeModal('minesModal')">Cancel</button>
   </div>
 </div>
 
