@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mines Game - Card Edition</title>
+<title>Mines Game</title>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 /* ═══════════════════════════════════════════════
@@ -17,22 +17,19 @@
   --neon-amber:    #fbbf24;
   --neon-rose:     #fb7185;
   --neon-blue:     #60a5fa;
-  --neon-teal:     #2dd4bf;
   --bg-deep:       #0a0c14;
-  --card-bg:       rgba(18, 22, 40, 0.85);
-  --card-border:   rgba(255,255,255,0.08);
-  --card-shadow:   0 8px 32px rgba(0,0,0,0.32);
+  --glass-bg:      rgba(18, 22, 40, 0.65);
+  --glass-border:  rgba(255,255,255,0.11);
+  --glass-border2: rgba(255,255,255,0.22);
   --text-primary:  #f0f0f5;
   --text-muted:    #9aa0b8;
-  --radius-lg:     18px;
-  --radius-md:     14px;
+  --radius:        16px;
   --radius-sm:     10px;
-  --spacing-card:  20px;
-  --spacing-section: 16px;
+  --blur-main:     24px;
+  --blur-modal:    30px;
+  --blur-tile:     6px;
 }
-
 * { margin:0; padding:0; box-sizing:border-box; }
-
 html, body {
   height:100%; min-height:100vh;
   font-family:'Rajdhani', sans-serif;
@@ -43,751 +40,384 @@ html, body {
 }
 
 /* ═══════════════════════════════════════════════
-   BACKGROUND & CANVAS
+   CANVAS BG
    ═══════════════════════════════════════════════ */
-.background-gradient {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: radial-gradient(ellipse at top, rgba(26, 32, 64, 0.4) 0%, rgba(10, 12, 20, 0.9) 70%);
-  z-index: -1;
+#bgCanvas {
+  position:fixed; top:0; left:0;
+  width:100%; height:100%;
+  z-index:0; pointer-events:none;
 }
 
-.noise-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  background-size: 200px;
-  opacity: 0.02;
-  z-index: -1;
-  pointer-events: none;
+/* noise grain */
+body::before {
+  content:'';
+  position:fixed; inset:0; z-index:1;
+  pointer-events:none; opacity:.04;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size:200px 200px;
 }
 
 /* ═══════════════════════════════════════════════
-   MAIN CONTAINER
+   PAGE LAYOUT
    ═══════════════════════════════════════════════ */
-.main-container {
-  max-width: 480px;
-  width: 100%;
-  margin: 0 auto;
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-section);
+.page-wrap {
+  position:relative; z-index:2;
+  min-height:100vh;
+  display:flex; justify-content:center;
+  align-items:flex-start;
+  padding:28px 16px 48px;
 }
 
 /* ═══════════════════════════════════════════════
-   CARD STYLES
+   GLASS CONTAINER
    ═══════════════════════════════════════════════ */
-.card {
-  background: var(--card-bg);
-  backdrop-filter: blur(20px) saturate(1.5);
-  -webkit-backdrop-filter: blur(20px) saturate(1.5);
-  border: 1px solid var(--card-border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--card-shadow),
-              inset 0 1px 0 rgba(255,255,255,0.05);
-  padding: var(--spacing-card);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+.container {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--blur-main)) saturate(1.4);
+  -webkit-backdrop-filter: blur(var(--blur-main)) saturate(1.4);
+  border: 1.5px solid var(--glass-border);
+  border-radius: var(--radius);
+  box-shadow: 0 8px 40px rgba(0,0,0,.52),
+              inset 0 1px 0 rgba(255,255,255,.07);
+  max-width:480px; width:100%;
+  padding:28px 22px 32px;
+  margin-top:20px;
 }
+.hidden { display:none !important; }
 
-.card:hover {
-  box-shadow: 0 12px 40px rgba(0,0,0,0.4),
-              inset 0 1px 0 rgba(255,255,255,0.08);
+/* ═══════════════════════════════════════════════
+   TITLE
+   ═══════════════════════════════════════════════ */
+.title {
+  font-family:'Orbitron', sans-serif;
+  font-size:50px; font-weight:900;
+  letter-spacing:13px; text-align:center;
+  margin-bottom:4px;
+  background: linear-gradient(135deg, #f0c040 0%, #fbbf24 45%, #f59e0b 75%, #f0c040 100%);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  background-clip:text;
+  filter: drop-shadow(0 0 20px rgba(240,192,64,.42));
+  text-transform:uppercase;
+}
+.subtitle {
+  font-size:14px; color:var(--text-muted);
+  text-align:center; margin-bottom:24px;
+  letter-spacing:2px; direction:rtl; font-weight:500;
 }
 
 /* ═══════════════════════════════════════════════
-   HEADER CARD - User info + Logout button
+   USER INFO
    ═══════════════════════════════════════════════ */
-.header-card {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px;
-  min-height: 80px;
-}
-
 .user-info {
-  flex: 1;
-}
-
-.user-name {
-  font-family: 'Orbitron', sans-serif;
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--gold);
-  letter-spacing: 1px;
-  margin-bottom: 6px;
-  text-shadow: 0 0 10px rgba(240,192,64,0.3);
-}
-
-.user-phone {
-  font-size: 15px;
-  color: var(--text-muted);
-  font-weight: 500;
-}
-
-/* ═══════════════════════════════════════════════
-   LOGOUT BUTTON - Touch-friendly
-   ═══════════════════════════════════════════════ */
-.logout-btn {
-  background: rgba(251,113,133,0.1);
-  border: 1.5px solid rgba(251,113,133,0.3);
-  color: var(--neon-rose);
-  padding: 12px 20px;
+  background: rgba(12,15,26,0.68);
+  backdrop-filter: blur(10px);
+  border: 1.5px solid var(--glass-border);
   border-radius: var(--radius-sm);
-  font-family: 'Rajdhani', sans-serif;
-  font-size: 15px;
-  font-weight: 600;
-  letter-spacing: 1px;
-  cursor: pointer;
-  transition: all 0.25s ease;
-  text-transform: uppercase;
-  min-height: 48px;
-  min-width: 100px;
-  touch-action: manipulation;
+  padding:12px 16px; margin-bottom:14px;
+  display:flex; justify-content:space-between;
+  align-items:center; gap:10px;
 }
+.user-name {
+  font-family:'Orbitron', sans-serif;
+  font-size:13px; font-weight:700;
+  color:var(--gold); letter-spacing:1px; margin-bottom:2px;
+  text-shadow: 0 0 8px rgba(240,192,64,.25);
+}
+.user-phone { font-size:13px; color:var(--text-muted); }
 
-.logout-btn:hover {
-  background: rgba(251,113,133,0.2);
-  border-color: rgba(251,113,133,0.5);
-  box-shadow: 0 0 20px rgba(251,113,133,0.2);
+/* ═══════════════════════════════════════════════
+   INPUTS
+   ═══════════════════════════════════════════════ */
+input {
+  width:100%; padding:14px 16px; margin:8px 0;
+  background: rgba(12,15,26,0.78);
+  border: 1.5px solid var(--glass-border2);
+  border-radius: var(--radius-sm);
+  font-family:'Rajdhani', sans-serif;
+  font-size:16px; font-weight:500;
+  color:var(--text-primary); outline:none;
+  transition: border-color .25s, box-shadow .25s;
+}
+input::placeholder { color:var(--text-muted); }
+input:focus {
+  border-color: var(--neon-cyan);
+  box-shadow: 0 0 14px rgba(34,211,238,.25);
 }
 
 /* ═══════════════════════════════════════════════
-   ACTION CARD - Deposit & Withdraw buttons (equal size)
+   BUTTONS
    ═══════════════════════════════════════════════ */
-.action-card {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  padding: 20px;
+button {
+  width:100%; padding:15px 18px; margin:7px 0;
+  border-radius: var(--radius-sm);
+  font-family:'Rajdhani', sans-serif;
+  font-size:17px; font-weight:700;
+  letter-spacing:1.2px; cursor:pointer;
+  border:none; position:relative; overflow:hidden;
+  transition: transform .18s, box-shadow .25s, background .22s;
+  text-transform:uppercase;
 }
+button:hover:not(:disabled) { transform:translateY(-2px); }
+button:active:not(:disabled) { transform:translateY(0); }
+button:disabled { opacity:.38; cursor:not-allowed; }
 
-.action-btn {
-  padding: 20px 12px;
-  border-radius: var(--radius-md);
-  font-family: 'Rajdhani', sans-serif;
-  font-size: 17px;
-  font-weight: 700;
-  letter-spacing: 1.2px;
-  cursor: pointer;
-  border: none;
-  transition: all 0.25s ease;
-  text-transform: uppercase;
-  text-align: center;
-  position: relative;
-  overflow: hidden;
-  min-height: 64px;
-  touch-action: manipulation;
-}
-
-.action-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.action-btn:not(:disabled):hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
-}
-
-.action-btn:not(:disabled):active {
-  transform: translateY(-1px);
-}
-
-/* Deposit Button */
-.deposit-btn {
-  background: linear-gradient(135deg, rgba(52,211,153,0.15), rgba(52,211,153,0.08));
-  border: 1.5px solid rgba(52,211,153,0.4);
+.btn-green {
+  background: rgba(52,211,153,.18);
+  border: 1.5px solid rgba(52,211,153,.55);
   color: var(--neon-emerald);
+  box-shadow: 0 0 12px rgba(52,211,153,.18), inset 0 1px 0 rgba(52,211,153,.14);
 }
-
-.deposit-btn:not(:disabled):hover {
-  background: linear-gradient(135deg, rgba(52,211,153,0.25), rgba(52,211,153,0.15));
-  border-color: rgba(52,211,153,0.6);
-  box-shadow: 0 0 24px rgba(52,211,153,0.2);
+.btn-green:hover:not(:disabled) {
+  box-shadow: 0 0 24px rgba(52,211,153,.4);
+  background: rgba(52,211,153,.26);
 }
+.btn-green:active:not(:disabled) { background: rgba(52,211,153,.34); }
 
-/* Withdraw Button */
-.withdraw-btn {
-  background: linear-gradient(135deg, rgba(251,191,36,0.15), rgba(251,191,36,0.08));
-  border: 1.5px solid rgba(251,191,36,0.4);
+.btn-orange {
+  background: rgba(251,191,36,.15);
+  border: 1.5px solid rgba(251,191,36,.5);
   color: var(--neon-amber);
+  box-shadow: 0 0 12px rgba(251,191,36,.15);
+}
+.btn-orange:hover:not(:disabled) {
+  box-shadow: 0 0 24px rgba(251,191,36,.35);
+  background: rgba(251,191,36,.24);
+}
+.btn-orange:active:not(:disabled) { background: rgba(251,191,36,.32); }
+
+.btn-blue {
+  background: rgba(96,165,250,.17);
+  border: 1.5px solid rgba(96,165,250,.5);
+  color: var(--neon-blue);
+  box-shadow: 0 0 12px rgba(96,165,250,.15);
+}
+.btn-blue:hover:not(:disabled) {
+  box-shadow: 0 0 24px rgba(96,165,250,.35);
+  background: rgba(96,165,250,.26);
+}
+.btn-blue:active:not(:disabled) { background: rgba(96,165,250,.34); }
+
+.btn-red {
+  background: rgba(251,113,133,.15);
+  border: 1.5px solid rgba(251,113,133,.5);
+  color: var(--neon-rose);
+  box-shadow: 0 0 12px rgba(251,113,133,.15);
+}
+.btn-red:hover:not(:disabled) {
+  box-shadow: 0 0 24px rgba(251,113,133,.35);
+  background: rgba(251,113,133,.26);
+}
+.btn-red:active:not(:disabled) { background: rgba(251,113,133,.34); }
+
+.btn-gold {
+  background: linear-gradient(135deg, rgba(240,192,64,.27), rgba(251,191,36,.2));
+  border: 1.5px solid rgba(240,192,64,.55);
+  color: var(--gold);
+  box-shadow: 0 0 14px rgba(240,192,64,.22);
+}
+.btn-gold:hover:not(:disabled) {
+  box-shadow: 0 0 28px rgba(240,192,64,.44);
+  background: linear-gradient(135deg, rgba(240,192,64,.36), rgba(251,191,36,.28));
+}
+.btn-gold:active:not(:disabled) {
+  background: linear-gradient(135deg, rgba(240,192,64,.44), rgba(251,191,36,.36));
 }
 
-.withdraw-btn:not(:disabled):hover {
-  background: linear-gradient(135deg, rgba(251,191,36,0.25), rgba(251,191,36,0.15));
-  border-color: rgba(251,191,36,0.6);
-  box-shadow: 0 0 24px rgba(251,191,36,0.2);
+.btn-reset {
+  background: rgba(96,165,250,.15);
+  border: 1.5px solid rgba(96,165,250,.45);
+  color: var(--neon-blue);
+  box-shadow: 0 0 12px rgba(96,165,250,.13);
+}
+.btn-reset:hover:not(:disabled) {
+  box-shadow: 0 0 24px rgba(96,165,250,.33);
+  background: rgba(96,165,250,.24);
+}
+.btn-reset:active:not(:disabled) { background: rgba(96,165,250,.32); }
+
+.logout-btn {
+  width:auto; padding:9px 18px; margin:0;
+  background: rgba(251,113,133,.14);
+  border: 1.5px solid rgba(251,113,133,.45);
+  color: var(--neon-rose);
+  border-radius: var(--radius-sm);
+  font-family:'Rajdhani', sans-serif;
+  font-size:14px; font-weight:600;
+  letter-spacing:1px; cursor:pointer;
+  transition: background .2s, box-shadow .2s;
+  text-transform:uppercase;
+}
+.logout-btn:hover {
+  background: rgba(251,113,133,.24);
+  box-shadow: 0 0 18px rgba(251,113,133,.3);
+}
+.logout-btn:active { background: rgba(251,113,133,.32); }
+
+/* ═══════════════════════════════════════════════
+   BALANCE BAR
+   ═══════════════════════════════════════════════ */
+.balance-section {
+  display:flex; justify-content:space-around; gap:12px;
+  background: rgba(8,10,18,0.65);
+  backdrop-filter: blur(12px);
+  border: 1.5px solid var(--glass-border);
+  border-radius: var(--radius);
+  padding:16px 12px; margin:16px 0;
+}
+.balance-item { text-align:center; flex:1; }
+.balance-label {
+  font-size:11px; color:var(--text-muted);
+  letter-spacing:2.5px; text-transform:uppercase; margin-bottom:5px;
+}
+.balance-value {
+  font-family:'Orbitron', sans-serif;
+  font-size:22px; font-weight:700;
+  color:var(--gold);
+  text-shadow: 0 0 10px rgba(240,192,64,.45);
 }
 
 /* ═══════════════════════════════════════════════
-   STATS CARD - Balance & Current Win in clear typography
+   5×5 GAME GRID
    ═══════════════════════════════════════════════ */
-.stats-card {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px;
-  padding: 24px;
-}
-
-.stat-item {
-  text-align: center;
-}
-
-.stat-label {
-  font-size: 13px;
-  color: var(--text-muted);
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  margin-bottom: 12px;
-  font-weight: 600;
-}
-
-.stat-value {
-  font-family: 'Orbitron', sans-serif;
-  font-size: 32px;
-  font-weight: 700;
-  color: var(--gold);
-  text-shadow: 0 0 12px rgba(240,192,64,0.4);
-  line-height: 1.2;
-}
-
-/* ═══════════════════════════════════════════════
-   GAME GRID CARD - 5x5 mines tiles as visual focus
-   ═══════════════════════════════════════════════ */
-.game-grid-card {
-  padding: 28px 24px;
-}
-
-.grid-title {
-  font-family: 'Orbitron', sans-serif;
-  font-size: 26px;
-  text-align: center;
-  margin-bottom: 24px;
-  color: var(--gold);
-  letter-spacing: 3px;
-  text-transform: uppercase;
-}
-
 .grid {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 10px;
-  margin: 0 auto;
-  max-width: 340px;
+  display:grid;
+  grid-template-columns: repeat(5,1fr);
+  gap:7px; margin:18px 0;
 }
-
 .tile {
-  aspect-ratio: 1;
-  background: linear-gradient(145deg, rgba(28,34,56,0.9), rgba(18,22,40,0.95));
-  border: 1.5px solid rgba(255,255,255,0.1);
-  border-radius: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 26px;
-  cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.34,1.56,0.64,1);
-  position: relative;
-  overflow: hidden;
-  user-select: none;
-  min-height: 56px;
-  touch-action: manipulation;
+  aspect-ratio:1;
+  background: linear-gradient(150deg, rgba(28,34,56,0.82), rgba(18,22,40,0.94));
+  backdrop-filter: blur(var(--blur-tile));
+  border: 1.5px solid var(--glass-border2);
+  border-radius:13px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:26px; cursor:pointer;
+  transition: transform .22s cubic-bezier(.34,1.56,.64,1),
+              box-shadow .28s, background .25s, border-color .25s;
+  position:relative; overflow:hidden; user-select:none;
 }
-
-.tile:not(.revealed):hover {
-  transform: scale(1.08);
-  border-color: rgba(34,211,238,0.5);
-  box-shadow: 0 0 20px rgba(34,211,238,0.2),
-              inset 0 0 12px rgba(34,211,238,0.1);
+.tile::before {
+  content:'';
+  position:absolute; top:0; left:8%; right:8%; height:1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.2), transparent);
+  pointer-events:none;
 }
-
-.tile.revealed {
-  cursor: default;
+.tile:hover:not(.revealed) {
+  transform: scale(1.09);
+  border-color: rgba(34,211,238,.6);
+  box-shadow: 0 0 22px rgba(34,211,238,.32),
+              inset 0 0 14px rgba(34,211,238,.08);
+  background: linear-gradient(150deg, rgba(30,55,88,0.78), rgba(18,28,52,0.9));
 }
+.tile.revealed { cursor:default; }
 
 .tile.safe {
-  background: linear-gradient(145deg, rgba(240,192,64,0.25), rgba(251,191,36,0.15));
-  border-color: rgba(240,192,64,0.6);
-  animation: revealSafe 0.3s ease-out;
+  background: linear-gradient(150deg, rgba(240,192,64,.32), rgba(251,191,36,.16));
+  border-color: rgba(240,192,64,.65);
+  box-shadow: 0 0 18px rgba(240,192,64,.36),
+              inset 0 0 10px rgba(240,192,64,.1);
+  animation: tileIn .28s cubic-bezier(.34,1.56,.64,1);
 }
-
 .tile.mine {
-  background: linear-gradient(145deg, rgba(251,113,133,0.3), rgba(220,20,60,0.2));
-  border-color: rgba(251,113,133,0.7);
-  animation: revealMine 0.4s ease-out;
+  background: linear-gradient(150deg, rgba(251,113,133,.34), rgba(220,20,60,.18));
+  border-color: rgba(251,113,133,.7);
+  box-shadow: 0 0 20px rgba(251,60,80,.42),
+              inset 0 0 12px rgba(251,60,80,.12);
+  animation: tileIn .28s cubic-bezier(.34,1.56,.64,1);
+}
+.tile.mine-hit {
+  animation: mineFlash .5s ease-out forwards;
 }
 
-@keyframes revealSafe {
-  0% { transform: scale(0.9); opacity: 0.6; }
-  100% { transform: scale(1); opacity: 1; }
+@keyframes tileIn {
+  0%   { transform:scale(.85); opacity:.6; }
+  100% { transform:scale(1);   opacity:1;  }
 }
-
-@keyframes revealMine {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.15); }
-  100% { transform: scale(1); }
-}
-
-/* ═══════════════════════════════════════════════
-   CONTROL CARD - 2×2 grid of game action buttons
-   ═══════════════════════════════════════════════ */
-.control-card {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: auto auto;
-  gap: 14px;
-  padding: 24px;
-}
-
-.control-btn {
-  padding: 20px 12px;
-  border-radius: var(--radius-md);
-  font-family: 'Rajdhani', sans-serif;
-  font-size: 16px;
-  font-weight: 700;
-  letter-spacing: 1px;
-  cursor: pointer;
-  border: none;
-  transition: all 0.25s ease;
-  text-align: center;
-  position: relative;
-  overflow: hidden;
-  min-height: 64px;
-  touch-action: manipulation;
-}
-
-.control-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.control-btn:not(:disabled):hover {
-  transform: translateY(-2px);
-}
-
-.control-btn:not(:disabled):active {
-  transform: translateY(0);
-}
-
-/* Left Side - Green/Teal Buttons */
-.control-left {
-  background: linear-gradient(135deg, rgba(52,211,153,0.15), rgba(52,211,153,0.08));
-  border: 1.5px solid rgba(52,211,153,0.4);
-  color: var(--neon-emerald);
-}
-
-.control-left:not(:disabled):hover {
-  background: linear-gradient(135deg, rgba(52,211,153,0.25), rgba(52,211,153,0.15));
-  border-color: rgba(52,211,153,0.6);
-  box-shadow: 0 0 20px rgba(52,211,153,0.2);
-}
-
-/* Cashout Button - Primary Green */
-#cashoutBtn {
-  background: linear-gradient(135deg, rgba(52,211,153,0.2), rgba(52,211,153,0.1));
-  border: 1.5px solid rgba(52,211,153,0.5);
-}
-
-/* Reset Button - Teal/Cyan */
-#resetBtn {
-  background: linear-gradient(135deg, rgba(45,212,191,0.15), rgba(45,212,191,0.08));
-  border: 1.5px solid rgba(45,212,191,0.4);
-  color: var(--neon-teal);
-}
-
-#resetBtn:not(:disabled):hover {
-  background: linear-gradient(135deg, rgba(45,212,191,0.25), rgba(45,212,191,0.15));
-  border-color: rgba(45,212,191,0.6);
-  box-shadow: 0 0 20px rgba(45,212,191,0.2);
-}
-
-/* Right Side - Amber/Red Buttons */
-.control-right {
-  background: linear-gradient(135deg, rgba(251,191,36,0.15), rgba(251,191,36,0.08));
-  border: 1.5px solid rgba(251,191,36,0.4);
-  color: var(--neon-amber);
-}
-
-.control-right:not(:disabled):hover {
-  background: linear-gradient(135deg, rgba(251,191,36,0.25), rgba(251,191,36,0.15));
-  border-color: rgba(251,191,36,0.6);
-  box-shadow: 0 0 20px rgba(251,191,36,0.2);
-}
-
-/* Mines Button - Soft Red */
-#minesBtn {
-  background: linear-gradient(135deg, rgba(251,113,133,0.15), rgba(251,113,133,0.08));
-  border: 1.5px solid rgba(251,113,133,0.4);
-  color: var(--neon-rose);
-}
-
-#minesBtn:not(:disabled):hover {
-  background: linear-gradient(135deg, rgba(251,113,133,0.25), rgba(251,113,133,0.15));
-  border-color: rgba(251,113,133,0.6);
-  box-shadow: 0 0 20px rgba(251,113,133,0.2);
-}
-
-/* ═══════════════════════════════════════════════
-   MESSAGE BOX CARD - For admin messages
-   ═══════════════════════════════════════════════ */
-.message-box-card {
-  padding: 20px;
-  display: none;
-}
-
-.message-box-card.active {
-  display: block;
-  animation: slideUp 0.4s ease-out;
-}
-
-.message-box-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 16px;
-}
-
-.message-icon {
-  font-size: 22px;
-  color: var(--neon-cyan);
-}
-
-.message-title {
-  font-family: 'Orbitron', sans-serif;
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--neon-cyan);
-  letter-spacing: 1px;
-}
-
-.message-content {
-  background: rgba(8, 10, 18, 0.6);
-  border: 1px solid rgba(34, 211, 238, 0.2);
-  border-radius: var(--radius-sm);
-  padding: 18px;
-  font-size: 15px;
-  line-height: 1.6;
-  color: var(--text-primary);
-  min-height: 80px;
-  overflow-y: auto;
-  max-height: 200px;
-}
-
-.message-timestamp {
-  font-size: 12px;
-  color: var(--text-muted);
-  text-align: right;
-  margin-top: 12px;
-  direction: rtl;
-}
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* ═══════════════════════════════════════════════
-   PENDING STATUS CARDS
-   ═══════════════════════════════════════════════ */
-.pending-card {
-  display: none;
-  padding: 16px;
-  margin-top: 16px;
-  border-top: 1px solid rgba(255,255,255,0.05);
-}
-
-.pending-card.active {
-  display: block;
-  animation: slideDown 0.3s ease;
-}
-
-.pending-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 12px;
-}
-
-.pending-icon {
-  font-size: 18px;
-}
-
-.pending-title {
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--neon-emerald);
-}
-
-.pending-amount {
-  font-family: 'Orbitron', sans-serif;
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--gold);
-  margin-bottom: 8px;
-}
-
-.pending-details {
-  font-size: 13px;
-  color: var(--text-muted);
-  line-height: 1.5;
-}
-
-.pending-timer {
-  font-size: 12px;
-  color: var(--neon-rose);
-  margin-top: 8px;
-  direction: rtl;
-}
-
-.withdraw-pending .pending-title {
-  color: var(--neon-amber);
-}
-
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+@keyframes mineFlash {
+  0%   { box-shadow: 0 0 52px rgba(251,60,80,1); transform:scale(1.12); }
+  60%  { box-shadow: 0 0 28px rgba(251,60,80,.6); transform:scale(1);   }
+  100% { box-shadow: 0 0 20px rgba(251,60,80,.42); transform:scale(1);  }
 }
 
 /* ═══════════════════════════════════════════════
    MESSAGES
    ═══════════════════════════════════════════════ */
-.message {
-  position: fixed;
-  top: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  padding: 14px 24px;
-  border-radius: var(--radius-md);
-  font-weight: 600;
-  font-size: 15px;
-  letter-spacing: 0.5px;
-  z-index: 1000;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  display: none;
-  animation: slideIn 0.3s ease;
-  max-width: 90%;
-  text-align: center;
+.msg {
+  padding:12px 16px; margin:12px 0;
+  border-radius: var(--radius-sm);
+  text-align:center; font-weight:600;
+  font-size:15px; display:none;
+  letter-spacing:.5px;
+  backdrop-filter: blur(8px);
 }
-
-.message.success {
-  background: rgba(52,211,153,0.15);
-  border: 1.5px solid rgba(52,211,153,0.4);
+.msg.success {
+  background: rgba(52,211,153,.16);
+  border: 1.5px solid rgba(52,211,153,.45);
   color: var(--neon-emerald);
+  text-shadow: 0 0 6px rgba(52,211,153,.3);
 }
-
-.message.error {
-  background: rgba(251,113,133,0.15);
-  border: 1.5px solid rgba(251,113,133,0.4);
+.msg.error {
+  background: rgba(251,113,133,.16);
+  border: 1.5px solid rgba(251,113,133,.45);
   color: var(--neon-rose);
+  text-shadow: 0 0 6px rgba(251,113,133,.3);
 }
-
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateX(-50%) translateY(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
-  }
-}
-
-/* ═══════════════════════════════════════════════
-   LOGIN SCREEN
-   ═══════════════════════════════════════════════ */
-.login-container {
-  max-width: 440px;
-  width: 90%;
-  margin: 0 auto;
-  padding: 40px 20px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-}
-
-.login-card {
-  background: var(--card-bg);
-  backdrop-filter: blur(30px) saturate(1.5);
-  -webkit-backdrop-filter: blur(30px) saturate(1.5);
-  border: 1px solid var(--card-border);
-  border-radius: var(--radius-lg);
-  box-shadow: 0 20px 60px rgba(0,0,0,0.4),
-              inset 0 1px 0 rgba(255,255,255,0.05);
-  padding: 40px 30px;
-  width: 100%;
-}
-
-.login-title {
-  font-family: 'Orbitron', sans-serif;
-  font-size: 48px;
-  font-weight: 900;
-  text-align: center;
-  margin-bottom: 8px;
-  background: linear-gradient(135deg, #f0c040 0%, #fbbf24 45%, #f59e0b 75%, #f0c040 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  text-transform: uppercase;
-  letter-spacing: 8px;
-}
-
-.login-subtitle {
-  font-size: 14px;
-  color: var(--text-muted);
-  text-align: center;
-  margin-bottom: 32px;
-  letter-spacing: 2px;
-  direction: rtl;
-  font-weight: 500;
-}
-
-.login-input {
-  width: 100%;
-  padding: 16px 18px;
-  margin: 12px 0;
-  background: rgba(12,15,26,0.7);
-  border: 1.5px solid rgba(255,255,255,0.1);
-  border-radius: var(--radius-sm);
-  font-family: 'Rajdhani', sans-serif;
-  font-size: 16px;
-  font-weight: 500;
-  color: var(--text-primary);
-  outline: none;
-  transition: all 0.25s ease;
-}
-
-.login-input:focus {
-  border-color: var(--neon-cyan);
-  box-shadow: 0 0 16px rgba(34,211,238,0.2);
-}
-
-.login-input::placeholder {
-  color: var(--text-muted);
-}
-
-.login-btn {
-  width: 100%;
-  padding: 18px;
-  margin-top: 16px;
-  background: linear-gradient(135deg, rgba(52,211,153,0.2), rgba(52,211,153,0.1));
-  border: 1.5px solid rgba(52,211,153,0.5);
-  border-radius: var(--radius-sm);
-  font-family: 'Rajdhani', sans-serif;
-  font-size: 17px;
-  font-weight: 700;
-  letter-spacing: 1.5px;
-  color: var(--neon-emerald);
-  cursor: pointer;
-  transition: all 0.25s ease;
-  text-transform: uppercase;
-  min-height: 56px;
-}
-
-.login-btn:hover {
-  background: linear-gradient(135deg, rgba(52,211,153,0.3), rgba(52,211,153,0.2));
-  box-shadow: 0 0 24px rgba(52,211,153,0.2);
-  transform: translateY(-2px);
-}
-
-.login-btn:active {
-  transform: translateY(0);
+.timer-msg {
+  background: rgba(251,191,36,.14);
+  border: 1.5px solid rgba(251,191,36,.4);
+  color: var(--neon-amber);
+  padding:10px 14px; border-radius: var(--radius-sm);
+  margin:8px 0; text-align:center;
+  font-size:14px; font-weight:500;
 }
 
 /* ═══════════════════════════════════════════════
    MODALS
    ═══════════════════════════════════════════════ */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(4,5,10,0.85);
+.modal {
+  display:none; position:fixed; inset:0;
+  background: rgba(4,5,10,0.74);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  display: none;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-  padding: 20px;
+  z-index:1000;
+  justify-content:center; align-items:center;
+  padding:20px;
 }
+.modal.active { display:flex; }
 
-.modal-overlay.active {
-  display: flex;
+.modal-content {
+  background: rgba(14,17,30,0.82);
+  backdrop-filter: blur(var(--blur-modal)) saturate(1.35);
+  -webkit-backdrop-filter: blur(var(--blur-modal)) saturate(1.35);
+  border: 1.5px solid var(--glass-border2);
+  box-shadow: 0 14px 52px rgba(0,0,0,.58),
+              inset 0 1px 0 rgba(255,255,255,.08);
+  padding:28px 24px;
+  border-radius: var(--radius);
+  max-width:420px; width:100%;
+  max-height:90vh; overflow-y:auto;
 }
-
-.modal-card {
-  background: var(--card-bg);
-  backdrop-filter: blur(30px) saturate(1.5);
-  -webkit-backdrop-filter: blur(30px) saturate(1.5);
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: var(--radius-lg);
-  box-shadow: 0 25px 80px rgba(0,0,0,0.5);
-  padding: 30px;
-  max-width: 420px;
-  width: 100%;
-  max-height: 90vh;
-  overflow-y: auto;
-}
-
 .modal-title {
-  font-family: 'Orbitron', sans-serif;
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--gold);
-  margin-bottom: 24px;
-  text-align: center;
-  letter-spacing: 2px;
+  font-family:'Orbitron', sans-serif;
+  font-size:19px; font-weight:700;
+  color:var(--gold); margin-bottom:18px;
+  text-align:center; letter-spacing:2px;
+  text-shadow: 0 0 12px rgba(240,192,64,.35);
 }
 
-.modal-input {
-  width: 100%;
-  padding: 16px 18px;
-  margin: 12px 0;
-  background: rgba(12,15,26,0.7);
-  border: 1.5px solid rgba(255,255,255,0.1);
-  border-radius: var(--radius-sm);
-  font-family: 'Rajdhani', sans-serif;
-  font-size: 16px;
-  font-weight: 500;
-  color: var(--text-primary);
-  outline: none;
-  transition: all 0.25s ease;
-  min-height: 52px;
+/* ═══════════════════════════════════════════════
+   GAME ACTION BUTTONS (NEW LAYOUT)
+   ═══════════════════════════════════════════════ */
+.game-action-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 18px 0;
 }
 
-.modal-input:focus {
-  border-color: var(--neon-cyan);
-  box-shadow: 0 0 16px rgba(34,211,238,0.2);
-}
-
-.modal-btn {
-  width: 100%;
-  padding: 16px;
-  margin: 8px 0;
+.game-btn-left, .game-btn-right {
+  padding: 15px 10px;
   border-radius: var(--radius-sm);
   font-family: 'Rajdhani', sans-serif;
   font-size: 16px;
@@ -795,388 +425,611 @@ html, body {
   letter-spacing: 1.2px;
   cursor: pointer;
   border: none;
-  transition: all 0.25s ease;
+  position: relative;
+  overflow: hidden;
+  transition: transform .18s, box-shadow .25s, background .22s;
   text-transform: uppercase;
-  min-height: 52px;
+  text-align: center;
+  width: 100%;
 }
 
-.modal-btn:hover {
+.game-btn-left:hover:not(:disabled),
+.game-btn-right:hover:not(:disabled) {
   transform: translateY(-2px);
 }
 
-.modal-btn:active {
+.game-btn-left:active:not(:disabled),
+.game-btn-right:active:not(:disabled) {
   transform: translateY(0);
 }
 
-.modal-btn-primary {
-  background: linear-gradient(135deg, rgba(52,211,153,0.2), rgba(52,211,153,0.1));
-  border: 1.5px solid rgba(52,211,153,0.5);
+.game-btn-left:disabled,
+.game-btn-right:disabled {
+  opacity: .38;
+  cursor: not-allowed;
+}
+
+/* Left side buttons (GREEN like Deposit) */
+.game-btn-left {
+  background: rgba(52,211,153,.18);
+  border: 1.5px solid rgba(52,211,153,.55);
   color: var(--neon-emerald);
+  box-shadow: 0 0 12px rgba(52,211,153,.18), inset 0 1px 0 rgba(52,211,153,.14);
 }
 
-.modal-btn-primary:hover {
-  background: linear-gradient(135deg, rgba(52,211,153,0.3), rgba(52,211,153,0.2));
-  box-shadow: 0 0 20px rgba(52,211,153,0.2);
+.game-btn-left:hover:not(:disabled) {
+  box-shadow: 0 0 24px rgba(52,211,153,.4);
+  background: rgba(52,211,153,.26);
 }
 
-.modal-btn-secondary {
-  background: rgba(251,113,133,0.1);
-  border: 1.5px solid rgba(251,113,133,0.3);
-  color: var(--neon-rose);
+.game-btn-left:active:not(:disabled) {
+  background: rgba(52,211,153,.34);
 }
 
-.modal-btn-secondary:hover {
-  background: rgba(251,113,133,0.2);
-  box-shadow: 0 0 20px rgba(251,113,133,0.15);
+/* Right side buttons (ORANGE like Withdraw) */
+.game-btn-right {
+  background: rgba(251,191,36,.15);
+  border: 1.5px solid rgba(251,191,36,.5);
+  color: var(--neon-amber);
+  box-shadow: 0 0 12px rgba(251,191,36,.15);
+}
+
+.game-btn-right:hover:not(:disabled) {
+  box-shadow: 0 0 24px rgba(251,191,36,.35);
+  background: rgba(251,191,36,.24);
+}
+
+.game-btn-right:active:not(:disabled) {
+  background: rgba(251,191,36,.32);
+}
+
+/* Specific button styles within the grid */
+#cashoutBtn { grid-column: 1; grid-row: 1; }
+#resetBtn { grid-column: 1; grid-row: 2; }
+#betBtn { grid-column: 2; grid-row: 1; }
+#minesBtn { grid-column: 2; grid-row: 2; }
+
+/* ═══════════════════════════════════════════════
+   KICKED OVERLAY
+   ═══════════════════════════════════════════════ */
+.kicked-overlay {
+  display:none; position:fixed; inset:0;
+  background: rgba(3,4,8,0.95);
+  backdrop-filter: blur(14px);
+  z-index:9999;
+  justify-content:center; align-items:center;
+}
+.kicked-overlay.active { display:flex; }
+
+.kicked-box {
+  background: rgba(14,17,30,0.9);
+  backdrop-filter: blur(22px);
+  border: 1.5px solid rgba(251,113,133,.35);
+  box-shadow: 0 0 44px rgba(251,113,133,.18),
+              0 14px 52px rgba(0,0,0,.58);
+  padding:46px 36px; border-radius: var(--radius);
+  text-align:center; max-width:360px; width:90%;
+}
+.kicked-box h2 {
+  font-family:'Orbitron', sans-serif;
+  color:var(--neon-rose); font-size:22px;
+  margin-bottom:14px; letter-spacing:2px;
+  text-shadow: 0 0 14px rgba(251,113,133,.5);
+}
+.kicked-box p {
+  color:var(--text-muted); margin-bottom:22px;
+  font-size:15px; line-height:1.55;
 }
 
 /* ═══════════════════════════════════════════════
-   RESPONSIVE DESIGN
+   REQUEST TOGGLE (For Both Deposit/Withdraw)
    ═══════════════════════════════════════════════ */
-@media (max-width: 480px) {
-  .main-container {
-    padding: 12px;
-    gap: 12px;
-  }
-  
-  .card {
-    padding: 16px;
-  }
-  
-  .user-name {
-    font-size: 18px;
-  }
-  
-  .stat-value {
-    font-size: 28px;
-  }
-  
-  .action-btn,
-  .control-btn {
-    padding: 18px 10px;
-    font-size: 15px;
-    min-height: 56px;
-  }
-  
-  .grid {
-    gap: 8px;
-  }
-  
-  .tile {
-    min-height: 48px;
-    font-size: 22px;
-  }
-  
-  .login-title {
-    font-size: 36px;
-    letter-spacing: 4px;
-  }
-  
-  .modal-card {
-    padding: 24px;
-  }
+.request-toggle {
+  display:flex; gap:0; margin:14px 0 10px;
+  background: rgba(8,10,18,0.6);
+  border: 1.5px solid var(--glass-border);
+  border-radius: var(--radius-sm);
+  overflow:hidden;
 }
-
-@media (max-width: 350px) {
-  .action-btn,
-  .control-btn {
-    font-size: 14px;
-    padding: 16px 8px;
-    min-height: 52px;
-  }
-  
-  .grid {
-    gap: 6px;
-  }
-  
-  .tile {
-    min-height: 44px;
-    font-size: 20px;
-  }
-  
-  .stat-value {
-    font-size: 24px;
-  }
+.request-toggle button {
+  flex:1; margin:0; border-radius:0;
+  padding:12px 8px; font-size:15px;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  color: var(--text-muted);
+  transition: background .22s, color .22s, box-shadow .22s;
+  text-transform:uppercase;
+  letter-spacing:1px;
+}
+.request-toggle button:hover:not(:disabled) { transform:none; }
+.request-toggle button.active-tab {
+  background: rgba(52,211,153,.18);
+  color: var(--neon-emerald);
+  box-shadow: inset 0 0 12px rgba(52,211,153,.1);
+}
+.request-toggle button.active-tab.easy-active {
+  background: rgba(251,191,36,.16);
+  color: var(--neon-amber);
+  box-shadow: inset 0 0 12px rgba(251,191,36,.1);
+}
+.request-toggle button + button {
+  border-left: 1px solid var(--glass-border);
 }
 
 /* ═══════════════════════════════════════════════
-   UTILITY CLASSES
+   PAYMENT NUMBER DISPLAY
    ═══════════════════════════════════════════════ */
-.hidden {
-  display: none !important;
+.payment-number-display {
+  background: rgba(8,10,18,0.65);
+  border: 1.5px solid rgba(240,192,64,0.3);
+  border-radius: 8px;
+  padding: 16px;
+  margin: 12px 0;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+.payment-number-display:hover {
+  border-color: var(--neon-cyan);
+  box-shadow: 0 0 20px rgba(34,211,238,0.2);
+}
+.payment-number-display .number {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--gold);
+  letter-spacing: 2px;
+  margin: 8px 0;
+  text-shadow: 0 0 8px rgba(240,192,64,0.3);
+}
+.payment-number-display .urdu-msg {
+  font-size: 14px;
+  color: var(--neon-emerald);
+  direction: rtl;
+  margin-top: 8px;
+}
+.payment-number-display.copied {
+  border-color: var(--neon-emerald);
+  background: rgba(52,211,153,0.1);
 }
 
-.text-center {
+/* ═══════════════════════════════════════════════
+   DEPOSIT/WITHDRAW STATUS BUTTONS
+   ═══════════════════════════════════════════════ */
+.btn-row {
+  display:flex; gap:8px; margin:12px 0;
+}
+.btn-row button {
+  flex:1; margin:0;
+}
+
+.btn-amber {
+  background: linear-gradient(135deg, rgba(251,191,36,0.24), rgba(251,191,36,0.14));
+  border: 2px solid rgba(251,191,36,0.5);
+  color: var(--neon-amber);
+  box-shadow: 0 0 20px rgba(251,191,36,0.2), inset 0 1px 0 rgba(255,255,255,0.1);
+}
+.btn-amber:hover:not(:disabled) {
+  background: linear-gradient(135deg, rgba(251,191,36,0.34), rgba(251,191,36,0.24));
+  box-shadow: 0 0 30px rgba(251,191,36,0.4);
+}
+
+/* ═══════════════════════════════════════════════
+   PENDING REQUEST STATUS
+   ═══════════════════════════════════════════════ */
+.pending-status {
+  display:none;
+  background: rgba(8,10,18,0.65);
+  border: 1.5px solid rgba(240,192,64,0.3);
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin: 12px 0;
   text-align: center;
 }
+.pending-status.active {
+  display:block;
+  animation: fadeIn 0.3s ease;
+}
+.pending-amount {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--gold);
+  margin: 8px 0;
+}
+.pending-method {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+.pending-timer {
+  font-size: 13px;
+  color: var(--neon-rose);
+  direction: rtl;
+  margin-top: 8px;
+}
 
-.mt-1 { margin-top: 4px; }
-.mt-2 { margin-top: 8px; }
-.mt-3 { margin-top: 12px; }
-.mt-4 { margin-top: 16px; }
-
-.mb-1 { margin-bottom: 4px; }
-.mb-2 { margin-bottom: 8px; }
-.mb-3 { margin-bottom: 12px; }
-.mb-4 { margin-bottom: 16px; }
+@keyframes fadeIn {
+  from { opacity:0; transform:translateY(-10px); }
+  to { opacity:1; transform:translateY(0); }
+}
 
 /* ═══════════════════════════════════════════════
    SCROLLBAR
    ═══════════════════════════════════════════════ */
-::-webkit-scrollbar {
-  width: 6px;
-}
+::-webkit-scrollbar       { width:6px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:rgba(255,255,255,.14); border-radius:3px; }
 
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: rgba(255,255,255,0.1);
-  border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(255,255,255,0.15);
+/* ═══════════════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════════════ */
+@media(max-width:420px){
+  .container      { padding:20px 14px 26px; }
+  .title          { font-size:36px; letter-spacing:7px; }
+  .balance-value  { font-size:18px; }
+  .tile           { font-size:22px; }
+  .modal-content  { padding:22px 16px; }
+  .payment-number-display .number { font-size:17px; }
+  .pending-amount { font-size:18px; }
+  .game-btn-left, .game-btn-right { font-size:14px; padding:12px 8px; }
 }
 </style>
 </head>
 <body>
 
-<!-- Background Elements -->
-<div class="background-gradient"></div>
-<div class="noise-overlay"></div>
+<!-- ═══ PARTICLE CANVAS ═══ -->
+<canvas id="bgCanvas"></canvas>
 
-<!-- Login Screen -->
-<div id="loginScreen" class="login-container">
-  <div class="login-card">
-    <div class="login-title">MINES</div>
-    <div class="login-subtitle">اپنا نام اور نمبر لکھیں</div>
-    
-    <div id="loginMessage" class="message"></div>
-    
-    <input type="text" id="loginName" class="login-input" placeholder="Your Name" maxlength="50">
-    <input type="tel" id="loginPhone" class="login-input" placeholder="03XXXXXXXXX" maxlength="11">
-    
-    <button class="login-btn" onclick="handleLogin()">LOGIN / لاگ ان</button>
+<div class="page-wrap">
+
+<!-- ═══ KICKED OVERLAY ═══ -->
+<div id="kickedOverlay" class="kicked-overlay">
+  <div class="kicked-box">
+    <div style="font-size:50px; margin-bottom:12px;">🚫</div>
+    <h2>SESSION TERMINATED</h2>
   </div>
 </div>
 
-<!-- Game Screen -->
-<div id="gameScreen" class="main-container hidden">
-  
-  <!-- Header Card: User info + Logout button -->
-  <div class="card header-card">
-    <div class="user-info">
-      <div class="user-name" id="displayName">Guest Player</div>
-      <div class="user-phone" id="displayPhone">03XXXXXXXXX</div>
+<!-- ═══ LOGIN SCREEN ═══ -->
+<div id="loginScreen" class="container">
+  <div class="title">MINES</div>
+  <div class="subtitle">اپنا نام اور نمبر لکھیں</div>
+  <div id="loginMsg" class="msg"></div>
+  <input type="text"  id="loginName"  placeholder="Your Name"   maxlength="50">
+  <input type="tel"   id="loginPhone" placeholder="03XXXXXXXXX" maxlength="11">
+  <button class="btn-green" onclick="handleLogin()">LOGIN / لاگ ان</button>
+</div>
+
+<!-- ═══ GAME SCREEN ═══ -->
+<div id="gameScreen" class="container hidden">
+  <div class="user-info">
+    <div>
+      <div class="user-name"  id="displayName"></div>
+      <div class="user-phone" id="displayPhone"></div>
     </div>
     <button class="logout-btn" onclick="handleLogout()">Logout</button>
   </div>
-  
-  <!-- Action Card: Deposit & Withdraw buttons (equal size) -->
-  <div class="card">
-    <div class="action-card">
-      <button id="depositBtn" class="action-btn deposit-btn" onclick="openDepositModal()">DEPOSIT</button>
-      <button id="withdrawBtn" class="action-btn withdraw-btn" onclick="openWithdrawModal()">WITHDRAW</button>
+
+  <div class="title">MINES</div>
+  <div id="gameMsg" class="msg"></div>
+
+  <!-- Deposit/Withdraw Button Row -->
+  <div class="btn-row">
+    <!-- Deposit Button -->
+    <button class="btn-green" id="depositBtn" onclick="openDepositModal()">DEPOSIT</button>
+    <!-- Withdraw Button -->
+    <button class="btn-orange" id="withdrawBtn" onclick="openWithdrawModal()">WITHDRAW</button>
+  </div>
+
+  <!-- Pending Deposit Status -->
+  <div id="pendingDepositStatus" class="pending-status">
+    <div style="color:var(--neon-emerald); font-weight:600; margin-bottom:6px;">⏳ Deposit Pending</div>
+    <div class="pending-amount" id="pendingDepositAmount">Rs 0</div>
+    <div class="pending-method" id="pendingDepositMethod"></div>
+    <div class="pending-timer" id="depositLockTimer"></div>
+  </div>
+
+  <!-- Pending Withdraw Status -->
+  <div id="pendingWithdrawStatus" class="pending-status">
+    <div style="color:var(--neon-amber); font-weight:600; margin-bottom:6px;">⏳ Withdraw Pending</div>
+    <div class="pending-amount" id="pendingWithdrawAmount">Rs 0</div>
+    <div class="pending-method" id="pendingWithdrawMethod"></div>
+    <div style="font-size:13px; color:var(--text-muted);" id="pendingWithdrawNumber"></div>
+  </div>
+
+  <div class="balance-section">
+    <div class="balance-item">
+      <div class="balance-label">Balance</div>
+      <div class="balance-value">Rs <span id="balance">0</span></div>
     </div>
+    <div class="balance-item">
+      <div class="balance-label">Current Win</div>
+      <div class="balance-value">Rs <span id="win">0</span></div>
+    </div>
+  </div>
+
+  <div class="grid" id="gameGrid"></div>
+
+  <!-- NEW GAME ACTION BUTTONS LAYOUT -->
+  <div class="game-action-buttons">
+    <!-- Left side - Green buttons -->
+    <button class="game-btn-left" id="cashoutBtn" onclick="cashout()" disabled>CASHOUT</button>
+    <button class="game-btn-left" id="resetBtn" onclick="resetGame()">RESET</button>
     
-    <!-- Pending Deposit Status -->
-    <div id="pendingDepositStatus" class="pending-card">
-      <div class="pending-header">
-        <span class="pending-icon">⏳</span>
-        <span class="pending-title">Deposit Pending</span>
-      </div>
-      <div class="pending-amount" id="pendingDepositAmount">Rs 0</div>
-      <div class="pending-details">
-        <div id="pendingDepositMethod"></div>
-        <div class="pending-timer" id="depositLockTimer"></div>
-      </div>
-    </div>
-    
-    <!-- Pending Withdraw Status -->
-    <div id="pendingWithdrawStatus" class="pending-card withdraw-pending">
-      <div class="pending-header">
-        <span class="pending-icon">⏳</span>
-        <span class="pending-title">Withdraw Pending</span>
-      </div>
-      <div class="pending-amount" id="pendingWithdrawAmount">Rs 0</div>
-      <div class="pending-details">
-        <div id="pendingWithdrawMethod"></div>
-        <div id="pendingWithdrawNumber"></div>
-      </div>
-    </div>
-  </div>
-  
-  <!-- Stats Card: Balance & Current Win in clear typography -->
-  <div class="card stats-card">
-    <div class="stat-item">
-      <div class="stat-label">Balance</div>
-      <div class="stat-value">Rs <span id="balance">0</span></div>
-    </div>
-    <div class="stat-item">
-      <div class="stat-label">Current Win</div>
-      <div class="stat-value">Rs <span id="win">0</span></div>
-    </div>
-  </div>
-  
-  <!-- Game Grid Card: 5x5 mines tiles as visual focus -->
-  <div class="card game-grid-card">
-    <div class="grid-title">MINES GAME</div>
-    <div class="grid" id="gameGrid"></div>
-  </div>
-  
-  <!-- Control Card: 2×2 grid of game action buttons -->
-  <div class="card control-card">
-    <!-- First Row -->
-    <button id="cashoutBtn" class="control-btn control-left" onclick="cashout()" disabled>CASHOUT</button>
-    <button id="betBtn" class="control-btn control-right" onclick="openBetModal()">BET RS <span id="betDisplay">0</span></button>
-    
-    <!-- Second Row -->
-    <button id="resetBtn" class="control-btn control-left" onclick="resetGame()">RESET</button>
-    <button id="minesBtn" class="control-btn control-right" onclick="openMinesModal()">💣 MINES: <span id="minesDisplay">3</span></button>
-  </div>
-  
-  <!-- Message Box Card: For admin messages -->
-  <div id="messageBoxCard" class="card message-box-card">
-    <div class="message-box-header">
-      <span class="message-icon">📨</span>
-      <span class="message-title">Admin Message</span>
-    </div>
-    <div class="message-content" id="adminMessageContent">
-      No messages from admin.
-    </div>
-    <div class="message-timestamp" id="adminMessageTimestamp"></div>
+    <!-- Right side - Orange buttons -->
+    <button class="game-btn-right" id="betBtn" onclick="openBetModal()">BET RS <span id="betDisplay">0</span></button>
+    <button class="game-btn-right" id="minesBtn" onclick="openMinesModal()">💣 MINES: <span id="minesDisplay">3</span></button>
   </div>
 </div>
 
-<!-- Global Message Display -->
-<div id="globalMessage" class="message"></div>
+</div><!-- /page-wrap -->
 
-<!-- Modals -->
-<div id="depositModal" class="modal-overlay">
-  <div class="modal-card">
+<!-- ═══ DEPOSIT MODAL (Mirror of Withdraw Modal) ═══ -->
+<div id="depositModal" class="modal">
+  <div class="modal-content">
     <div class="modal-title">Deposit Request</div>
-    <div class="payment-method-toggle mb-4">
-      <!-- Payment method toggle will be added by JS -->
+    
+    <!-- Payment Method Toggle (Same as Withdraw) -->
+    <div class="request-toggle">
+      <button id="depTabJazz" class="active-tab" onclick="switchDepositMethod('jazz')">JazzCash</button>
+      <button id="depTabEasy" onclick="switchDepositMethod('easy')">Easypaisa</button>
     </div>
-    <div class="payment-number-display mb-4" onclick="copyDepositNumber()">
-      <!-- Payment number will be added by JS -->
+    
+    <!-- Payment Number Display (Non-editable, Copy Only) -->
+    <div class="payment-number-display" id="depositNumberDisplay" onclick="copyDepositNumber()">
+      <div class="number" id="depositNumber">03266916283</div>
+      <div class="urdu-msg">نمبر کاپی کر کے ادائیگی کریں۔</div>
     </div>
-    <input type="number" id="depositAmount" class="modal-input" placeholder="Amount (Minimum Rs 500)" min="500">
-    <div id="depositCooldown" class="pending-timer mb-4" style="display: none;"></div>
-    <button class="modal-btn modal-btn-primary" onclick="submitDeposit()">Submit Request</button>
-    <button class="modal-btn modal-btn-secondary" onclick="closeModal('depositModal')">Cancel</button>
+    
+    <!-- Amount Input -->
+    <input type="number" id="depositAmount" placeholder="Amount (Minimum Rs 500)" min="500">
+    
+    <!-- Cooldown Message -->
+    <div id="depositCooldown" style="display:none;" class="timer-msg"></div>
+    
+    <!-- Submit Button -->
+    <button class="btn-orange" onclick="submitDeposit()">Submit Request</button>
+    <button class="btn-red" onclick="closeModal('depositModal')">Cancel</button>
   </div>
 </div>
 
-<div id="withdrawModal" class="modal-overlay">
-  <div class="modal-card">
+<!-- ═══ WITHDRAW MODAL ═══ -->
+<div id="withdrawModal" class="modal">
+  <div class="modal-content">
     <div class="modal-title">Withdraw Request</div>
-    <div class="payment-method-toggle mb-4">
-      <!-- Payment method toggle will be added by JS -->
+    
+    <!-- Payment Method Toggle -->
+    <div class="request-toggle">
+      <button id="tabJazz" class="active-tab" onclick="switchWithdrawMethod('jazz')">JazzCash</button>
+      <button id="tabEasy" onclick="switchWithdrawMethod('easy')">Easypaisa</button>
     </div>
-    <input type="tel" id="withdrawPhone" class="modal-input" placeholder="03XXXXXXXXX" maxlength="11">
-    <input type="number" id="withdrawAmount" class="modal-input" placeholder="Amount (Minimum Rs 1000)" min="1000">
-    <div id="withdrawCooldown" class="pending-timer mb-4" style="display: none;"></div>
-    <button class="modal-btn modal-btn-primary" onclick="submitWithdraw()">Submit Request</button>
-    <button class="modal-btn modal-btn-secondary" onclick="closeModal('withdrawModal')">Cancel</button>
+    
+    <!-- Phone Input -->
+    <input type="tel" id="withdrawPhone" placeholder="03XXXXXXXXX" maxlength="11">
+    
+    <!-- Amount Input -->
+    <input type="number" id="withdrawAmount" placeholder="Amount (Minimum Rs 1000)" min="1000">
+    
+    <!-- Cooldown Message -->
+    <div id="withdrawCooldown" style="display:none;" class="timer-msg"></div>
+    
+    <!-- Submit Button -->
+    <button class="btn-orange" onclick="submitWithdraw()">Submit Request</button>
+    <button class="btn-red" onclick="closeModal('withdrawModal')">Cancel</button>
   </div>
 </div>
 
-<div id="betModal" class="modal-overlay">
-  <div class="modal-card">
+<!-- ═══ BET MODAL ═══ -->
+<div id="betModal" class="modal">
+  <div class="modal-content">
     <div class="modal-title">Set Bet Amount</div>
-    <input type="number" id="betInput" class="modal-input" placeholder="Amount (Rs 100 – 10,000)" min="100" max="10000">
-    <button class="modal-btn modal-btn-primary" onclick="setBet()">Set Bet</button>
-    <button class="modal-btn modal-btn-secondary" onclick="closeModal('betModal')">Cancel</button>
+    <input type="number" id="betInput" placeholder="Amount (Rs 100 – 10,000)" min="100" max="10000">
+    <button class="btn-blue" onclick="setBet()">Set Bet</button>
+    <button class="btn-red"  onclick="closeModal('betModal')">Cancel</button>
   </div>
 </div>
 
-<div id="minesModal" class="modal-overlay">
-  <div class="modal-card">
+<!-- ═══ MINES MODAL ═══ -->
+<div id="minesModal" class="modal">
+  <div class="modal-content">
     <div class="modal-title">💣 Set Mines Count</div>
-    <input type="number" id="minesInput" class="modal-input" placeholder="Mines (1–24)" min="1" max="24" value="3">
-    <button class="modal-btn modal-btn-secondary" onclick="setMines()">Set Mines</button>
-    <button class="modal-btn modal-btn-primary" onclick="closeModal('minesModal')">Cancel</button>
+    <input type="number" id="minesInput" placeholder="Mines (1–24)" min="1" max="24" value="3">
+    <button class="btn-red"  onclick="setMines()">Set Mines</button>
+    <button class="btn-blue" onclick="closeModal('minesModal')">Cancel</button>
   </div>
 </div>
 
-<!-- Kicked Overlay -->
-<div id="kickedOverlay" class="modal-overlay">
-  <div class="modal-card">
-    <div style="text-align: center; margin-bottom: 24px;">
-      <div style="font-size: 60px; margin-bottom: 16px;">🚫</div>
-      <div class="modal-title" style="color: var(--neon-rose);">SESSION TERMINATED</div>
-    </div>
-    <div style="text-align: center; color: var(--text-muted); line-height: 1.6;">
-      Your session has been terminated. Please contact support if you believe this is an error.
-    </div>
-  </div>
-</div>
+<!-- ═══ ADAPTIVE PERFORMANCE ═══ -->
+<script>
+(function(){
+  const cores  = navigator.hardwareConcurrency || 4;
+  const dpr    = window.devicePixelRatio || 1;
+  const w      = screen.width;
+  const isLow  = cores <= 2 || (dpr >= 3 && w < 400) || (w < 320);
+  window._perfTier = isLow ? 'low' : 'high';
+  if(isLow){
+    document.documentElement.style.setProperty('--blur-main',  '14px');
+    document.documentElement.style.setProperty('--blur-modal', '18px');
+    document.documentElement.style.setProperty('--blur-tile',  '3px');
+  }
+})();
+</script>
 
-<!-- Firebase -->
+<!-- ═══ BACKGROUND PARTICLE ENGINE ═══ -->
+<script>
+(function(){
+  const canvas = document.getElementById('bgCanvas');
+  const ctx    = canvas.getContext('2d');
+  let W, H;
+  function resize(){
+    W = canvas.width  = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  const isLow       = window._perfTier === 'low';
+  const PART_COUNT  = isLow ? 55  : 120;
+  const SHARD_COUNT = isLow ? 8   : 20;
+
+  const PALETTE = [
+    [34,211,238],[96,165,250],[52,211,153],
+    [240,192,64],[251,191,36],[180,195,240],
+  ];
+
+  class Particle {
+    constructor(){ this.reset(true); }
+    reset(init){
+      this.x  = init ? Math.random()*W : (Math.random()<.5 ? -12 : W+12);
+      this.y  = init ? Math.random()*H : Math.random()*H;
+      this.r  = .5 + Math.random()*2.4;
+      this.vx = (Math.random()-.5)*.38;
+      this.vy = (Math.random()-.5)*.38;
+      this.col   = PALETTE[Math.floor(Math.random()*PALETTE.length)];
+      this.alpha = .12 + Math.random()*.5;
+      this.phase = Math.random()*Math.PI*2;
+      this.freq  = .35 + Math.random()*.55;
+    }
+    update(){
+      this.x+=this.vx; this.y+=this.vy; this.phase+=this.freq*.016;
+      if(this.x<-30||this.x>W+30||this.y<-30||this.y>H+30) this.reset(false);
+    }
+    draw(){
+      const a = this.alpha + Math.sin(this.phase)*.13;
+      const [r,g,b] = this.col;
+      ctx.beginPath(); ctx.arc(this.x, this.y, this.r, 0, Math.PI*2);
+      ctx.fillStyle = `rgba(${r},${g},${b},${a})`; ctx.fill();
+      if(!isLow){
+        ctx.beginPath(); ctx.arc(this.x, this.y, this.r*3.5, 0, Math.PI*2);
+        ctx.fillStyle = `rgba(${r},${g},${b},${a*.16})`; ctx.fill();
+      }
+    }
+  }
+
+  class Shard {
+    constructor(){ this.reset(true); }
+    reset(init){
+      this.x     = init ? Math.random()*W : -70;
+      this.y     = init ? Math.random()*H : Math.random()*H;
+      this.w     = 2.5 + Math.random()*4;
+      this.h     = 28 + Math.random()*75;
+      this.angle = -.52 + Math.random()*.25;
+      this.speed = .28 + Math.random()*.32;
+      this.alpha = .028 + Math.random()*.065;
+      this.col   = [195+Math.random()*60, 210+Math.random()*45, 255];
+    }
+    update(){ this.x += this.speed; if(this.x > W+100) this.reset(false); }
+    draw(){
+      ctx.save();
+      ctx.translate(this.x, this.y);
+      ctx.rotate(this.angle);
+      const g = ctx.createLinearGradient(0,0,0,this.h);
+      const [r,gr,b] = this.col;
+      g.addColorStop(0,   `rgba(${r},${gr},${b},0)`);
+      g.addColorStop(.28, `rgba(${r},${gr},${b},${this.alpha})`);
+      g.addColorStop(.72, `rgba(${r},${gr},${b},${this.alpha})`);
+      g.addColorStop(1,   `rgba(${r},${gr},${b},0)`);
+      ctx.fillStyle = g;
+      ctx.fillRect(-this.w*.5, 0, this.w, this.h);
+      ctx.restore();
+    }
+  }
+
+  const particles = [], shards = [];
+  for(let i=0; i<PART_COUNT; i++) particles.push(new Particle());
+  for(let i=0; i<SHARD_COUNT; i++) shards.push(new Shard());
+
+  function drawBg(){
+    const g = ctx.createLinearGradient(0,0, W*.55, H);
+    g.addColorStop(0,   '#0a0c14');
+    g.addColorStop(.4,  '#0e1320');
+    g.addColorStop(.72, '#111a2e');
+    g.addColorStop(1,   '#0c1118');
+    ctx.fillStyle = g;
+    ctx.fillRect(0,0,W,H);
+    if(!isLow){
+      [
+        { x:W*.12, y:H*.28, r:W*.24, c:'rgba(34,211,238,.032)' },
+        { x:W*.82, y:H*.68, r:W*.21, c:'rgba(96,165,250,.028)' },
+        { x:W*.48, y:H*.88, r:W*.19, c:'rgba(52,211,153,.022)' },
+        { x:W*.72, y:H*.12, r:W*.17, c:'rgba(240,192,64,.020)' },
+        { x:W*.25, y:H*.75, r:W*.15, c:'rgba(251,191,36,.018)' },
+      ].forEach(b=>{
+        const rg = ctx.createRadialGradient(b.x,b.y,0, b.x,b.y,b.r);
+        rg.addColorStop(0, b.c);
+        rg.addColorStop(1, 'transparent');
+        ctx.fillStyle = rg;
+        ctx.fillRect(0,0,W,H);
+      });
+    }
+  }
+
+  function loop(){
+    drawBg();
+    shards.forEach(s=>{ s.update(); s.draw(); });
+    particles.forEach(p=>{ p.update(); p.draw(); });
+    requestAnimationFrame(loop);
+  }
+  loop();
+})();
+</script>
+
+<!-- ═══ FIREBASE MODULE ═══ -->
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
 import { getDatabase, ref, set, get, update, onValue, push, serverTimestamp }
   from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
 
 const firebaseConfig = {
-  apiKey: "AIzaSyA8C1-TpsRo0UsATshlI8Dy0v40PnLRlc4",
-  authDomain: "mines-67d8c.firebaseapp.com",
-  databaseURL: "https://mines-67d8c-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "mines-67d8c",
-  storageBucket: "mines-67d8c.firebasestorage.app",
-  messagingSenderId: "918317634273",
-  appId: "1:918317634273:web:8527c0d58a1f3de0371da0",
-  measurementId: "G-NHC6K1X3KZ"
+  apiKey:"AIzaSyA8C1-TpsRo0UsATshlI8Dy0v40PnLRlc4",
+  authDomain:"mines-67d8c.firebaseapp.com",
+  databaseURL:"https://mines-67d8c-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId:"mines-67d8c",
+  storageBucket:"mines-67d8c.firebasestorage.app",
+  messagingSenderId:"918317634273",
+  appId:"1:918317634273:web:8527c0d58a1f3de0371da0",
+  measurementId:"G-NHC6K1X3KZ"
 };
 
-const app = initializeApp(firebaseConfig);
+const app      = initializeApp(firebaseConfig);
 const database = getDatabase(app);
 
-window.db = database;
-window.dbRef = ref;
-window.dbSet = set;
-window.dbGet = get;
-window.dbUpdate = update;
-window.dbOnValue = onValue;
-window.dbPush = push;
+window.db               = database;
+window.dbRef            = ref;
+window.dbSet            = set;
+window.dbGet            = get;
+window.dbUpdate         = update;
+window.dbOnValue        = onValue;
+window.dbPush           = push;
 window.dbServerTimestamp = serverTimestamp;
 
 if (window._fbResolve) window._fbResolve();
 console.log('✅ Firebase initialized successfully!');
 </script>
 
-<!-- Main Game Script -->
+<!-- ═══ MAIN GAME SCRIPT ═══ -->
 <script>
-// Wait for Firebase to be ready
 window._fbReady = new Promise(r => { window._fbResolve = r; });
-async function fbReady() { await window._fbReady; }
+async function fbReady(){ await window._fbReady; }
 
-// Game State
+/* ─── Device fingerprint ─── */
+function getDeviceFingerprint(){
+  const n=navigator, s=window.screen;
+  return btoa(`${n.userAgent}_${s.width}x${s.height}_${s.colorDepth}_${n.language}`).substring(0,32);
+}
+
+/* ─── Game State ─── */
 let gameState = {
-  userId: null,
-  userName: '',
-  userPhone: '',
-  balance: 0,
-  currentBet: 0,
-  currentWin: 0,
-  minesCount: 3,
-  gameActive: false,
-  minePositions: [],
-  revealedTiles: [],
-  betSet: false,
-  tilesClicked: false
+  userId:null, userName:'', userPhone:'',
+  balance:0, currentBet:0, currentWin:0,
+  minesCount:3, gameActive:false,
+  minePositions:[], revealedTiles:[],
+  betSet:false, tilesClicked:false
 };
 
-// Deposit/Withdraw State
-let depositMethod = 'jazz';
-let withdrawMethod = 'jazz';
-let depositLockTimer = null;
-let messageListener = null;
-
-// Sound Effects
+/* ─── Sound Effects ─── */
 const sounds = {
   click: new Audio('data:audio/wav;base64,UklGRhIAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU4AAAB/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/'),
   success: new Audio('data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YWAAAAB/gH+Af4B/gH+Af4B/gH+Af4B/gH+Af4B/gH+Af4B/gH+Af4B/gH+Af4B/gH+Af4B/'),
@@ -1185,557 +1038,247 @@ const sounds = {
   mine: new Audio('data:audio/wav;base64,UklGRiYAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YWIAAACAfn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+')
 };
 
-// Preload sounds
+// Preload sounds - set to 40% volume
 Object.values(sounds).forEach(sound => {
   sound.volume = 0.4;
   sound.load();
 });
 
-// Win Rate Table
-const WIN_RATES = {
-  1: 0.02, 2: 0.05, 3: 0.10, 4: 0.20, 5: 0.40,
-  6: 0.60, 7: 0.70, 8: 0.80, 9: 0.90, 10: 1.00,
-  11: 1.10, 12: 1.20, 13: 1.30, 14: 1.40, 15: 1.50,
-  16: 1.60, 17: 1.70, 18: 1.80, 19: 1.90, 20: 2.00,
-  21: 2.20, 22: 2.50, 23: 3.00, 24: 4.00,
-};
+// Audio context for musical sounds
+let audioCtx;
 
-function getWinRate() { return WIN_RATES[gameState.minesCount] || 0.10; }
-
-// Utility Functions
-function showMessage(text, type = 'success') {
-  const messageEl = document.getElementById('globalMessage');
-  messageEl.textContent = text;
-  messageEl.className = `message ${type}`;
-  messageEl.style.display = 'block';
-  
-  setTimeout(() => {
-    messageEl.style.display = 'none';
-  }, 3000);
+function initAudioContext(){
+  if(!audioCtx){
+    try {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    } catch(e) {
+      console.log('Audio context init failed:', e);
+    }
+  }
 }
 
-function playSound(soundName) {
+// Play button click music
+function playButtonMusic(){
+  if(!audioCtx) initAudioContext();
+  if(!audioCtx) return;
+  
   try {
-    if (sounds[soundName]) {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    
+    osc.type = 'sine';
+    osc.frequency.value = 800;
+    gain.gain.value = 0.16; // 40% volume
+    
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    
+    osc.start();
+    osc.frequency.exponentialRampToValueAtTime(600, audioCtx.currentTime + 0.1);
+    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+    osc.stop(audioCtx.currentTime + 0.1);
+  } catch(e) {
+    console.log('Button music error:', e);
+  }
+}
+
+// Play musical note on tile click/reveal
+function playMusicNote(frequency, duration = 0.15){
+  if(!audioCtx) initAudioContext();
+  if(!audioCtx) return;
+  
+  try {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    
+    osc.type = 'sine';
+    osc.frequency.value = frequency;
+    gain.gain.value = 0.16; // 40% volume
+    
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    
+    osc.start();
+    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+    osc.stop(audioCtx.currentTime + duration);
+  } catch(e) {
+    console.log('Music note error:', e);
+  }
+}
+
+// Play realistic bomb blast sound
+function playBombBlast(){
+  if(!audioCtx) initAudioContext();
+  if(!audioCtx) return;
+  
+  try {
+    // Create multiple layers for realistic bomb blast
+    
+    // Layer 1: Low frequency rumble
+    const osc1 = audioCtx.createOscillator();
+    const gain1 = audioCtx.createGain();
+    osc1.type = 'sawtooth';
+    osc1.frequency.value = 80;
+    gain1.gain.value = 0.2; // 40% volume
+    osc1.connect(gain1);
+    gain1.connect(audioCtx.destination);
+    
+    // Layer 2: Mid explosion crack
+    const osc2 = audioCtx.createOscillator();
+    const gain2 = audioCtx.createGain();
+    osc2.type = 'square';
+    osc2.frequency.value = 200;
+    gain2.gain.value = 0.12; // 40% volume
+    osc2.connect(gain2);
+    gain2.connect(audioCtx.destination);
+    
+    // Layer 3: High frequency debris
+    const noise = audioCtx.createBufferSource();
+    const noiseGain = audioCtx.createGain();
+    const noiseFilter = audioCtx.createBiquadFilter();
+    
+    // Create white noise
+    const bufferSize = audioCtx.sampleRate * 0.5;
+    const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for(let i = 0; i < bufferSize; i++){
+      data[i] = Math.random() * 2 - 1;
+    }
+    noise.buffer = buffer;
+    
+    noiseFilter.type = 'bandpass';
+    noiseFilter.frequency.value = 1000;
+    noiseGain.gain.value = 0.08; // 40% volume
+    
+    noise.connect(noiseFilter);
+    noiseFilter.connect(noiseGain);
+    noiseGain.connect(audioCtx.destination);
+    
+    // Start all layers
+    const now = audioCtx.currentTime;
+    osc1.start(now);
+    osc2.start(now);
+    noise.start(now);
+    
+    // Decay envelopes
+    osc1.frequency.exponentialRampToValueAtTime(20, now + 0.5);
+    gain1.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+    
+    osc2.frequency.exponentialRampToValueAtTime(50, now + 0.3);
+    gain2.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+    
+    noiseGain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+    
+    // Stop all
+    osc1.stop(now + 0.5);
+    osc2.stop(now + 0.3);
+    noise.stop(now + 0.4);
+    
+  } catch(e) {
+    console.log('Bomb blast sound error:', e);
+  }
+}
+
+function playSound(soundName){
+  try {
+    if(!audioCtx) initAudioContext();
+    
+    if(sounds[soundName]){
       sounds[soundName].currentTime = 0;
-      sounds[soundName].volume = 0.4;
+      sounds[soundName].volume = 0.4; // Ensure 40% volume
       sounds[soundName].play().catch(e => console.log('Sound blocked:', e));
     }
-  } catch (e) {
+  } catch(e) {
     console.log('Sound error:', e);
   }
 }
 
-function closeModal(modalId) {
-  document.getElementById(modalId).classList.remove('active');
-}
+/* ─── Win-rate table ─── */
+const WIN_RATES = {
+   1:0.02, 2:0.05, 3:0.10, 4:0.20, 5:0.40,
+   6:0.60, 7:0.70, 8:0.80, 9:0.90, 10:1.00,
+  11:1.10,12:1.20,13:1.30,14:1.40,15:1.50,
+  16:1.60,17:1.70,18:1.80,19:1.90,20:2.00,
+  21:2.20,22:2.50,23:3.00,24:4.00,
+};
+function getWinRate(){ return WIN_RATES[gameState.minesCount] || 0.10; }
 
-// Device Fingerprint
-function getDeviceFingerprint() {
-  const n = navigator, s = window.screen;
-  return btoa(`${n.userAgent}_${s.width}x${s.height}_${s.colorDepth}_${n.language}`).substring(0, 32);
-}
+/* ═══════════════════════════════════════════════
+   DEPOSIT SYSTEM (Mirror of Withdraw System)
+   ═══════════════════════════════════════════════ */
 
-// Firebase Helpers
-async function saveUserData(phone, data) {
-  await fbReady();
-  try {
-    await window.dbSet(window.dbRef(window.db, `users/${phone}`), {
-      ...data,
-      lastUpdated: window.dbServerTimestamp()
-    });
-    return true;
-  } catch (e) {
-    console.error(e);
-    return false;
-  }
-}
+let depositMethod = 'jazz';
+let depositLockTimer = null;
 
-async function getUserData(phone) {
-  await fbReady();
-  try {
-    const snap = await window.dbGet(window.dbRef(window.db, `users/${phone}`));
-    return snap.exists() ? snap.val() : null;
-  } catch (e) {
-    console.error(e);
-    return null;
-  }
-}
-
-async function updateUserBalance(phone, bal) {
-  await fbReady();
-  try {
-    await window.dbUpdate(window.dbRef(window.db, `users/${phone}`), {
-      balance: bal,
-      lastUpdated: window.dbServerTimestamp()
-    });
-    return true;
-  } catch (e) {
-    console.error(e);
-    return false;
-  }
-}
-
-function listenToUserData(phone) {
-  window.dbOnValue(window.dbRef(window.db, `users/${phone}`), snap => {
-    if (!snap.exists()) return;
-    const d = snap.val();
-    
-    // Check if banned
-    if (d.banned) {
-      showKickedScreen();
-      return;
-    }
-    
-    // Check if kicked
-    const currentDeviceId = getDeviceFingerprint();
-    if (!d.isOnline || (d.deviceId && d.deviceId !== currentDeviceId)) {
-      showKickedScreen();
-      return;
-    }
-    
-    gameState.balance = d.balance || 0;
-    updateDisplay();
-  });
-}
-
-// Message System
-function listenToAdminMessages() {
-  if (messageListener) {
-    messageListener(); // Remove previous listener
-  }
+// Deposit method switching
+function switchDepositMethod(method){
+  playButtonMusic();
+  depositMethod = method;
+  const tabJ = document.getElementById('depTabJazz');
+  const tabE = document.getElementById('depTabEasy');
+  const numberEl = document.getElementById('depositNumber');
   
-  messageListener = window.dbOnValue(window.dbRef(window.db, 'adminMessages'), snapshot => {
-    if (!snapshot.exists()) return;
-    
-    const messages = [];
-    snapshot.forEach(child => {
-      const msg = child.val();
-      if (msg.active && (!msg.targetUser || msg.targetUser === gameState.userPhone)) {
-        messages.push(msg);
-      }
-    });
-    
-    // Sort by timestamp (newest first)
-    messages.sort((a, b) => b.timestamp - a.timestamp);
-    
-    const messageBoxCard = document.getElementById('messageBoxCard');
-    const messageContent = document.getElementById('adminMessageContent');
-    const messageTimestamp = document.getElementById('adminMessageTimestamp');
-    
-    if (messages.length > 0) {
-      const latestMessage = messages[0];
-      messageContent.textContent = latestMessage.message;
-      
-      // Format timestamp
-      const date = new Date(latestMessage.timestamp);
-      messageTimestamp.textContent = `Received: ${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
-      
-      // Show message box with animation
-      messageBoxCard.classList.add('active');
-      
-      // Auto-hide after 30 seconds for general messages
-      if (!latestMessage.targetUser) {
-        setTimeout(() => {
-          messageBoxCard.classList.remove('active');
-        }, 30000);
-      }
-    } else {
-      messageContent.textContent = 'No messages from admin.';
-      messageTimestamp.textContent = '';
-      messageBoxCard.classList.remove('active');
-    }
-  });
-}
-
-function closeMessageBox() {
-  document.getElementById('messageBoxCard').classList.remove('active');
-}
-
-// Login System
-async function handleLogin() {
-  playSound('click');
-  await fbReady();
-  
-  const name = document.getElementById('loginName').value.trim();
-  const phone = document.getElementById('loginPhone').value.trim();
-  
-  if (!name) {
-    showMessage('Please enter your name!', 'error');
-    return;
-  }
-  
-  if (!/^03[0-9]{9}$/.test(phone)) {
-    showMessage('Invalid phone! Must be 03XXXXXXXXX', 'error');
-    return;
-  }
-  
-  showMessage('Logging in…', 'success');
-  
-  const deviceId = getDeviceFingerprint();
-  const namePairKey = `${name}_${phone}`;
-  
-  try {
-    // Check banned phones
-    const bannedPhoneSnap = await window.dbGet(window.dbRef(window.db, `bannedPhones/${phone}`));
-    if (bannedPhoneSnap.exists()) {
-      setTimeout(() => showKickedScreen(), 500);
-      return;
-    }
-    
-    // Check user data
-    const userSnap = await window.dbGet(window.dbRef(window.db, `users/${phone}`));
-    if (userSnap.exists()) {
-      const userData = userSnap.val();
-      
-      if (userData.banned) {
-        showKickedScreen();
-        return;
-      }
-      
-      if (userData.isOnline && userData.deviceId && userData.deviceId !== deviceId) {
-        showMessage('Account already logged in on another device!', 'error');
-        return;
-      }
-      
-      if (userData.name !== name) {
-        showMessage('Name does not match registered name!', 'error');
-        return;
-      }
-    }
-    
-    // Update user data
-    const now = Date.now();
-    const updates = {};
-    
-    if (!userSnap.exists()) {
-      updates[`users/${phone}`] = {
-        name,
-        phone,
-        balance: 0,
-        totalDeposit: 0,
-        totalWithdraw: 0,
-        createdAt: now,
-        deviceId,
-        isOnline: true,
-        lastLogin: now
-      };
-    } else {
-      updates[`users/${phone}/deviceId`] = deviceId;
-      updates[`users/${phone}/isOnline`] = true;
-      updates[`users/${phone}/lastLogin`] = now;
-    }
-    
-    updates[`namePhonePairs/${namePairKey}/deviceId`] = deviceId;
-    updates[`deviceTracking/${deviceId}/users/${phone}/name`] = name;
-    updates[`deviceTracking/${deviceId}/users/${phone}/lastLogin`] = now;
-    
-    await window.dbUpdate(window.dbRef(window.db), updates);
-    
-    // Set game state
-    gameState.userId = phone;
-    gameState.userName = name;
-    gameState.userPhone = phone;
-    gameState.balance = userSnap.exists() ? (userSnap.val().balance || 0) : 0;
-    
-    // Update UI
-    document.getElementById('displayName').textContent = gameState.userName;
-    document.getElementById('displayPhone').textContent = phone;
-    document.getElementById('loginScreen').classList.add('hidden');
-    document.getElementById('gameScreen').classList.remove('hidden');
-    
-    // Initialize game
-    listenToUserData(phone);
-    listenToDepositRequests();
-    listenToWithdrawRequests();
-    listenToAdminMessages(); // Start listening to messages
-    initializeGrid();
-    updateDisplay();
-    updateDepositButtonState();
-    updateWithdrawButtonState();
-    
-    // Start timers
-    startDepositLockTimer();
-    
-    showMessage('Login successful!', 'success');
-    
-  } catch (e) {
-    console.error(e);
-    showMessage('Login failed!', 'error');
-  }
-}
-
-function handleLogout() {
-  if (confirm('Are you sure you want to logout?')) {
-    try {
-      window.dbUpdate(window.dbRef(window.db, `users/${gameState.userPhone}`), {
-        isOnline: false,
-        deviceId: null
-      });
-      
-      if (messageListener) {
-        messageListener();
-        messageListener = null;
-      }
-    } catch (e) { }
-    
-    if (depositLockTimer) clearInterval(depositLockTimer);
-    location.reload();
-  }
-}
-
-function showKickedScreen() {
-  document.getElementById('kickedOverlay').classList.add('active');
-}
-
-// Game Grid Functions
-function initializeGrid() {
-  const grid = document.getElementById('gameGrid');
-  grid.innerHTML = '';
-  
-  for (let i = 0; i < 25; i++) {
-    const tile = document.createElement('div');
-    tile.className = 'tile';
-    tile.onclick = () => clickTile(i);
-    grid.appendChild(tile);
-  }
-}
-
-function clickTile(index) {
-  if (gameState.revealedTiles.includes(index)) return;
-  
-  if (!gameState.gameActive) {
-    if (gameState.currentBet === 0) {
-      playSound('error');
-      showMessage('Set bet first!', 'error');
-      return;
-    }
-    startGame();
-  }
-  
-  gameState.tilesClicked = true;
-  gameState.revealedTiles.push(index);
-  const tiles = document.querySelectorAll('.tile');
-  
-  if (gameState.minePositions.includes(index)) {
-    playSound('mine');
-    tiles[index].textContent = '💣';
-    tiles[index].classList.add('revealed', 'mine');
-    gameOver(false);
+  if(method === 'jazz'){
+    tabJ.classList.add('active-tab');
+    tabJ.classList.remove('easy-active');
+    tabE.classList.remove('active-tab','easy-active');
+    numberEl.textContent = '03266916283';
   } else {
+    tabE.classList.add('active-tab','easy-active');
+    tabJ.classList.remove('active-tab');
+    numberEl.textContent = '03193433587';
+  }
+}
+
+// Copy deposit number to clipboard
+function copyDepositNumber(){
+  const number = document.getElementById('depositNumber').textContent;
+  const display = document.getElementById('depositNumberDisplay');
+  
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(number).then(() => {
+      display.classList.add('copied');
+      setTimeout(() => display.classList.remove('copied'), 2000);
+      playSound('success');
+      playButtonMusic();
+    }).catch(err => {
+      console.error('Copy failed:', err);
+    });
+  } else {
+    // Fallback for older browsers
+    const textArea = document.createElement('textarea');
+    textArea.value = number;
+    document.body.appendChild(textArea);
+    textArea.select();
+    document.execCommand('copy');
+    document.body.removeChild(textArea);
+    
+    display.classList.add('copied');
+    setTimeout(() => display.classList.remove('copied'), 2000);
     playSound('success');
-    tiles[index].textContent = '💎';
-    tiles[index].classList.add('revealed', 'safe');
-    gameState.currentWin += Math.floor(gameState.currentBet * getWinRate());
-    updateDisplay();
-    document.getElementById('cashoutBtn').disabled = false;
   }
 }
 
-function startGame() {
-  playSound('click');
-  gameState.gameActive = true;
-  gameState.minePositions = [];
-  gameState.revealedTiles = [];
-  gameState.currentWin = 0;
-  
-  // Generate random mine positions
-  while (gameState.minePositions.length < gameState.minesCount) {
-    const p = Math.floor(Math.random() * 25);
-    if (!gameState.minePositions.includes(p)) {
-      gameState.minePositions.push(p);
-    }
-  }
-  
-  updateDisplay();
-}
-
-async function cashout() {
-  if (!gameState.gameActive || gameState.currentWin === 0) return;
-  
-  playSound('win');
-  const total = gameState.currentBet + gameState.currentWin;
-  gameState.balance += total;
-  
-  await updateUserBalance(gameState.userPhone, gameState.balance);
-  
-  gameState.currentBet = 0;
-  gameState.currentWin = 0;
-  gameState.gameActive = false;
-  gameState.betSet = false;
-  gameState.tilesClicked = false;
-  
-  document.getElementById('cashoutBtn').disabled = true;
-  updateDisplay();
-  revealAllTiles();
-  
-  showMessage(`Cashed out Rs ${total}! 🎉`, 'success');
-}
-
-function gameOver(won) {
-  if (!won) playSound('error');
-  
-  gameState.gameActive = false;
-  gameState.currentBet = 0;
-  gameState.currentWin = 0;
-  gameState.betSet = false;
-  gameState.tilesClicked = false;
-  
-  document.getElementById('cashoutBtn').disabled = true;
-  updateDisplay();
-  revealAllTiles();
-  
-  if (!won) {
-    showMessage('Game Over! 💔', 'error');
-  }
-}
-
-function revealAllTiles() {
-  document.querySelectorAll('.tile').forEach((tile, i) => {
-    if (!tile.classList.contains('revealed')) {
-      tile.classList.add('revealed');
-      if (gameState.minePositions.includes(i)) {
-        tile.textContent = '💣';
-        tile.classList.add('mine');
-      } else {
-        tile.textContent = '💎';
-        tile.classList.add('safe');
-      }
-    }
-  });
-}
-
-async function resetGame() {
-  playSound('click');
-  
-  if (gameState.betSet && gameState.currentBet > 0) {
-    const ret = gameState.currentBet + gameState.currentWin;
-    gameState.balance += ret;
-    
-    await updateUserBalance(gameState.userPhone, gameState.balance);
-    
-    showMessage(
-      gameState.tilesClicked
-        ? `Rs ${gameState.currentBet} (bet) + Rs ${gameState.currentWin} (win) refunded!`
-        : `Rs ${gameState.currentBet} refunded!`,
-      'success'
-    );
-  }
-  
-  gameState.gameActive = false;
-  gameState.currentWin = 0;
-  gameState.currentBet = 0;
-  gameState.minePositions = [];
-  gameState.revealedTiles = [];
-  gameState.betSet = false;
-  gameState.tilesClicked = false;
-  
-  document.getElementById('cashoutBtn').disabled = true;
-  initializeGrid();
-  updateDisplay();
-}
-
-function updateDisplay() {
-  document.getElementById('balance').textContent = gameState.balance;
-  document.getElementById('win').textContent = gameState.currentWin;
-  document.getElementById('betDisplay').textContent = gameState.currentBet;
-  document.getElementById('minesDisplay').textContent = gameState.minesCount;
-}
-
-// Modal Functions
-function openBetModal() {
-  playSound('click');
-  
-  if (gameState.gameActive) {
-    showMessage('Cannot change bet during active game!', 'error');
-    return;
-  }
-  
-  document.getElementById('betInput').value = gameState.currentBet || '';
-  document.getElementById('betModal').classList.add('active');
-}
-
-async function setBet() {
-  const amount = parseInt(document.getElementById('betInput').value);
-  
-  if (!amount || amount < 100 || amount > 10000) {
-    showMessage('Bet must be Rs 100–10,000', 'error');
-    return;
-  }
-  
-  if (gameState.betSet && gameState.currentBet === amount) {
-    showMessage('Bet already set with this amount!', 'error');
-    return;
-  }
-  
-  if (gameState.betSet && gameState.currentBet > 0 && gameState.currentBet !== amount) {
-    gameState.balance += gameState.currentBet;
-  }
-  
-  if (amount > gameState.balance) {
-    showMessage('Insufficient balance!', 'error');
-    return;
-  }
-  
-  playSound('click');
-  gameState.balance -= amount;
-  gameState.currentBet = amount;
-  gameState.betSet = true;
-  gameState.tilesClicked = false;
-  
-  await updateUserBalance(gameState.userPhone, gameState.balance);
-  
-  updateDisplay();
-  closeModal('betModal');
-  showMessage('Bet set! Start playing!', 'success');
-}
-
-function openMinesModal() {
-  playSound('click');
-  
-  if (gameState.gameActive) {
-    showMessage('Cannot change mines during game!', 'error');
-    return;
-  }
-  
-  document.getElementById('minesInput').value = gameState.minesCount;
-  document.getElementById('minesModal').classList.add('active');
-}
-
-function setMines() {
-  const count = parseInt(document.getElementById('minesInput').value);
-  
-  if (!count || count < 1 || count > 24) {
-    showMessage('Mines must be 1–24', 'error');
-    return;
-  }
-  
-  playSound('click');
-  gameState.minesCount = count;
-  updateDisplay();
-  closeModal('minesModal');
-}
-
-// Deposit System
-async function checkDepositLock() {
+// Check deposit lock status
+async function checkDepositLock(){
   try {
     const userSnap = await window.dbGet(window.dbRef(window.db, `users/${gameState.userPhone}`));
-    if (!userSnap.exists()) return { locked: false };
+    if(!userSnap.exists()) return { locked: false };
     
     const user = userSnap.val();
     const rejections = user.depositRejections || 0;
     const lockUntil = user.depositLockUntil || 0;
     const now = Date.now();
     
-    if (rejections >= 3 && now < lockUntil) {
-      return {
-        locked: true,
-        lockUntil: lockUntil,
-        remaining: Math.ceil((lockUntil - now) / 1000)
+    if(rejections >= 3 && now < lockUntil){
+      return { 
+        locked: true, 
+        lockUntil: lockUntil, 
+        remaining: Math.ceil((lockUntil - now) / 1000) 
       };
     }
     
-    if (rejections >= 3 && now >= lockUntil) {
+    if(rejections >= 3 && now >= lockUntil){
       await window.dbUpdate(window.dbRef(window.db, `users/${gameState.userPhone}`), {
         depositRejections: 0,
         depositLockUntil: null
@@ -1744,208 +1287,152 @@ async function checkDepositLock() {
     }
     
     return { locked: false };
-  } catch (e) {
+  } catch(e){
     console.error('Check deposit lock error:', e);
     return { locked: false };
   }
 }
 
-async function getPendingDeposit() {
-  try {
-    const snapshot = await window.dbGet(window.dbRef(window.db, 'depositRequests'));
-    if (!snapshot.exists()) return null;
-    
-    let pendingDeposit = null;
-    snapshot.forEach(child => {
-      const req = child.val();
-      if (req.phone === gameState.userPhone && req.status === 'pending') {
-        pendingDeposit = { id: child.key, ...req };
-      }
-    });
-    
-    return pendingDeposit;
-  } catch (e) {
-    console.error('Get pending deposit error:', e);
-    return null;
-  }
-}
-
-async function updateDepositButtonState() {
+// Update deposit button state
+async function updateDepositButtonState(){
   const depositBtn = document.getElementById('depositBtn');
   const pendingStatus = document.getElementById('pendingDepositStatus');
   
   try {
+    // Check for pending deposit
     const pendingDeposit = await getPendingDeposit();
     const lockStatus = await checkDepositLock();
     
-    if (pendingDeposit) {
+    if(pendingDeposit){
+      // Show pending status
       depositBtn.textContent = '⏳ PENDING';
       depositBtn.disabled = false;
+      depositBtn.style.opacity = '0.8';
       
       pendingStatus.classList.add('active');
       document.getElementById('pendingDepositAmount').textContent = 'Rs ' + pendingDeposit.amount;
-      document.getElementById('pendingDepositMethod').textContent =
+      document.getElementById('pendingDepositMethod').textContent = 
         pendingDeposit.paymentMethod === 'jazzcash' ? 'JazzCash' : 'Easypaisa';
-      
-      if (lockStatus.locked) {
+        
+      // Update lock timer if locked
+      if(lockStatus.locked){
         const minutes = Math.floor(lockStatus.remaining / 60);
         const seconds = lockStatus.remaining % 60;
-        document.getElementById('depositLockTimer').textContent =
-          `🔒 Locked: ${minutes}:${seconds.toString().padStart(2, '0')} remaining`;
+        document.getElementById('depositLockTimer').textContent = 
+          `🔒 Locked: ${minutes}:${seconds.toString().padStart(2,'0')} remaining`;
       } else {
         document.getElementById('depositLockTimer').textContent = '';
       }
     } else {
+      // Normal state
       depositBtn.textContent = 'DEPOSIT';
       depositBtn.disabled = false;
+      depositBtn.style.opacity = '1';
       pendingStatus.classList.remove('active');
       
-      if (lockStatus.locked) {
+      // Check if locked
+      if(lockStatus.locked){
         depositBtn.disabled = true;
+        depositBtn.style.opacity = '0.5';
         depositBtn.textContent = '🔒 LOCKED';
         
         pendingStatus.classList.add('active');
         const minutes = Math.floor(lockStatus.remaining / 60);
         const seconds = lockStatus.remaining % 60;
-        document.getElementById('depositLockTimer').textContent =
-          `🔒 Locked: ${minutes}:${seconds.toString().padStart(2, '0')} remaining`;
+        document.getElementById('depositLockTimer').textContent = 
+          `🔒 Locked: ${minutes}:${seconds.toString().padStart(2,'0')} remaining`;
         document.getElementById('pendingDepositAmount').textContent = 'Deposit Locked';
         document.getElementById('pendingDepositMethod').textContent = 'Too many rejected requests';
       }
     }
-  } catch (e) {
+  } catch(e){
     console.error('Update deposit button error:', e);
   }
 }
 
-function listenToDepositRequests() {
+// Get pending deposit for current user
+async function getPendingDeposit(){
+  try {
+    const snapshot = await window.dbGet(window.dbRef(window.db, 'depositRequests'));
+    if(!snapshot.exists()) return null;
+    
+    let pendingDeposit = null;
+    snapshot.forEach(child => {
+      const req = child.val();
+      if(req.phone === gameState.userPhone && req.status === 'pending'){
+        pendingDeposit = { id: child.key, ...req };
+      }
+    });
+    
+    return pendingDeposit;
+  } catch(e){
+    console.error('Get pending deposit error:', e);
+    return null;
+  }
+}
+
+// Listen to deposit requests
+function listenToDepositRequests(){
   window.dbOnValue(window.dbRef(window.db, 'depositRequests'), snapshot => {
     updateDepositButtonState();
   });
 }
 
-function startDepositLockTimer() {
-  if (depositLockTimer) clearInterval(depositLockTimer);
-  
-  depositLockTimer = setInterval(async () => {
-    await updateDepositButtonState();
-  }, 1000);
-}
-
-function openDepositModal() {
-  playSound('click');
-  
+// Open deposit modal
+async function openDepositModal(){
   // Reset form
-  depositMethod = 'jazz';
+  switchDepositMethod('jazz');
   document.getElementById('depositAmount').value = '';
   
-  // Create payment method toggle
-  const toggleHtml = `
-    <div style="display: flex; gap: 0; margin-bottom: 20px; background: rgba(8,10,18,0.6); border: 1.5px solid rgba(255,255,255,0.1); border-radius: 8px; overflow: hidden;">
-      <button id="depTabJazz" style="flex: 1; padding: 12px; background: rgba(52,211,153,0.18); color: var(--neon-emerald); border: none; cursor: pointer;" onclick="switchDepositMethod('jazz')">JazzCash</button>
-      <button id="depTabEasy" style="flex: 1; padding: 12px; background: transparent; color: var(--text-muted); border: none; cursor: pointer;" onclick="switchDepositMethod('easy')">Easypaisa</button>
-    </div>
-  `;
-  
-  document.querySelector('#depositModal .payment-method-toggle').innerHTML = toggleHtml;
-  
-  // Create payment number display
-  const numberHtml = `
-    <div style="background: rgba(8,10,18,0.65); border: 1.5px solid rgba(240,192,64,0.3); border-radius: 8px; padding: 16px; text-align: center; cursor: pointer; transition: all 0.3s ease;">
-      <div style="font-family: 'Orbitron', sans-serif; font-size: 20px; font-weight: 700; color: var(--gold); letter-spacing: 2px; margin: 8px 0; text-shadow: 0 0 8px rgba(240,192,64,0.3);" id="depositNumber">03266916283</div>
-      <div style="font-size: 14px; color: var(--neon-emerald); direction: rtl; margin-top: 8px;">نمبر کاپی کر کے ادائیگی کریں۔</div>
-    </div>
-  `;
-  
-  document.querySelector('#depositModal .payment-number-display').innerHTML = numberHtml;
-  document.querySelector('#depositModal .payment-number-display').onclick = copyDepositNumber;
-  
-  // Initialize with JazzCash
-  switchDepositMethod('jazz');
-  
   // Check lock status
-  checkDepositLock().then(lockStatus => {
-    const cooldownEl = document.getElementById('depositCooldown');
-    if (lockStatus.locked) {
-      const minutes = Math.floor(lockStatus.remaining / 60);
-      const seconds = lockStatus.remaining % 60;
-      cooldownEl.style.display = 'block';
-      cooldownEl.textContent = `🔒 Locked for ${minutes}:${seconds.toString().padStart(2, '0')} (3 rejected requests)`;
-    } else {
-      cooldownEl.style.display = 'none';
-    }
-  });
+  const lockStatus = await checkDepositLock();
+  if(lockStatus.locked){
+    const minutes = Math.floor(lockStatus.remaining / 60);
+    const seconds = lockStatus.remaining % 60;
+    document.getElementById('depositCooldown').style.display = 'block';
+    document.getElementById('depositCooldown').textContent = 
+      `🔒 Locked for ${minutes}:${seconds.toString().padStart(2,'0')} (3 rejected requests)`;
+  } else {
+    document.getElementById('depositCooldown').style.display = 'none';
+  }
   
   document.getElementById('depositModal').classList.add('active');
 }
 
-function switchDepositMethod(method) {
-  playSound('click');
-  depositMethod = method;
-  const tabJ = document.getElementById('depTabJazz');
-  const tabE = document.getElementById('depTabEasy');
-  const numberEl = document.getElementById('depositNumber');
-  
-  if (method === 'jazz') {
-    tabJ.style.background = 'rgba(52,211,153,0.18)';
-    tabJ.style.color = 'var(--neon-emerald)';
-    tabE.style.background = 'transparent';
-    tabE.style.color = 'var(--text-muted)';
-    numberEl.textContent = '03266916283';
-  } else {
-    tabE.style.background = 'rgba(251,191,36,0.16)';
-    tabE.style.color = 'var(--neon-amber)';
-    tabJ.style.background = 'transparent';
-    tabJ.style.color = 'var(--text-muted)';
-    numberEl.textContent = '03193433587';
-  }
-}
-
-function copyDepositNumber() {
-  const number = document.getElementById('depositNumber').textContent;
-  const display = document.querySelector('#depositModal .payment-number-display');
-  
-  if (navigator.clipboard) {
-    navigator.clipboard.writeText(number).then(() => {
-      display.style.borderColor = 'var(--neon-emerald)';
-      display.style.background = 'rgba(52,211,153,0.1)';
-      setTimeout(() => {
-        display.style.borderColor = 'rgba(240,192,64,0.3)';
-        display.style.background = 'rgba(8,10,18,0.65)';
-      }, 2000);
-      playSound('success');
-    }).catch(err => {
-      console.error('Copy failed:', err);
-    });
-  }
-}
-
-async function submitDeposit() {
-  playSound('click');
+// Submit deposit request
+async function submitDeposit(){
+  playButtonMusic();
   
   const amount = parseInt(document.getElementById('depositAmount').value);
   const method = depositMethod === 'jazz' ? 'jazzcash' : 'easypaisa';
   
-  if (!amount || amount < 500) {
-    showMessage('Minimum deposit amount is Rs 500', 'error');
+  // Validation
+  if(!amount || amount < 500){
+    playSound('error');
+    alert('Minimum deposit amount is Rs 500');
     return;
   }
   
+  // Check lock status
   const lockStatus = await checkDepositLock();
-  if (lockStatus.locked) {
+  if(lockStatus.locked){
+    playSound('error');
     const minutes = Math.floor(lockStatus.remaining / 60);
     const seconds = lockStatus.remaining % 60;
-    showMessage(`Deposit locked! Wait ${minutes}:${seconds.toString().padStart(2, '0')}`, 'error');
+    alert(`Deposit locked! Wait ${minutes}:${seconds.toString().padStart(2,'0')}`);
     return;
   }
   
+  // Check for existing pending deposit
   const pendingDeposit = await getPendingDeposit();
-  if (pendingDeposit) {
-    showMessage('You already have a pending deposit request', 'error');
+  if(pendingDeposit){
+    playSound('error');
+    alert('You already have a pending deposit request');
     return;
   }
   
   try {
+    // Submit to Firebase
     const requestRef = window.dbPush(window.dbRef(window.db, 'depositRequests'));
     await window.dbSet(requestRef, {
       id: requestRef.key,
@@ -1959,76 +1446,111 @@ async function submitDeposit() {
       createdAt: window.dbServerTimestamp()
     });
     
-    showMessage('✅ Deposit request submitted successfully!\nAdmin will approve soon.', 'success');
+    playSound('success');
+    alert('✅ Deposit request submitted successfully!\nAdmin will approve soon.');
     closeModal('depositModal');
-  } catch (e) {
+  } catch(e){
     console.error('Submit deposit error:', e);
-    showMessage('❌ Failed to submit deposit request', 'error');
+    playSound('error');
+    alert('❌ Failed to submit deposit request');
   }
 }
 
-// Withdraw System
-async function getPendingWithdraw() {
+/* ═══════════════════════════════════════════════
+   WITHDRAW SYSTEM
+   ═══════════════════════════════════════════════ */
+
+let withdrawMethod = 'jazz';
+
+// Withdraw method switching
+function switchWithdrawMethod(method){
+  playButtonMusic();
+  withdrawMethod = method;
+  const tabJ = document.getElementById('tabJazz');
+  const tabE = document.getElementById('tabEasy');
+  const input = document.getElementById('withdrawPhone');
+  
+  if(method === 'jazz'){
+    tabJ.classList.add('active-tab');
+    tabJ.classList.remove('easy-active');
+    tabE.classList.remove('active-tab','easy-active');
+    input.placeholder = 'JazzCash 03XXXXXXXXX';
+  } else {
+    tabE.classList.add('active-tab','easy-active');
+    tabJ.classList.remove('active-tab');
+    input.placeholder = 'Easypaisa 03XXXXXXXXX';
+  }
+}
+
+// Get pending withdraw for current user
+async function getPendingWithdraw(){
   try {
     const snapshot = await window.dbGet(window.dbRef(window.db, 'withdrawRequests'));
-    if (!snapshot.exists()) return null;
+    if(!snapshot.exists()) return null;
     
     let pendingWithdraw = null;
     snapshot.forEach(child => {
       const req = child.val();
-      if (req.phone === gameState.userPhone && req.status === 'pending') {
+      if(req.phone === gameState.userPhone && req.status === 'pending'){
         pendingWithdraw = { id: child.key, ...req };
       }
     });
     
     return pendingWithdraw;
-  } catch (e) {
+  } catch(e){
     console.error('Get pending withdraw error:', e);
     return null;
   }
 }
 
-async function updateWithdrawButtonState() {
+// Update withdraw button state
+async function updateWithdrawButtonState(){
   const withdrawBtn = document.getElementById('withdrawBtn');
   const pendingStatus = document.getElementById('pendingWithdrawStatus');
   
   try {
     const pendingWithdraw = await getPendingWithdraw();
     
-    if (pendingWithdraw) {
+    if(pendingWithdraw){
+      // Show pending status
       withdrawBtn.textContent = '⏳ PENDING';
       withdrawBtn.disabled = false;
+      withdrawBtn.style.opacity = '0.8';
       
       pendingStatus.classList.add('active');
       document.getElementById('pendingWithdrawAmount').textContent = 'Rs ' + pendingWithdraw.amount;
-      document.getElementById('pendingWithdrawMethod').textContent =
+      document.getElementById('pendingWithdrawMethod').textContent = 
         pendingWithdraw.withdrawMethod === 'jazz' ? 'JazzCash' : 'Easypaisa';
-      document.getElementById('pendingWithdrawNumber').textContent =
+      document.getElementById('pendingWithdrawNumber').textContent = 
         'To: ' + pendingWithdraw.jazzCash;
     } else {
+      // Normal state
       withdrawBtn.textContent = 'WITHDRAW';
       withdrawBtn.disabled = false;
+      withdrawBtn.style.opacity = '1';
       pendingStatus.classList.remove('active');
     }
-  } catch (e) {
+  } catch(e){
     console.error('Update withdraw button error:', e);
   }
 }
 
-function listenToWithdrawRequests() {
+// Listen to withdraw requests
+function listenToWithdrawRequests(){
   window.dbOnValue(window.dbRef(window.db, 'withdrawRequests'), snapshot => {
     updateWithdrawButtonState();
   });
 }
 
-function checkWithdrawCooldown() {
+// Check withdraw cooldown
+function checkWithdrawCooldown(){
   const last = localStorage.getItem(`lastWithdraw_${gameState.userPhone}`);
-  if (last) {
+  if(last){ 
     const elapsed = Date.now() - parseInt(last);
     const cooldown = 2 * 60 * 60 * 1000; // 2 hours
-    if (elapsed < cooldown) {
+    if(elapsed < cooldown){
       return {
-        allowed: false,
+        allowed: false, 
         remaining: Math.ceil((cooldown - elapsed) / 60000)
       };
     }
@@ -2036,100 +1558,74 @@ function checkWithdrawCooldown() {
   return { allowed: true };
 }
 
-function openWithdrawModal() {
-  playSound('click');
-  
+// Open withdraw modal
+function openWithdrawModal(){
   // Reset form
-  withdrawMethod = 'jazz';
+  switchWithdrawMethod('jazz');
   document.getElementById('withdrawPhone').value = '';
   document.getElementById('withdrawAmount').value = '';
   
-  // Create payment method toggle
-  const toggleHtml = `
-    <div style="display: flex; gap: 0; margin-bottom: 20px; background: rgba(8,10,18,0.6); border: 1.5px solid rgba(255,255,255,0.1); border-radius: 8px; overflow: hidden;">
-      <button id="withdrawTabJazz" style="flex: 1; padding: 12px; background: rgba(52,211,153,0.18); color: var(--neon-emerald); border: none; cursor: pointer;" onclick="switchWithdrawMethod('jazz')">JazzCash</button>
-      <button id="withdrawTabEasy" style="flex: 1; padding: 12px; background: transparent; color: var(--text-muted); border: none; cursor: pointer;" onclick="switchWithdrawMethod('easy')">Easypaisa</button>
-    </div>
-  `;
-  
-  document.querySelector('#withdrawModal .payment-method-toggle').innerHTML = toggleHtml;
-  
-  // Initialize with JazzCash
-  switchWithdrawMethod('jazz');
-  
   // Check cooldown
   const cooldown = checkWithdrawCooldown();
-  const cooldownEl = document.getElementById('withdrawCooldown');
-  if (!cooldown.allowed) {
+  if(!cooldown.allowed){
     const hours = Math.floor(cooldown.remaining / 60);
     const minutes = cooldown.remaining % 60;
-    cooldownEl.style.display = 'block';
-    cooldownEl.textContent = `⏳ Wait ${hours}h ${minutes}m before next withdraw`;
+    document.getElementById('withdrawCooldown').style.display = 'block';
+    document.getElementById('withdrawCooldown').textContent = 
+      `⏳ Wait ${hours}h ${minutes}m before next withdraw`;
   } else {
-    cooldownEl.style.display = 'none';
+    document.getElementById('withdrawCooldown').style.display = 'none';
   }
   
   document.getElementById('withdrawModal').classList.add('active');
 }
 
-function switchWithdrawMethod(method) {
-  playSound('click');
-  withdrawMethod = method;
-  const tabJ = document.getElementById('withdrawTabJazz');
-  const tabE = document.getElementById('withdrawTabEasy');
-  const input = document.getElementById('withdrawPhone');
-  
-  if (method === 'jazz') {
-    tabJ.style.background = 'rgba(52,211,153,0.18)';
-    tabJ.style.color = 'var(--neon-emerald)';
-    tabE.style.background = 'transparent';
-    tabE.style.color = 'var(--text-muted)';
-    input.placeholder = 'JazzCash 03XXXXXXXXX';
-  } else {
-    tabE.style.background = 'rgba(251,191,36,0.16)';
-    tabE.style.color = 'var(--neon-amber)';
-    tabJ.style.background = 'transparent';
-    tabJ.style.color = 'var(--text-muted)';
-    input.placeholder = 'Easypaisa 03XXXXXXXXX';
-  }
-}
-
-async function submitWithdraw() {
-  playSound('click');
+// Submit withdraw request
+async function submitWithdraw(){
+  playButtonMusic();
   
   const phone = document.getElementById('withdrawPhone').value.trim();
   const amount = parseInt(document.getElementById('withdrawAmount').value);
   
-  if (!/^03[0-9]{9}$/.test(phone)) {
-    showMessage(withdrawMethod === 'jazz' ? 'Invalid JazzCash number!' : 'Invalid Easypaisa number!', 'error');
+  // Validation
+  if(!/^03[0-9]{9}$/.test(phone)){
+    playSound('error');
+    alert(withdrawMethod === 'jazz' ? 'Invalid JazzCash number!' : 'Invalid Easypaisa number!');
     return;
   }
   
-  if (!amount || amount < 1000) {
-    showMessage('Minimum withdraw amount is Rs 1000', 'error');
+  if(!amount || amount < 1000){
+    playSound('error');
+    alert('Minimum withdraw amount is Rs 1000');
     return;
   }
   
-  if (amount > gameState.balance) {
-    showMessage('Insufficient balance!', 'error');
+  if(amount > gameState.balance){
+    playSound('error');
+    alert('Insufficient balance!');
     return;
   }
   
+  // Check cooldown
   const cooldown = checkWithdrawCooldown();
-  if (!cooldown.allowed) {
+  if(!cooldown.allowed){
+    playSound('error');
     const hours = Math.floor(cooldown.remaining / 60);
     const minutes = cooldown.remaining % 60;
-    showMessage(`⏳ Wait ${hours}h ${minutes}m before next withdraw`, 'error');
+    alert(`⏳ Wait ${hours}h ${minutes}m before next withdraw`);
     return;
   }
   
+  // Check for existing pending withdraw
   const pendingWithdraw = await getPendingWithdraw();
-  if (pendingWithdraw) {
-    showMessage('You already have a pending withdraw request', 'error');
+  if(pendingWithdraw){
+    playSound('error');
+    alert('You already have a pending withdraw request');
     return;
   }
   
   try {
+    // Submit to Firebase
     const requestRef = window.dbPush(window.dbRef(window.db, 'withdrawRequests'));
     await window.dbSet(requestRef, {
       id: requestRef.key,
@@ -2144,23 +1640,442 @@ async function submitWithdraw() {
       createdAt: window.dbServerTimestamp()
     });
     
+    // Update cooldown
     localStorage.setItem(`lastWithdraw_${gameState.userPhone}`, Date.now().toString());
     
-    showMessage('✅ Withdraw request submitted successfully!\nAdmin will process soon.', 'success');
+    playSound('success');
+    alert('✅ Withdraw request submitted successfully!\nAdmin will process soon.');
     closeModal('withdrawModal');
-  } catch (e) {
+  } catch(e){
     console.error('Submit withdraw error:', e);
-    showMessage('❌ Failed to submit withdraw request', 'error');
+    playSound('error');
+    alert('❌ Failed to submit withdraw request');
   }
 }
 
-// Initialize game when page loads
-window.addEventListener('DOMContentLoaded', () => {
-  // Add click event to message box to close it
-  document.getElementById('messageBoxCard').addEventListener('click', closeMessageBox);
+/* ─── Firebase helpers ─── */
+async function saveUserData(phone,data){
+  await fbReady();
+  try{
+    await window.dbSet(window.dbRef(window.db,`users/${phone}`),{...data,lastUpdated:window.dbServerTimestamp()});
+    return true;
+  }catch(e){ console.error(e); return false; }
+}
+
+async function getUserData(phone){
+  await fbReady();
+  try{
+    const snap = await window.dbGet(window.dbRef(window.db,`users/${phone}`));
+    return snap.exists() ? snap.val() : null;
+  }catch(e){ console.error(e); return null; }
+}
+
+async function updateUserBalance(phone,bal){
+  await fbReady();
+  try{
+    await window.dbUpdate(window.dbRef(window.db,`users/${phone}`),{balance:bal,lastUpdated:window.dbServerTimestamp()});
+    return true;
+  }catch(e){ console.error(e); return false; }
+}
+
+function listenToUserData(phone){
+  window.dbOnValue(window.dbRef(window.db,`users/${phone}`), snap=>{
+    if(!snap.exists()) return;
+    const d = snap.val();
+    
+    // Check if banned
+    if(d.banned){
+      showKickedScreen();
+      return;
+    }
+    
+    // Check if kicked (device changed or logged out)
+    const currentDeviceId = getDeviceFingerprint();
+    if(!d.isOnline || (d.deviceId && d.deviceId !== currentDeviceId)){
+      showKickedScreen();
+      return;
+    }
+    
+    gameState.balance = d.balance||0;
+    updateDisplay();
+  });
+}
+
+/* ─── Login ─── */
+async function handleLogin(){
+  playButtonMusic();
+  await fbReady();
+  const name  = document.getElementById('loginName').value.trim();
+  const phone = document.getElementById('loginPhone').value.trim();
+  if(!name){ showMessage('loginMsg','Please enter your name!','error'); return; }
+  if(!/^03[0-9]{9}$/.test(phone)){ showMessage('loginMsg','Invalid phone! Must be 03XXXXXXXXX','error'); return; }
+  showMessage('loginMsg','Logging in…','success');
+
+  const deviceId = getDeviceFingerprint();
+  const namePairKey = `${name}_${phone}`;
+
+  try {
+    // Check: Banned phones
+    const bannedPhoneSnap = await window.dbGet(window.dbRef(window.db, `bannedPhones/${phone}`));
+    if(bannedPhoneSnap.exists()){
+      showMessage('loginMsg','','error');
+      setTimeout(() => showKickedScreen(), 500);
+      return;
+    }
+    
+    // Check: Phone number ban
+    const phoneCheckSnap = await window.dbGet(window.dbRef(window.db, `users/${phone}`));
+    if(phoneCheckSnap.exists()){
+      const phoneUserData = phoneCheckSnap.val();
+      if(phoneUserData.banned){
+        showMessage('loginMsg','','error');
+        setTimeout(() => showKickedScreen(), 500);
+        return;
+      }
+    }
+    
+    // Check: Name-Phone pair lock
+    const pairSnap = await window.dbGet(window.dbRef(window.db, `namePhonePairs/${namePairKey}`));
+    if(pairSnap.exists()){
+      const pairData = pairSnap.val();
+      if(pairData.banned){
+        showMessage('loginMsg','','error');
+        setTimeout(() => showKickedScreen(), 500);
+        return;
+      }
+      if(pairData.deviceId !== deviceId){
+        showMessage('loginMsg','❌ This name-phone combination is locked to another device!','error');
+        return;
+      }
+    }
+    
+    // Check: Device limit (max 2 users per device)
+    const deviceTrackSnap = await window.dbGet(window.dbRef(window.db, `deviceTracking/${deviceId}`));
+    if(deviceTrackSnap.exists()){
+      const deviceData = deviceTrackSnap.val();
+      const usersOnDevice = deviceData.users || {};
+      const userCount = Object.keys(usersOnDevice).length;
+      
+      if(!usersOnDevice[phone] && userCount >= 2){
+        showMessage('loginMsg','❌ Maximum 2 accounts per device!','error');
+        return;
+      }
+      
+      if(usersOnDevice[phone] && usersOnDevice[phone].name !== name){
+        showMessage('loginMsg','❌ Phone number registered with different name!','error');
+        return;
+      }
+    }
+    
+    // Check: User already logged in or banned
+    const userSnap = await window.dbGet(window.dbRef(window.db, `users/${phone}`));
+    if(userSnap.exists()){
+      const userData = userSnap.val();
+      
+      if(userData.banned){
+        showKickedScreen();
+        return;
+      }
+      
+      if(userData.isOnline && userData.deviceId && userData.deviceId !== deviceId){
+        showMessage('loginMsg','یہ اکاؤنٹ پہلے سے کسی اور ڈیوائس پر لاگ ان ہے!','error');
+        return;
+      }
+      
+      if(userData.name !== name){
+        showMessage('loginMsg','❌ Name does not match registered name!','error');
+        return;
+      }
+    }
+    
+    // All checks passed - proceed with login
+    const now = Date.now();
+    const updates = {};
+    
+    let userData = userSnap.exists() ? userSnap.val() : null;
+    
+    // Update or create user data
+    if(!userData){
+      updates[`users/${phone}`] = {
+        name, phone, balance:0, totalDeposit:0, totalWithdraw:0,
+        createdAt:now, deviceId, isOnline:true, lastLogin:now
+      };
+    } else {
+      updates[`users/${phone}/deviceId`] = deviceId;
+      updates[`users/${phone}/isOnline`] = true;
+      updates[`users/${phone}/lastLogin`] = now;
+      updates[`users/${phone}/name`] = name;
+    }
+    
+    // Lock name-phone pair to this device
+    updates[`namePhonePairs/${namePairKey}/deviceId`] = deviceId;
+    updates[`namePhonePairs/${namePairKey}/registeredAt`] = now;
+    updates[`namePhonePairs/${namePairKey}/locked`] = true;
+    
+    // Track device usage
+    updates[`deviceTracking/${deviceId}/users/${phone}/name`] = name;
+    updates[`deviceTracking/${deviceId}/users/${phone}/lastLogin`] = now;
+    
+    await window.dbUpdate(window.dbRef(window.db), updates);
+    
+    // Continue with normal login flow
+    gameState.userId = phone;
+    gameState.userName = name;
+    gameState.userPhone = phone;
+    gameState.balance = userData ? (userData.balance || 0) : 0;
+    
+    document.getElementById('displayName').textContent = gameState.userName;
+    document.getElementById('displayPhone').textContent = phone;
+    document.getElementById('loginScreen').classList.add('hidden');
+    document.getElementById('gameScreen').classList.remove('hidden');
+    
+    listenToUserData(phone);
+    listenToDepositRequests();
+    listenToWithdrawRequests();
+    initializeGrid();
+    updateDisplay();
+    updateDepositButtonState();
+    updateWithdrawButtonState();
+    
+    // Start deposit lock timer if needed
+    startDepositLockTimer();
+    
+    if(!userData){
+      showMessage('loginMsg','✅ Account created!','success');
+    }
+    
+  } catch(e){
+    console.error(e);
+    showMessage('loginMsg','❌ Login failed: ' + e.message,'error');
+  }
+}
+
+// Start deposit lock timer
+function startDepositLockTimer(){
+  if(depositLockTimer) clearInterval(depositLockTimer);
   
-  console.log('Mines Game - Card Edition loaded');
-});
+  depositLockTimer = setInterval(async () => {
+    await updateDepositButtonState();
+  }, 1000);
+}
+
+async function handleLogout(){
+  if(confirm('Are you sure you want to logout?')){
+    try{ 
+      await fbReady(); 
+      await window.dbUpdate(window.dbRef(window.db,`users/${gameState.userPhone}`),{isOnline:false,deviceId:null}); 
+    }catch(e){}
+    if(depositLockTimer) clearInterval(depositLockTimer);
+    location.reload();
+  }
+}
+
+function showKickedScreen(){ 
+  document.getElementById('kickedOverlay').classList.add('active'); 
+}
+
+/* ─── Grid & Tile logic ─── */
+function initializeGrid(){
+  const grid = document.getElementById('gameGrid');
+  grid.innerHTML='';
+  for(let i=0;i<25;i++){
+    const t = document.createElement('div');
+    t.className='tile';
+    t.onclick = ()=> clickTile(i);
+    grid.appendChild(t);
+  }
+}
+
+function clickTile(index){
+  if(gameState.revealedTiles.includes(index)) return;
+  if(!gameState.gameActive){
+    if(gameState.currentBet===0){ 
+      playSound('error');
+      showMessage('gameMsg','Set bet first!','error'); 
+      return; 
+    }
+    startGame();
+  }
+  gameState.tilesClicked = true;
+  gameState.revealedTiles.push(index);
+  const tiles = document.querySelectorAll('.tile');
+
+  if(gameState.minePositions.includes(index)){
+    playSound('mine');
+    playBombBlast(); // Realistic bomb blast sound
+    tiles[index].textContent = '💣';
+    tiles[index].classList.add('revealed','mine','mine-hit');
+    gameOver(false);
+  } else {
+    playSound('success');
+    // Play ascending musical note based on tile position
+    const notes = [523, 587, 659, 698, 784, 880, 988, 1047]; // C5 to C6 scale
+    playMusicNote(notes[gameState.revealedTiles.length % notes.length]);
+    tiles[index].textContent = '💎';
+    tiles[index].classList.add('revealed','safe');
+    gameState.currentWin += Math.floor(gameState.currentBet * getWinRate());
+    updateDisplay();
+    document.getElementById('cashoutBtn').disabled = false;
+  }
+}
+
+function startGame(){
+  playSound('click');
+  gameState.gameActive    = true;
+  gameState.minePositions = [];
+  gameState.revealedTiles = [];
+  gameState.currentWin    = 0;
+  while(gameState.minePositions.length < gameState.minesCount){
+    const p = Math.floor(Math.random()*25);
+    if(!gameState.minePositions.includes(p)) gameState.minePositions.push(p);
+  }
+  updateDisplay();
+}
+
+async function cashout(){
+  if(!gameState.gameActive || gameState.currentWin===0) return;
+  playSound('win');
+  playButtonMusic();
+  const total = gameState.currentBet + gameState.currentWin;
+  gameState.balance += total;
+  await updateUserBalance(gameState.userPhone, gameState.balance);
+  gameState.currentBet=0; gameState.currentWin=0; gameState.gameActive=false;
+  gameState.betSet=false; gameState.tilesClicked=false;
+  document.getElementById('cashoutBtn').disabled=true;
+  updateDisplay(); revealAllTiles();
+  showMessage('gameMsg',`Cashed out Rs ${total}! 🎉`,'success');
+}
+
+function gameOver(won){
+  if(!won) playSound('error');
+  gameState.gameActive=false; gameState.currentBet=0; gameState.currentWin=0;
+  gameState.betSet=false; gameState.tilesClicked=false;
+  document.getElementById('cashoutBtn').disabled=true;
+  updateDisplay(); revealAllTiles();
+  if(!won) showMessage('gameMsg','Game Over! 💔','error');
+}
+
+function revealAllTiles(){
+  document.querySelectorAll('.tile').forEach((t,i)=>{
+    if(!t.classList.contains('revealed')){
+      t.classList.add('revealed');
+      if(gameState.minePositions.includes(i)){
+        t.textContent='💣'; t.classList.add('mine');
+      } else {
+        t.textContent='💎'; t.classList.add('safe');
+      }
+    }
+  });
+}
+
+async function resetGame(){
+  playButtonMusic();
+  if(gameState.betSet && gameState.currentBet>0){
+    const ret = gameState.currentBet + gameState.currentWin;
+    gameState.balance += ret;
+    await updateUserBalance(gameState.userPhone, gameState.balance);
+    showMessage('gameMsg',
+      gameState.tilesClicked
+        ? `Rs ${gameState.currentBet} (bet) + Rs ${gameState.currentWin} (win) واپس ہو گئے!`
+        : `Rs ${gameState.currentBet} واپس ہو گیا!`,
+      'success');
+  }
+  gameState.gameActive=false; gameState.currentWin=0; gameState.currentBet=0;
+  gameState.minePositions=[]; gameState.revealedTiles=[];
+  gameState.betSet=false; gameState.tilesClicked=false;
+  document.getElementById('cashoutBtn').disabled=true;
+  initializeGrid(); updateDisplay();
+}
+
+function updateDisplay(){
+  document.getElementById('balance').textContent      = gameState.balance;
+  document.getElementById('win').textContent          = gameState.currentWin;
+  document.getElementById('betDisplay').textContent   = gameState.currentBet;
+  document.getElementById('minesDisplay').textContent = gameState.minesCount;
+}
+
+/* ─── Bet / Mines modals ─── */
+function openBetModal(){
+  playButtonMusic();
+  if(gameState.gameActive){ 
+    playSound('error');
+    alert('Cannot change bet during active game!'); 
+    return; 
+  }
+  document.getElementById('betModal').classList.add('active');
+}
+
+async function setBet(){
+  const a = parseInt(document.getElementById('betInput').value);
+  if(!a||a<100||a>10000){ 
+    playSound('error');
+    alert('Bet must be Rs 100–10,000'); 
+    return; 
+  }
+  
+  // Check if bet is already set with the same amount
+  if(gameState.betSet && gameState.currentBet === a){
+    playSound('error');
+    alert('Bet already set with this amount!');
+    return;
+  }
+  
+  // If changing bet amount, refund the old bet first
+  if(gameState.betSet && gameState.currentBet > 0 && gameState.currentBet !== a){
+    gameState.balance += gameState.currentBet;
+  }
+  
+  // Check if user has enough balance for new bet
+  if(a > gameState.balance){ 
+    playSound('error');
+    alert('Insufficient balance!'); 
+    return; 
+  }
+  
+  // Deduct balance and set bet
+  playButtonMusic();
+  gameState.balance -= a; 
+  gameState.currentBet = a; 
+  gameState.betSet = true; 
+  gameState.tilesClicked = false;
+  await updateUserBalance(gameState.userPhone, gameState.balance);
+  updateDisplay(); 
+  closeModal('betModal');
+  showMessage('gameMsg','Bet set! Start playing!','success');
+}
+
+function openMinesModal(){
+  playButtonMusic();
+  if(gameState.gameActive){ 
+    playSound('error');
+    alert('Cannot change mines during game!'); 
+    return; 
+  }
+  document.getElementById('minesModal').classList.add('active');
+}
+
+function setMines(){
+  const c = parseInt(document.getElementById('minesInput').value);
+  if(!c||c<1||c>24){ 
+    playSound('error');
+    alert('Mines must be 1–24'); 
+    return; 
+  }
+  playButtonMusic();
+  gameState.minesCount=c; updateDisplay(); closeModal('minesModal');
+}
+
+/* ─── UI helpers ─── */
+function closeModal(id){ 
+  document.getElementById(id).classList.remove('active'); 
+}
+
+function showMessage(elId, text, type){
+  const el = document.getElementById(elId);
+  el.textContent=text; el.className='msg '+type; el.style.display='block';
+  setTimeout(()=>el.style.display='none', 3000);
+}
+
 </script>
 
 </body>
