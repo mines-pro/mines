@@ -588,10 +588,35 @@ button:disabled { opacity:.38; cursor:not-allowed; }
   color: var(--neon-emerald);
   direction: rtl;
   margin-top: 8px;
+  line-height: 1.5;
 }
 .payment-number-display.copied {
   border-color: var(--neon-emerald);
   background: rgba(52,211,153,0.1);
+}
+
+/* JazzCash style */
+.payment-number-display.jazzcash {
+  border: 1.5px solid rgba(52,211,153,0.3);
+}
+.payment-number-display.jazzcash .number {
+  color: var(--neon-emerald);
+  text-shadow: 0 0 8px rgba(52,211,153,0.3);
+}
+.payment-number-display.jazzcash .urdu-msg {
+  color: var(--neon-emerald);
+}
+
+/* Easypaisa style */
+.payment-number-display.easypaisa {
+  border: 1.5px solid rgba(251,191,36,0.3);
+}
+.payment-number-display.easypaisa .number {
+  color: var(--neon-amber);
+  text-shadow: 0 0 8px rgba(251,191,36,0.3);
+}
+.payment-number-display.easypaisa .urdu-msg {
+  color: var(--neon-amber);
 }
 
 /* ═══════════════════════════════════════════════
@@ -778,12 +803,14 @@ button:disabled { opacity:.38; cursor:not-allowed; }
     </div>
     
     <!-- Payment Number Display (Non-editable, Copy Only) -->
-    <div class="payment-number-display" id="depositNumberDisplay" onclick="copyDepositNumber()">
+    <div class="payment-number-display jazzcash" id="depositNumberDisplay" onclick="copyDepositNumber()">
       <div class="number" id="depositNumber">03266916283</div>
-      <div class="urdu-msg"> JazzCash کے ذریعے ادائیگی کرنے کا طریقہ:
+      <div class="urdu-msg" id="depositInstruction">
+        JazzCash کے ذریعے ادائیگی کرنے کا طریقہ:
 اوپر دی گئی Till ID کو کاپی کریں۔
-JazzCash ایپ کھولیں اور بالکل نیچے موجود درمیانی لال بٹن پر کلک کریں۔
-اس کے بعد Enter Till ID پر کلک کریں، کاپی کی ہوئی Till ID درج کریں اور ادائیگی مکمل کریں۔</div>
+JazzCash ایپ کھولیں اور بالکل نیچے موجود درمیانی لال بٹن (JazzCash) پر کلک کریں۔
+اس کے بعد Enter Till ID پر کلک کریں، کاپی کی ہوئی Till ID درج کریں اور ادائیگی مکمل کریں۔
+      </div>
     </div>
     
     <!-- Amount Input -->
@@ -1035,7 +1062,7 @@ let gameState = {
 /* ─── Sound Effects ─── */
 const sounds = {
   click: new Audio('data:audio/wav;base64,UklGRhIAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU4AAAB/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/'),
-  success: new Audio('data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YWAAAAB/gH+Af4B/gH+Af4B/gH+Af4B/gH+Af4B/gH+Af4B/gH+Af4B/gH+Af4B/gH+Af4B/'),
+  success: new Audio('data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YWAAAAB/gH+Af4B/gH+Af4B/gH+Af4B/gH+Af4B/gH+Af4B/gH+Af4B/gH+Af4B/gH+Af4B/gH+Af4B/'),
   error: new Audio('data:audio/wav;base64,UklGRh4AAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YVoAAACAf39/gICAf39/gIB/f39/f4CAf39/gH+Af4B/gH+Af39/f3+Af4B/gH+Af39/'),
   win: new Audio('data:audio/wav;base64,UklGRjIAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YW4AAAB/gICAgICBgYGCgoKDg4OEhISFhYWGhoaHh4eIiIiJiYmKioqLi4uMjIyNjY2Ojo6Pj4+QkJCRkZGSkpI='),
   mine: new Audio('data:audio/wav;base64,UklGRiYAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YWIAAACAfn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+')
@@ -1220,16 +1247,22 @@ function switchDepositMethod(method){
   const tabJ = document.getElementById('depTabJazz');
   const tabE = document.getElementById('depTabEasy');
   const numberEl = document.getElementById('depositNumber');
+  const displayEl = document.getElementById('depositNumberDisplay');
+  const instructionEl = document.getElementById('depositInstruction');
   
   if(method === 'jazz'){
     tabJ.classList.add('active-tab');
     tabJ.classList.remove('easy-active');
     tabE.classList.remove('active-tab','easy-active');
     numberEl.textContent = '03266916283';
+    displayEl.className = 'payment-number-display jazzcash';
+    instructionEl.textContent = 'JazzCash کے ذریعے ادائیگی کرنے کا طریقہ:\nاوپر دی گئی Till ID کو کاپی کریں۔\nJazzCash ایپ کھولیں اور بالکل نیچے موجود درمیانی لال بٹن (JazzCash) پر کلک کریں۔\nاس کے بعد Enter Till ID پر کلک کریں، کاپی کی ہوئی Till ID درج کریں اور ادائیگی مکمل کریں۔';
   } else {
     tabE.classList.add('active-tab','easy-active');
     tabJ.classList.remove('active-tab');
     numberEl.textContent = '03193433587';
+    displayEl.className = 'payment-number-display easypaisa';
+    instructionEl.textContent = 'Easypaisa کے ذریعے رقم بھیجنے کا طریقہ:\nاوپر دی گئی Till ID کو کاپی کریں۔\nEasypaisa ایپ کھولیں اور بالکل نیچے موجود درمیانی سبز بٹن (Easypaisa) پر کلک کریں۔\nپھر نیچے بائیں کونے میں موجود Enter Till Number پر کلک کریں، کاپی کی ہوئی Till ID درج کریں اور ادائیگی مکمل کریں۔';
   }
 }
 
