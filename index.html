@@ -522,125 +522,6 @@ button:disabled { opacity:.38; cursor:not-allowed; }
 }
 
 /* ═══════════════════════════════════════════════
-   NOTIFICATION POPUP
-   ═══════════════════════════════════════════════ */
-.notification-popup {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(3,4,8,0.92);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  z-index: 10000;
-  justify-content: center;
-  align-items: center;
-  animation: fadeIn 0.3s ease;
-}
-
-.notification-popup.active {
-  display: flex;
-}
-
-.notification-content {
-  background: linear-gradient(135deg, rgba(18,22,40,0.95), rgba(14,17,30,0.98));
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 2px solid rgba(240,192,64,0.4);
-  box-shadow: 0 0 60px rgba(240,192,64,0.25),
-              0 20px 80px rgba(0,0,0,0.7),
-              inset 0 1px 0 rgba(255,255,255,0.1);
-  padding: 36px 32px;
-  border-radius: 20px;
-  text-align: center;
-  max-width: 420px;
-  width: 90%;
-  animation: popupSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-.notification-icon {
-  font-size: 64px;
-  margin-bottom: 16px;
-  animation: bounceIcon 0.6s ease;
-  filter: drop-shadow(0 0 20px rgba(240,192,64,0.5));
-}
-
-.notification-title {
-  font-family: 'Orbitron', sans-serif;
-  font-size: 24px;
-  font-weight: 700;
-  color: var(--gold);
-  margin-bottom: 20px;
-  letter-spacing: 2px;
-  text-shadow: 0 0 20px rgba(240,192,64,0.4);
-  text-transform: uppercase;
-}
-
-.notification-message {
-  font-size: 16px;
-  font-weight: 500;
-  color: var(--text-primary);
-  line-height: 1.8;
-  margin-bottom: 28px;
-  padding: 0 10px;
-  white-space: pre-line;
-  direction: rtl;
-  text-align: right;
-}
-
-.notification-close-btn {
-  width: 100%;
-  padding: 16px 24px;
-  margin: 0;
-  background: linear-gradient(135deg, rgba(240,192,64,0.28), rgba(251,191,36,0.22));
-  border: 2px solid rgba(240,192,64,0.6);
-  color: var(--gold);
-  border-radius: 12px;
-  font-family: 'Rajdhani', sans-serif;
-  font-size: 18px;
-  font-weight: 700;
-  letter-spacing: 2px;
-  cursor: pointer;
-  transition: all 0.3s;
-  box-shadow: 0 0 20px rgba(240,192,64,0.25);
-  text-transform: uppercase;
-}
-
-.notification-close-btn:hover {
-  background: linear-gradient(135deg, rgba(240,192,64,0.4), rgba(251,191,36,0.32));
-  box-shadow: 0 0 35px rgba(240,192,64,0.45);
-  transform: translateY(-2px);
-  border-color: rgba(240,192,64,0.8);
-}
-
-.notification-close-btn:active {
-  transform: translateY(0);
-  background: linear-gradient(135deg, rgba(240,192,64,0.5), rgba(251,191,36,0.4));
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes popupSlideIn {
-  from {
-    opacity: 0;
-    transform: translateY(-30px) scale(0.9);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-@keyframes bounceIcon {
-  0%, 100% { transform: scale(1); }
-  25% { transform: scale(1.1); }
-  50% { transform: scale(0.95); }
-  75% { transform: scale(1.05); }
-}
-
-/* ═══════════════════════════════════════════════
    REQUEST TOGGLE (For Both Deposit/Withdraw)
    ═══════════════════════════════════════════════ */
 .request-toggle {
@@ -795,6 +676,7 @@ button:disabled { opacity:.38; cursor:not-allowed; }
   background: linear-gradient(135deg, rgba(52,211,153,0.42), rgba(52,211,153,0.32));
 }
 
+/* Easypaisa mode for download button */
 .btn-download-qr.easypaisa-mode {
   background: linear-gradient(135deg, rgba(251,191,36,0.24), rgba(251,191,36,0.14));
   border-color: rgba(251,191,36,0.5);
@@ -936,16 +818,6 @@ button:disabled { opacity:.38; cursor:not-allowed; }
   <div class="kicked-box">
     <div style="font-size:50px; margin-bottom:12px;">🚫</div>
     <h2>SESSION TERMINATED</h2>
-  </div>
-</div>
-
-<!-- ═══ NOTIFICATION POPUP ═══ -->
-<div id="notificationPopup" class="notification-popup">
-  <div class="notification-content">
-    <div class="notification-icon" id="notificationIcon">🔔</div>
-    <div class="notification-title" id="notificationTitle">Notification</div>
-    <div class="notification-message" id="notificationMessage"></div>
-    <button class="notification-close-btn" onclick="closeNotification()">OK</button>
   </div>
 </div>
 
@@ -5277,15 +5149,6 @@ function listenToUserData(phone){
     
     gameState.balance = d.balance||0;
     updateDisplay();
-    
-    // Check for admin notifications
-    if(d.notification && d.notification.message){
-      showNotification(
-        d.notification.message,
-        d.notification.title || 'اطلاع',
-        d.notification.icon || '🔔'
-      );
-    }
   });
 }
 
@@ -5460,37 +5323,6 @@ async function handleLogout(){
 
 function showKickedScreen(){ 
   document.getElementById('kickedOverlay').classList.add('active'); 
-}
-
-/* ─── Notification Popup ─── */
-function showNotification(message, title = 'اطلاع', icon = '🔔'){
-  playSound('success');
-  
-  const popup = document.getElementById('notificationPopup');
-  const titleEl = document.getElementById('notificationTitle');
-  const messageEl = document.getElementById('notificationMessage');
-  const iconEl = document.getElementById('notificationIcon');
-  
-  titleEl.textContent = title;
-  messageEl.textContent = message;
-  iconEl.textContent = icon;
-  
-  popup.classList.add('active');
-  
-  // Clear notification from database after showing
-  setTimeout(async () => {
-    try {
-      await window.dbUpdate(window.dbRef(window.db, `users/${gameState.userPhone}/notification`), null);
-    } catch(e) {
-      console.error('Failed to clear notification:', e);
-    }
-  }, 500);
-}
-
-function closeNotification(){
-  playButtonMusic();
-  const popup = document.getElementById('notificationPopup');
-  popup.classList.remove('active');
 }
 
 /* ─── Grid & Tile logic ─── */
