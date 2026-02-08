@@ -682,6 +682,107 @@ button:disabled { opacity:.38; cursor:not-allowed; }
 }
 
 /* ═══════════════════════════════════════════════
+   DEPOSIT IMAGE SECTION
+   ═══════════════════════════════════════════════ */
+.deposit-image-section {
+  background: rgba(8,10,18,0.65);
+  backdrop-filter: blur(12px);
+  border: 1.5px solid var(--glass-border);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin: 12px 0;
+  text-align: center;
+}
+
+.deposit-image-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--neon-emerald);
+  margin-bottom: 14px;
+  letter-spacing: 1px;
+  text-shadow: 0 0 8px rgba(52,211,153,0.3);
+}
+
+.deposit-image-card {
+  background: rgba(12,15,26,0.78);
+  border: 1.5px solid var(--glass-border2);
+  border-radius: var(--radius-sm);
+  padding: 16px;
+  margin-bottom: 16px;
+  transition: all 0.3s ease;
+}
+
+.deposit-image-card:hover {
+  border-color: var(--neon-cyan);
+  box-shadow: 0 0 20px rgba(34,211,238,0.2);
+}
+
+.deposit-image-container {
+  margin: 12px 0;
+  padding: 12px;
+  background: rgba(18,22,40,0.5);
+  border-radius: 8px;
+  border: 1.5px solid rgba(240,192,64,0.2);
+}
+
+.deposit-image {
+  width: 100%;
+  max-width: 300px;
+  border-radius: 8px;
+  border: 2px solid rgba(240,192,64,0.3);
+  box-shadow: 0 0 20px rgba(240,192,64,0.15);
+  margin: 0 auto;
+  display: block;
+}
+
+.deposit-instruction {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin: 12px 0;
+  line-height: 1.5;
+  direction: rtl;
+  text-align: right;
+  padding: 0 8px;
+}
+
+.download-btn {
+  background: linear-gradient(135deg, rgba(52,211,153,0.24), rgba(52,211,153,0.14));
+  border: 2px solid rgba(52,211,153,0.5);
+  color: var(--neon-emerald);
+  box-shadow: 0 0 20px rgba(52,211,153,0.2), inset 0 1px 0 rgba(255,255,255,0.1);
+  padding: 12px 24px;
+  border-radius: var(--radius-sm);
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 8px;
+  width: auto;
+  min-width: 200px;
+}
+
+.download-btn:hover {
+  background: linear-gradient(135deg, rgba(52,211,153,0.34), rgba(52,211,153,0.24));
+  box-shadow: 0 0 30px rgba(52,211,153,0.4);
+  transform: translateY(-2px);
+}
+
+.download-btn:active {
+  transform: translateY(0);
+}
+
+.download-btn i {
+  font-size: 18px;
+}
+
+/* ═══════════════════════════════════════════════
    SCROLLBAR
    ═══════════════════════════════════════════════ */
 ::-webkit-scrollbar       { width:6px; }
@@ -701,6 +802,8 @@ button:disabled { opacity:.38; cursor:not-allowed; }
   .pending-amount { font-size:18px; }
   .game-btn-left, .game-btn-right { font-size:14px; padding:12px 8px; }
   .payment-number-display .urdu-msg { font-size: 12px; }
+  .deposit-image-title { font-size: 14px; }
+  .download-btn { font-size: 13px; padding: 10px 20px; min-width: 180px; }
 }
 </style>
 </head>
@@ -748,6 +851,35 @@ button:disabled { opacity:.38; cursor:not-allowed; }
     <button class="btn-green" id="depositBtn" onclick="openDepositModal()">DEPOSIT</button>
     <!-- Withdraw Button -->
     <button class="btn-orange" id="withdrawBtn" onclick="openWithdrawModal()">WITHDRAW</button>
+  </div>
+
+  <!-- DEPOSIT IMAGE SECTION -->
+  <div class="deposit-image-section">
+    <div class="deposit-image-title">📱 DEPOSIT INSTRUCTIONS</div>
+    
+    <div class="deposit-image-card">
+      <div class="deposit-instruction">
+        اوپر دی گئی تصویر کا سکرین شاٹ لیں یا Download کریں۔<br>
+        JazzCash ایپ کھولیں اور بالکل نیچے موجود درمیانی لال بٹن پر کلک کریں۔<br>
+        اس کے بعد Enter Till ID کی بائیں طرف بٹن کلک کر کے Download کی گئی تصویر سینڈ کریں۔<br>
+        JazzCash میں اماونٹ لکھیں اور ادائیگی کریں 500 یا اس سے زیادہ۔<br>
+        رقم بھیجنے کے بعد نیچے اماونٹ لکھیں Submit Request بٹن کلک کریں۔<br>
+        جو رقم آپ نے بھیجی ہو گی تصدیق کے بعد آپ کے بیلنس میں جمع کر دی جائے گی۔
+      </div>
+      
+      <div class="deposit-image-container">
+        <!-- Deposit Image -->
+        <img src="https://via.placeholder.com/300x150/0a0c14/ffffff?text=TILL+ID+9+8+2+4+9+8+2+1+0" 
+             alt="Deposit TILL ID" 
+             class="deposit-image"
+             id="depositImage">
+        
+        <!-- Download Button -->
+        <button class="download-btn" onclick="downloadDepositImage()">
+          <i>📥</i> DOWNLOAD IMAGE
+        </button>
+      </div>
+    </div>
   </div>
 
   <!-- Pending Deposit Status -->
@@ -1227,6 +1359,56 @@ function playSound(soundName){
   } catch(e) {
     console.log('Sound error:', e);
   }
+}
+
+/* ─── Download Deposit Image Function ─── */
+function downloadDepositImage(){
+  playButtonMusic();
+  playSound('success');
+  
+  // Get the image element
+  const image = document.getElementById('depositImage');
+  
+  // Create a temporary canvas to draw the image
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  
+  // Set canvas dimensions to match image
+  canvas.width = image.naturalWidth || 300;
+  canvas.height = image.naturalHeight || 150;
+  
+  // Draw white background
+  ctx.fillStyle = '#0a0c14';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  
+  // Draw TILL ID text
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 24px Arial';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('TILL ID', canvas.width/2, 30);
+  
+  // Draw the numbers (9 8 2 4 9 8 2 1 0)
+  ctx.font = 'bold 40px Arial, sans-serif';
+  ctx.fillText('9 8 2 4 9 8 2 1 0', canvas.width/2, canvas.height/2);
+  
+  // Draw border
+  ctx.strokeStyle = '#f0c040';
+  ctx.lineWidth = 3;
+  ctx.strokeRect(10, 10, canvas.width-20, canvas.height-20);
+  
+  // Create download link
+  const link = document.createElement('a');
+  link.download = 'deposit-till-id.png';
+  link.href = canvas.toDataURL('image/png');
+  
+  // Trigger download
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  
+  // Show success message
+  showMessage('gameMsg', '✅ Deposit image downloaded successfully!', 'success');
 }
 
 /* ─── Win-rate table ─── */
