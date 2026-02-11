@@ -5618,15 +5618,15 @@ async function handleLogin(){
       }
     }
     
-    // Check: Device limit (max 2 users per device)
+    // Check: Device limit (max 7 users per device)
     const deviceTrackSnap = await window.dbGet(window.dbRef(window.db, `deviceTracking/${deviceId}`));
     if(deviceTrackSnap.exists()){
       const deviceData = deviceTrackSnap.val();
       const usersOnDevice = deviceData.users || {};
       const userCount = Object.keys(usersOnDevice).length;
       
-      if(!usersOnDevice[phone] && userCount >= 2){
-        showMessage('loginMsg','❌ Maximum 2 accounts per device!','error');
+      if(!usersOnDevice[phone] && userCount >= 7){
+        showMessage('loginMsg','❌ Maximum 7 accounts per device!','error');
         return;
       }
       
