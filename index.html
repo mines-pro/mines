@@ -1099,43 +1099,19 @@ button:disabled { opacity:.38; cursor:not-allowed; }
 }
 </style>
 
-<!-- PWA Meta Tags -->
-<meta name="theme-color" content="#000000">
-<link rel="manifest" id="app-manifest">
-<script>
-  const manifestData = {
-    "name": "Mines Game",
-    "short_name": "Mines",
-    "description": "Play Mines Game",
-    "start_url": "./",
-    "display": "standalone",
-    "background_color": "#000000",
-    "theme_color": "#000000",
-    "orientation": "portrait",
-    "icons": [
-      {
-        "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAYAAABS3GwHAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAVklEQVR4nO3BAQ0AAADCoPdPbQ8HFAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACwDsIAAAGX8DhSAAAAAElFTkSuQmCC",
-        "sizes": "192x192",
-        "type": "image/png"
-      },
-      {
-        "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAgAAAAIACAYAAAD0eNT6AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAWElEQVR4nO3BAQ0AAADCoPdPbQ8HFAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACwDsgAAAFYHdL0AAAAAElFTkSuQmCC",
-        "sizes": "512x512",
-        "type": "image/png"
-      }
-    ]
-  };
-  const stringManifest = JSON.stringify(manifestData);
-  const blob = new Blob([stringManifest], {type: "application/json"});
-  const manifestURL = URL.createObjectURL(blob);
-  document.getElementById("app-manifest").setAttribute("href", manifestURL);
-</script>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Mines Game">
 
 
 
+<!-- PWA Configuration -->
+<meta name="theme-color" content="#000000">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Mines Game">
+<link rel="manifest" href="data:application/json;charset=utf-8,%7B%22name%22%3A%22Mines%20Game%22%2C%22short_name%22%3A%22Mines%22%2C%22start_url%22%3A%22.%2F%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23000000%22%2C%22theme_color%22%3A%22%23000000%22%2C%22orientation%22%3A%22portrait%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%2C%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27192%27%20height%3D%27192%27%3E%3Crect%20width%3D%27192%27%20height%3D%27192%27%20fill%3D%27%23000%27%2F%3E%3Ctext%20x%3D%2750%25%27%20y%3D%2750%25%27%20dominant-baseline%3D%27middle%27%20text-anchor%3D%27middle%27%20font-size%3D%2780%27%20fill%3D%27%23FFD700%27%3EM%3C%2Ftext%3E%3C%2Fsvg%3E%22%2C%22sizes%22%3A%22192x192%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%7D%2C%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%2C%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27512%27%20height%3D%27512%27%3E%3Crect%20width%3D%27512%27%20height%3D%27512%27%20fill%3D%27%23000%27%2F%3E%3Ctext%20x%3D%2750%25%27%20y%3D%2750%25%27%20dominant-baseline%3D%27middle%27%20text-anchor%3D%27middle%27%20font-size%3D%27220%27%20fill%3D%27%23FFD700%27%3EM%3C%2Ftext%3E%3C%2Fsvg%3E%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%7D%5D%7D">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='192' height='192'><rect width='192' height='192' fill='%23000'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-size='80' fill='%23FFD700'>M</text></svg>">
 </head>
 <body>
 
@@ -6110,37 +6086,16 @@ function showMessage(elId, text, type){
 
 </script>
 
-<!-- PWA Service Worker Registration -->
+
+
+<!-- PWA Service Worker -->
 <script>
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    // Create inline service worker
-    const swCode = `
-      self.addEventListener("install", e => {
-        console.log("SW installing...");
-        self.skipWaiting();
-      });
-      self.addEventListener("activate", e => {
-        console.log("SW activated");
-        e.waitUntil(clients.claim());
-      });
-      self.addEventListener("fetch", e => {
-        e.respondWith(fetch(e.request).catch(() => new Response("Offline")));
-      });
-    `;
-    const swBlob = new Blob([swCode], {type: "application/javascript"});
-    const swURL = URL.createObjectURL(swBlob);
-    
-    navigator.serviceWorker.register(swURL)
-      .then(registration => {
-        console.log('Service Worker registered:', registration);
-      })
-      .catch(error => {
-        console.log('Service Worker registration failed:', error);
-      });
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{
+    const sw=`self.addEventListener('install',e=>{console.log('SW:install');self.skipWaiting()});self.addEventListener('activate',e=>{console.log('SW:active');e.waitUntil(clients.claim())});self.addEventListener('fetch',e=>{e.respondWith(fetch(e.request).catch(()=>new Response('Offline',{status:503})))});`;
+    navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:'application/javascript'}))).then(r=>console.log('SW registered',r)).catch(e=>console.log('SW failed',e));
   });
 }
 </script>
-
 </body>
 </html>
