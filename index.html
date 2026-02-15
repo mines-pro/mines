@@ -1101,11 +1101,40 @@ button:disabled { opacity:.38; cursor:not-allowed; }
 
 <!-- PWA Meta Tags -->
 <meta name="theme-color" content="#000000">
+<link rel="manifest" id="app-manifest">
+<script>
+  const manifestData = {
+    "name": "Mines Game",
+    "short_name": "Mines",
+    "description": "Play Mines Game",
+    "start_url": "./",
+    "display": "standalone",
+    "background_color": "#000000",
+    "theme_color": "#000000",
+    "orientation": "portrait",
+    "icons": [
+      {
+        "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAYAAABS3GwHAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAVklEQVR4nO3BAQ0AAADCoPdPbQ8HFAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACwDsIAAAGX8DhSAAAAAElFTkSuQmCC",
+        "sizes": "192x192",
+        "type": "image/png"
+      },
+      {
+        "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAgAAAAIACAYAAAD0eNT6AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAWElEQVR4nO3BAQ0AAADCoPdPbQ8HFAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACwDsgAAAFYHdL0AAAAAElFTkSuQmCC",
+        "sizes": "512x512",
+        "type": "image/png"
+      }
+    ]
+  };
+  const stringManifest = JSON.stringify(manifestData);
+  const blob = new Blob([stringManifest], {type: "application/json"});
+  const manifestURL = URL.createObjectURL(blob);
+  document.getElementById("app-manifest").setAttribute("href", manifestURL);
+</script>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Mines Game">
-<link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="icon-192.png">
+
+
 
 </head>
 <body>
@@ -6085,7 +6114,24 @@ function showMessage(elId, text, type){
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./service-worker.js')
+    // Create inline service worker
+    const swCode = `
+      self.addEventListener("install", e => {
+        console.log("SW installing...");
+        self.skipWaiting();
+      });
+      self.addEventListener("activate", e => {
+        console.log("SW activated");
+        e.waitUntil(clients.claim());
+      });
+      self.addEventListener("fetch", e => {
+        e.respondWith(fetch(e.request).catch(() => new Response("Offline")));
+      });
+    `;
+    const swBlob = new Blob([swCode], {type: "application/javascript"});
+    const swURL = URL.createObjectURL(swBlob);
+    
+    navigator.serviceWorker.register(swURL)
       .then(registration => {
         console.log('Service Worker registered:', registration);
       })
