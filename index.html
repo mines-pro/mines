@@ -1098,6 +1098,15 @@ button:disabled { opacity:.38; cursor:not-allowed; }
   .payment-number-display .urdu-msg { font-size: 12px; }
 }
 </style>
+
+<!-- PWA Meta Tags -->
+<meta name="theme-color" content="#000000">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Mines Game">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+
 </head>
 <body>
 
@@ -6070,6 +6079,21 @@ function showMessage(elId, text, type){
   }
 }
 
+</script>
+
+<!-- PWA Service Worker Registration -->
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/service-worker.js')
+      .then(registration => {
+        console.log('Service Worker registered:', registration);
+      })
+      .catch(error => {
+        console.log('Service Worker registration failed:', error);
+      });
+  });
+}
 </script>
 
 </body>
