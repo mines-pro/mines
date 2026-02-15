@@ -1,0 +1,33 @@
+// Mines Game - Service Worker
+// Version 1.0
+
+const CACHE_NAME = 'mines-game-v1';
+
+// Install event - fires when service worker is first installed
+self.addEventListener('install', (event) => {
+  console.log('Service Worker installing...');
+  // Skip waiting to activate immediately
+  self.skipWaiting();
+});
+
+// Activate event - fires when service worker becomes active
+self.addEventListener('activate', (event) => {
+  console.log('Service Worker activated');
+  // Claim all clients immediately
+  event.waitUntil(clients.claim());
+});
+
+// Fetch event - intercept network requests
+self.addEventListener('fetch', (event) => {
+  // Let requests go through to network (no caching)
+  // This ensures your app always gets latest data
+  event.respondWith(
+    fetch(event.request).catch(() => {
+      // If offline, you can add fallback logic here if needed
+      return new Response('Offline - Please check your connection', {
+        status: 503,
+        statusText: 'Service Unavailable'
+      });
+    })
+  );
+});
