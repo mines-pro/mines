@@ -1099,31 +1099,123 @@ button:disabled { opacity:.38; cursor:not-allowed; }
 }
 </style>
 
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Mines Game">
 
 
 
-<!-- PWA Configuration -->
+
+
+
+
+
+
+
+
+<rect width='192' height='192' fill='%23000'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-size='80' fill='%23FFD700'>M</text></svg>">
+
+<!-- ═══ PWA CONFIGURATION ═══ -->
 <meta name="theme-color" content="#000000">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Mines Game">
-<link rel="manifest" href="data:application/json;charset=utf-8,%7B%22name%22%3A%22Mines%20Game%22%2C%22short_name%22%3A%22Mines%22%2C%22start_url%22%3A%22.%2F%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23000000%22%2C%22theme_color%22%3A%22%23000000%22%2C%22orientation%22%3A%22portrait%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%2C%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27192%27%20height%3D%27192%27%3E%3Crect%20width%3D%27192%27%20height%3D%27192%27%20fill%3D%27%23000%27%2F%3E%3Ctext%20x%3D%2750%25%27%20y%3D%2750%25%27%20dominant-baseline%3D%27middle%27%20text-anchor%3D%27middle%27%20font-size%3D%2780%27%20fill%3D%27%23FFD700%27%3EM%3C%2Ftext%3E%3C%2Fsvg%3E%22%2C%22sizes%22%3A%22192x192%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%7D%2C%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%2C%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27512%27%20height%3D%27512%27%3E%3Crect%20width%3D%27512%27%20height%3D%27512%27%20fill%3D%27%23000%27%2F%3E%3Ctext%20x%3D%2750%25%27%20y%3D%2750%25%27%20dominant-baseline%3D%27middle%27%20text-anchor%3D%27middle%27%20font-size%3D%27220%27%20fill%3D%27%23FFD700%27%3EM%3C%2Ftext%3E%3C%2Fsvg%3E%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%7D%5D%7D">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='192' height='192'><rect width='192' height='192' fill='%23000'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-size='80' fill='%23FFD700'>M</text></svg>">
-<script>
-const manifestData={name:"Mines Game",short_name:"Mines",description:"Play Mines",start_url:"./",scope:"./",display:"standalone",background_color:"#000000",theme_color:"#000000",orientation:"portrait",icons:[{src:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAIAAADdvvtQAAACxklEQVR4nO3dsXUTQQBF0THHFVCCMwL6L8QBGSW4BQjsA8aWhMzbXS0796ZSMDrz9KVIGgMAAAAAANZ0d/nhh8enbc7Bnn3/+vncQ5+2PAfHIyASAZHcX//UCx+EHM+VX38tEImASAREIiASAZEIiERAJAIiERCJgEgERCIgEgGRCIhEQCQCIhEQiYBIBEQiIBIBkQiIREAkAiIREImASAREIiASAZEIiERAJAIiERCJgEgERPKB30jc0o9vtz7BLt19ufUJ3rFAJAIiOWZAO5z6sddTRccMaOzvtvZ2nqUcNiC2ceSA9vOm389JFnfkgMY+bm4PZ1jPwQNibccP6LYDcOz5GTMENG53i4evZ0wSEOuZJaDtx2CG+RnzBMRKJgpoy0mYZH7GVAGNre51nnrGbAGxuOkCWnseppqfMWFAY807nq2eMWdALGjSgNaYignnZ0wb0Fj6vuesZ8wcEIuYOqClZmPa+RmTBzSWuPuZ6xkCIhJQmpDJ52cI6Nm/daCeISAiAb346JyYn2cC+u36JtTzi4BIBPSHa6bF/LwmIBIBvXV5YMzPGwI64Vwl6nlPQCQCOu392JifkwR01uti1HOOgEgEdMnz8JifCwT0F+q5TEAkAiIREImASAREIiASAZEIiERAJAIiERCJgEgERCIgEgGRCIhEQCQCIhEQiYBIBEQiIBIBkQiIREAkAiIREImASAREIiASAZEIiERAJAIiERCJgEgERCIgEgGRCIhEQCQCIhEQiYBIBEQiIBIBkQiIREAk97c+wGlH/Z/A470uC0QiIBIBkQiIREAkAiIREImASAREIiASAZEIiERAJAIiERCJgEgERCIgEgGRCIhEQCQCIhEQiYBIBEQiIBIBkQiIREAkAiIREImASAREIiASAZEIiERAJB/4ldaHx6f1zsF/ygKRCIhEQAAAAAAArOsnuS8T9/yM5jkAAAAASUVORK5CYII=",sizes:"192x192",type:"image/png",purpose:"any maskable"},{src:"data:image/png;base64,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",sizes:"512x512",type:"image/png",purpose:"any maskable"}]};
-const manifestBlob=new Blob([JSON.stringify(manifestData)],{type:'application/json'});
-const manifestURL=URL.createObjectURL(manifestBlob);
-const link=document.createElement('link');
-link.rel='manifest';
-link.href=manifestURL;
-document.head.appendChild(link);
-</script>
+<link rel="icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAIAAADdvvtQAAACxklEQVR4nO3dsXUTQQBF0THHFVCCMwL6L8QBGSW4BQjsA8aWhMzbXS0796ZSMDrz9KVIGgMAAAAAANZ0d/nhh8enbc7Bnn3/+vncQ5+2PAfHIyASAZHcX//UCx+EHM+VX38tEImASAREIiASAZEIiERAJAIiERCJgEgERCIgEgGRCIhEQCQCIhEQiYBIBEQiIBIBkQiIREAkAiIREImASAREIiASAZEIiERAJAIiERCJgEgERPKB30jc0o9vtz7BLt19ufUJ3rFAJAIiOWZAO5z6sddTRccMaOzvtvZ2nqUcNiC2ceSA9vOm389JFnfkgMY+bm4PZ1jPwQNibccP6LYDcOz5GTMENG53i4evZ0wSEOuZJaDtx2CG+RnzBMRKJgpoy0mYZH7GVAGNre51nnrGbAGxuOkCWnseppqfMWFAY807nq2eMWdALGjSgNaYignnZ0wb0Fj6vuesZ8wcEIuYOqClZmPa+RmTBzSWuPuZ6xkCIhJQmpDJ52cI6Nm/daCeISAiAb346JyYn2cC+u36JtTzi4BIBPSHa6bF/LwmIBIBvXV5YMzPGwI64Vwl6nlPQCQCOu392JifkwR01uti1HOOgEgEdMnz8JifCwT0F+q5TEAkAiIREImASAREIiASAZEIiERAJAIiERCJgEgERCIgEgGRCIhEQCQCIhEQiYBIBEQiIBIBkQiIREAkAiIREImASAREIiASAZEIiERAJAIiERCJgEgERCIgEgGRCIhEQCQCIhEQiYBIBEQiIBIBkQiIREAk97c+wGlH/Z/A470uC0QiIBIBkQiIREAkAiIREImASAREIiASAZEIiERAJAIiERCJgEgERCIgEgGRCIhEQCQCIhEQiYBIBEQiIBIBkQiIREAkAiIREImASAREIiASAZEIiERAJB/4ldaHx6f1zsF/ygKRCIhEQAAAAAAArOsnuS8T9/yM5jkAAAAASUVORK5CYII=">
+<link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAIAAADdvvtQAAACxklEQVR4nO3dsXUTQQBF0THHFVCCMwL6L8QBGSW4BQjsA8aWhMzbXS0796ZSMDrz9KVIGgMAAAAAANZ0d/nhh8enbc7Bnn3/+vncQ5+2PAfHIyASAZHcX//UCx+EHM+VX38tEImASAREIiASAZEIiERAJAIiERCJgEgERCIgEgGRCIhEQCQCIhEQiYBIBEQiIBIBkQiIREAkAiIREImASAREIiASAZEIiERAJAIiERCJgEgERPKB30jc0o9vtz7BLt19ufUJ3rFAJAIiOWZAO5z6sddTRccMaOzvtvZ2nqUcNiC2ceSA9vOm389JFnfkgMY+bm4PZ1jPwQNibccP6LYDcOz5GTMENG53i4evZ0wSEOuZJaDtx2CG+RnzBMRKJgpoy0mYZH7GVAGNre51nnrGbAGxuOkCWnseppqfMWFAY807nq2eMWdALGjSgNaYignnZ0wb0Fj6vuesZ8wcEIuYOqClZmPa+RmTBzSWuPuZ6xkCIhJQmpDJ52cI6Nm/daCeISAiAb346JyYn2cC+u36JtTzi4BIBPSHa6bF/LwmIBIBvXV5YMzPGwI64Vwl6nlPQCQCOu392JifkwR01uti1HOOgEgEdMnz8JifCwT0F+q5TEAkAiIREImASAREIiASAZEIiERAJAIiERCJgEgERCIgEgGRCIhEQCQCIhEQiYBIBEQiIBIBkQiIREAkAiIREImASAREIiASAZEIiERAJAIiERCJgEgERCIgEgGRCIhEQCQCIhEQiYBIBEQiIBIBkQiIREAk97c+wGlH/Z/A470uC0QiIBIBkQiIREAkAiIREImASAREIiASAZEIiERAJAIiERCJgEgERCIgEgGRCIhEQCQCIhEQiYBIBEQiIBIBkQiIREAkAiIREImASAREIiASAZEIiERAJB/4ldaHx6f1zsF/ygKRCIhEQAAAAAAArOsnuS8T9/yM5jkAAAAASUVORK5CYII=">
+
+<!-- Custom Install Banner CSS -->
+<style>
+#pwa-install-banner {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 99999;
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+  border-top: 2px solid #22d3ee;
+  padding: 14px 16px;
+  box-shadow: 0 -4px 30px rgba(34,211,238,0.3);
+  animation: slideUp 0.4s ease;
+}
+#pwa-install-banner.show {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+@keyframes slideUp {
+  from { transform: translateY(100%); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+#pwa-install-banner .pwa-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  background: #000;
+  border: 2px solid #22d3ee;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  flex-shrink: 0;
+}
+#pwa-install-banner .pwa-text {
+  flex: 1;
+}
+#pwa-install-banner .pwa-text p {
+  margin: 0;
+  font-family: 'Rajdhani', sans-serif;
+}
+#pwa-install-banner .pwa-text .pwa-title {
+  color: #22d3ee;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+#pwa-install-banner .pwa-text .pwa-sub {
+  color: #94a3b8;
+  font-size: 12px;
+  margin-top: 2px;
+}
+#pwa-install-banner .pwa-btn-install {
+  background: linear-gradient(135deg, #22d3ee, #0891b2);
+  color: #000;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 1px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+#pwa-install-banner .pwa-btn-close {
+  background: transparent;
+  color: #64748b;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 4px 6px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+</style>
 
 </head>
 <body>
+
+<!-- ═══ PWA INSTALL BANNER ═══ -->
+<div id="pwa-install-banner">
+  <div class="pwa-icon">💣</div>
+  <div class="pwa-text">
+    <p class="pwa-title">INSTALL MINES GAME</p>
+    <p class="pwa-sub">App download karo - ek click mein!</p>
+  </div>
+  <button class="pwa-btn-install" id="pwa-btn-install">📥 INSTALL</button>
+  <button class="pwa-btn-close" id="pwa-btn-close">✕</button>
+</div>
+
 
 <!-- ═══ PARTICLE CANVAS ═══ -->
 <canvas id="bgCanvas"></canvas>
@@ -6098,23 +6190,150 @@ function showMessage(elId, text, type){
 
 
 
-<!-- PWA Service Worker -->
-<script>
-if('serviceWorker' in navigator){
-  window.addEventListener('load',()=>{
-    const sw=`self.addEventListener('install',e=>{console.log('SW:install');self.skipWaiting()});self.addEventListener('activate',e=>{console.log('SW:active');e.waitUntil(clients.claim())});self.addEventListener('fetch',e=>{e.respondWith(fetch(e.request).catch(()=>new Response('Offline',{status:503})))});`;
-    navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:'application/javascript'}))).then(r=>console.log('SW registered',r)).catch(e=>console.log('SW failed',e));
-  });
-}
-</script>
 
+
+<!-- ═══ PWA SCRIPT - MANIFEST + SW + INSTALL BUTTON ═══ -->
 <script>
-if('serviceWorker' in navigator){
-window.addEventListener('load',()=>{
-const sw=`self.addEventListener('install',e=>{console.log('[SW] Install');self.skipWaiting()});self.addEventListener('activate',e=>{console.log('[SW] Active');e.waitUntil(clients.claim())});self.addEventListener('fetch',e=>{e.respondWith(fetch(e.request).catch(()=>new Response('Offline',{status:503})))});`;
-navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:'application/javascript'}))).then(r=>console.log('[PWA] OK:',r.scope)).catch(e=>console.error('[PWA] Fail:',e));
-});
-}
+(function() {
+
+  // ─── 1. EMBEDDED MANIFEST ───────────────────────────────
+  var manifestData = {
+    name: "Mines Game",
+    short_name: "Mines",
+    description: "Play Mines Game - Test Your Luck",
+    start_url: "./",
+    scope: "./",
+    display: "standalone",
+    background_color: "#000000",
+    theme_color: "#000000",
+    orientation: "portrait",
+    icons: [
+      {
+        src: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAIAAADdvvtQAAACxklEQVR4nO3dsXUTQQBF0THHFVCCMwL6L8QBGSW4BQjsA8aWhMzbXS0796ZSMDrz9KVIGgMAAAAAANZ0d/nhh8enbc7Bnn3/+vncQ5+2PAfHIyASAZHcX//UCx+EHM+VX38tEImASAREIiASAZEIiERAJAIiERCJgEgERCIgEgGRCIhEQCQCIhEQiYBIBEQiIBIBkQiIREAkAiIREImASAREIiASAZEIiERAJAIiERCJgEgERPKB30jc0o9vtz7BLt19ufUJ3rFAJAIiOWZAO5z6sddTRccMaOzvtvZ2nqUcNiC2ceSA9vOm389JFnfkgMY+bm4PZ1jPwQNibccP6LYDcOz5GTMENG53i4evZ0wSEOuZJaDtx2CG+RnzBMRKJgpoy0mYZH7GVAGNre51nnrGbAGxuOkCWnseppqfMWFAY807nq2eMWdALGjSgNaYignnZ0wb0Fj6vuesZ8wcEIuYOqClZmPa+RmTBzSWuPuZ6xkCIhJQmpDJ52cI6Nm/daCeISAiAb346JyYn2cC+u36JtTzi4BIBPSHa6bF/LwmIBIBvXV5YMzPGwI64Vwl6nlPQCQCOu392JifkwR01uti1HOOgEgEdMnz8JifCwT0F+q5TEAkAiIREImASAREIiASAZEIiERAJAIiERCJgEgERCIgEgGRCIhEQCQCIhEQiYBIBEQiIBIBkQiIREAkAiIREImASAREIiASAZEIiERAJAIiERCJgEgERCIgEgGRCIhEQCQCIhEQiYBIBEQiIBIBkQiIREAk97c+wGlH/Z/A470uC0QiIBIBkQiIREAkAiIREImASAREIiASAZEIiERAJAIiERCJgEgERCIgEgGRCIhEQCQCIhEQiYBIBEQiIBIBkQiIREAkAiIREImASAREIiASAZEIiERAJB/4ldaHx6f1zsF/ygKRCIhEQAAAAAAArOsnuS8T9/yM5jkAAAAASUVORK5CYII=",
+        sizes: "192x192",
+        type: "image/png",
+        purpose: "any maskable"
+      },
+      {
+        src: "data:image/png;base64,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",
+        sizes: "512x512",
+        type: "image/png",
+        purpose: "any maskable"
+      }
+    ]
+  };
+  var manifestBlob = new Blob([JSON.stringify(manifestData)], {type: 'application/json'});
+  var manifestURL  = URL.createObjectURL(manifestBlob);
+  var manifestLink = document.createElement('link');
+  manifestLink.rel  = 'manifest';
+  manifestLink.href = manifestURL;
+  document.head.appendChild(manifestLink);
+
+  // ─── 2. EMBEDDED SERVICE WORKER ─────────────────────────
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function() {
+      var swCode = [
+        "self.addEventListener('install', function(e) {",
+        "  console.log('[SW] Installed');",
+        "  self.skipWaiting();",
+        "});",
+        "self.addEventListener('activate', function(e) {",
+        "  console.log('[SW] Activated');",
+        "  e.waitUntil(clients.claim());",
+        "});",
+        "self.addEventListener('fetch', function(e) {",
+        "  e.respondWith(fetch(e.request).catch(function() {",
+        "    return new Response('Offline', {status: 503});",
+        "  }));",
+        "});"
+      ].join('\n');
+
+      var swBlob = new Blob([swCode], {type: 'application/javascript'});
+      var swURL  = URL.createObjectURL(swBlob);
+
+      navigator.serviceWorker.register(swURL)
+        .then(function(reg) {
+          console.log('[PWA] Service Worker registered:', reg.scope);
+        })
+        .catch(function(err) {
+          console.error('[PWA] SW Error:', err);
+        });
+    });
+  }
+
+  // ─── 3. INSTALL BANNER (ALWAYS SHOW) ────────────────────
+  var deferredPrompt = null;
+  var banner         = null;
+  var installBtn     = null;
+  var closeBtn       = null;
+
+  function showBanner() {
+    if (!banner) return;
+    banner.classList.add('show');
+  }
+
+  function hideBanner() {
+    if (!banner) return;
+    banner.classList.remove('show');
+  }
+
+  window.addEventListener('DOMContentLoaded', function() {
+    banner     = document.getElementById('pwa-install-banner');
+    installBtn = document.getElementById('pwa-btn-install');
+    closeBtn   = document.getElementById('pwa-btn-close');
+
+    // Close button
+    if (closeBtn) {
+      closeBtn.addEventListener('click', function() {
+        hideBanner();
+        // Show again after 30 seconds
+        setTimeout(showBanner, 30000);
+      });
+    }
+
+    // Install button
+    if (installBtn) {
+      installBtn.addEventListener('click', function() {
+        if (deferredPrompt) {
+          // Use browser's native install
+          deferredPrompt.prompt();
+          deferredPrompt.userChoice.then(function(choice) {
+            console.log('[PWA] User choice:', choice.outcome);
+            deferredPrompt = null;
+            if (choice.outcome === 'accepted') {
+              hideBanner();
+            }
+          });
+        } else {
+          // No native prompt - show manual instructions
+          alert('App Install karne ke liye:\n\n1. Chrome menu (⋮) tap karo\n2. "Install app" ya "Add to Home Screen" select karo\n3. Install tap karo\n\nApp aapke home screen par add ho jayega!');
+        }
+      });
+    }
+
+    // Show banner after 2 seconds always
+    setTimeout(showBanner, 2000);
+  });
+
+  // Capture browser install prompt
+  window.addEventListener('beforeinstallprompt', function(e) {
+    e.preventDefault();
+    deferredPrompt = e;
+    console.log('[PWA] Install prompt ready');
+    // Update button text when native prompt available
+    if (installBtn) {
+      installBtn.textContent = '📥 INSTALL';
+    }
+  });
+
+  // Hide banner after successful install
+  window.addEventListener('appinstalled', function() {
+    console.log('[PWA] App installed!');
+    hideBanner();
+    deferredPrompt = null;
+  });
+
+})();
 </script>
 
 </body>
