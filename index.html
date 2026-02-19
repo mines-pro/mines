@@ -95,14 +95,33 @@ body::before {
   max-height: 90vh;
   width: calc(100% - 40px);
   max-width: 450px;
-  overflow-y: auto;
-  overflow-x: hidden;
-  scrollbar-width: thin;
-  scrollbar-color: transparent transparent;
-  transition: scrollbar-color 0.3s ease;
-  touch-action: pan-y;
-  overscroll-behavior: contain;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
 }
+
+#gameTopBar {
+  flex-shrink: 0;
+  padding: 18px 22px 0 22px;
+  background: transparent;
+}
+
+#gameScrollArea {
+  flex: 1;
+  overflow: hidden;
+  padding: 0 22px 14px 22px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+#gameScrollArea > * {
+  width: 100%;
+}
+
+
 
 #gameScreen.container:hover,
 #gameScreen.container:active {
@@ -110,31 +129,31 @@ body::before {
 }
 
 /* Premium popup-style scrollbar - appears only during interaction */
-#gameScreen.container::-webkit-scrollbar {
+#gameScrollArea::-webkit-scrollbar {
   width: 5px;
 }
 
-#gameScreen.container::-webkit-scrollbar-track {
+#gameScrollArea::-webkit-scrollbar-track {
   background: transparent;
 }
 
-#gameScreen.container::-webkit-scrollbar-thumb {
+#gameScrollArea::-webkit-scrollbar-thumb {
   background: transparent;
   border-radius: 10px;
   transition: background 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease;
 }
 
-#gameScreen.container:hover::-webkit-scrollbar-thumb,
-#gameScreen.container:active::-webkit-scrollbar-thumb {
+#gameScrollArea:hover::-webkit-scrollbar-thumb,
+#gameScrollArea:active::-webkit-scrollbar-thumb {
   background: rgba(34,211,238,0.2);
 }
 
-#gameScreen.container::-webkit-scrollbar-thumb:hover {
+#gameScrollArea::-webkit-scrollbar-thumb:hover {
   background: rgba(34,211,238,0.45);
   box-shadow: 0 0 8px rgba(34,211,238,0.3);
 }
 
-#gameScreen.container::-webkit-scrollbar-thumb:active {
+#gameScrollArea::-webkit-scrollbar-thumb:active {
   background: rgba(34,211,238,0.6);
   box-shadow: 0 0 12px rgba(34,211,238,0.5);
 }
@@ -469,8 +488,8 @@ button:disabled { opacity:.38; cursor:not-allowed; }
   background: rgba(12,15,26,0.78);
   border: 1.5px solid rgba(34,211,238,0.3);
   border-radius: var(--radius-sm);
-  padding: 16px;
-  margin: 14px 0;
+  padding: 10px;
+  margin: 6px 0;
   box-shadow: 0 0 20px rgba(34,211,238,0.15);
 }
 
@@ -478,12 +497,12 @@ button:disabled { opacity:.38; cursor:not-allowed; }
 .game-action-buttons-new {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin: 18px 0 0;
+  gap: 8px;
+  margin: 8px 0 0;
 }
 
 .game-action-buttons-new button {
-  padding: 15px 12px;
+  padding: 10px 12px;
   border-radius: 12px;
   font-family: 'Rajdhani', sans-serif;
   font-size: 15px;
@@ -1241,70 +1260,97 @@ button:disabled { opacity:.38; cursor:not-allowed; }
   <button class="btn-green" onclick="handleLogin()">LOGIN / لاگ ان</button>
 </div>
 
-<!-- ═══ GAME SCREEN ═══ -->
-<div id="gameScreen" class="container hidden">
+<!-- ═══ DASHBOARD SCREEN ═══ -->
+<div id="dashboardScreen" class="container hidden" style="position:fixed;top:20px;left:50%;transform:translateX(-50%);width:calc(100% - 40px);max-width:450px;max-height:calc(100vh - 40px);overflow-y:auto;">
+  <!-- Top bar: phone + logout -->
   <div class="user-info">
     <div>
-      <div class="user-name"  id="displayName"></div>
+      <div class="user-name" id="dashDisplayName"></div>
     </div>
     <button class="logout-btn" onclick="handleLogout()">Logout</button>
   </div>
 
-  <div class="title">MINES</div>
-
-  <!-- Deposit/Withdraw Button Row -->
-  <div class="btn-row">
-    <!-- Deposit Button -->
+  <!-- Deposit + Withdraw buttons -->
+  <div class="btn-row" style="margin-top:10px;">
     <button class="btn-green" id="depositBtn" onclick="openDepositModal()">DEPOSIT</button>
-    <!-- Withdraw Button -->
-    <button class="btn-orange" id="withdrawBtn" onclick="openWithdrawModal()">WITHDRAW</button>
+    <button class="btn-orange" onclick="openWithdrawModal()">WITHDRAW</button>
   </div>
 
-  <!-- Pending Deposit Status -->
-  <div id="pendingDepositStatus" class="pending-status">
-    <div style="color:var(--neon-emerald); font-weight:600; margin-bottom:6px;">⏳ Deposit Pending</div>
-    <div class="pending-amount" id="pendingDepositAmount">Rs 0</div>
-    <div class="pending-method" id="pendingDepositMethod"></div>
-    <div class="pending-timer" id="depositLockTimer"></div>
+  <!-- Balance display -->
+  <div class="btn-row" style="margin-top:0;">
+    <div style="flex:1;background:rgba(12,15,26,0.78);border:1.5px solid rgba(255,255,255,0.22);border-radius:10px;padding:10px 16px;text-align:center;">
+      <div style="font-size:12px;color:var(--text-muted);letter-spacing:1px;margin-bottom:2px;">BALANCE</div>
+      <div style="font-family:'Orbitron',sans-serif;font-size:16px;font-weight:700;color:var(--neon-emerald);">Rs <span id="dashBalance">0</span></div>
+    </div>
   </div>
 
-  <!-- Pending Withdraw Status -->
-  <div id="pendingWithdrawStatus" class="pending-status">
-    <div style="color:var(--neon-amber); font-weight:600; margin-bottom:6px;">⏳ Withdraw Pending</div>
-    <div class="pending-amount" id="pendingWithdrawAmount">Rs 0</div>
-    <div class="pending-method" id="pendingWithdrawMethod"></div>
-    <div style="font-size:13px; color:var(--text-muted);" id="pendingWithdrawNumber"></div>
+  <!-- Tap to open game -->
+  <div style="cursor:pointer;margin-top:14px;border:2px solid rgba(34,211,238,0.3);border-radius:12px;padding:28px 20px;text-align:center;" onclick="document.getElementById('dashboardScreen').classList.add('hidden');document.getElementById('gameScreen').classList.remove('hidden');">
+    <div style="font-family:'Orbitron',sans-serif;font-size:42px;font-weight:900;letter-spacing:10px;background:linear-gradient(135deg,#f0c040 0%,#fbbf24 45%,#f59e0b 75%,#f0c040 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 0 20px rgba(240,192,64,.42));text-transform:uppercase;">MINES</div>
+    <div style="font-size:13px;color:#9aa0b8;margin-top:10px;letter-spacing:2px;">Tap to Play</div>
+  </div>
+</div>
+
+<!-- ═══ GAME SCREEN ═══ -->
+<div id="gameScreen" class="container hidden">
+
+  <!-- Fixed Top Bar: always visible -->
+  <div id="gameTopBar">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;padding:8px 4px;position:relative;">
+      <button onclick="document.getElementById('gameScreen').classList.add('hidden');document.getElementById('dashboardScreen').classList.remove('hidden');" style="background:transparent;border:none;color:var(--neon-cyan);font-size:22px;font-weight:700;width:28px;height:28px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;line-height:1;">&#8592;</button>
+      <div class="title" style="margin:0;font-size:36px;letter-spacing:10px;position:absolute;left:50%;transform:translateX(-50%);">MINES</div>
+    </div>
   </div>
 
-  <!-- Game Play Area Card (Scrollable) -->
-  <div class="game-play-card">
-    <div class="balance-section">
-      <div class="balance-item">
-        <div class="balance-label">Balance</div>
-        <div class="balance-value">Rs <span id="balance">0</span></div>
-      </div>
-      <div class="balance-item">
-        <div class="balance-label">Current Win</div>
-        <div class="balance-value">Rs <span id="win">0</span></div>
-      </div>
+  <!-- Scrollable Game Area: only the grid and controls scroll -->
+  <div id="gameScrollArea">
+
+    <!-- Pending Deposit Status -->
+    <div id="pendingDepositStatus" class="pending-status">
+      <div style="color:var(--neon-emerald); font-weight:600; margin-bottom:6px;">⏳ Deposit Pending</div>
+      <div class="pending-amount" id="pendingDepositAmount">Rs 0</div>
+      <div class="pending-method" id="pendingDepositMethod"></div>
+      <div class="pending-timer" id="depositLockTimer"></div>
     </div>
 
-    <div class="grid" id="gameGrid"></div>
+    <!-- Pending Withdraw Status -->
+    <div id="pendingWithdrawStatus" class="pending-status">
+      <div style="color:var(--neon-amber); font-weight:600; margin-bottom:6px;">⏳ Withdraw Pending</div>
+      <div class="pending-amount" id="pendingWithdrawAmount">Rs 0</div>
+      <div class="pending-method" id="pendingWithdrawMethod"></div>
+      <div style="font-size:13px; color:var(--text-muted);" id="pendingWithdrawNumber"></div>
+    </div>
 
-    <!-- 4 COLORFUL ACTION BUTTONS -->
-    <div class="game-action-buttons-new">
-      <button class="game-btn-bet" id="betBtn" onclick="openBetModal()">
-        <span style="font-size:20px;">💵</span> BET <span id="betDisplay">0</span>
-      </button>
-      <button class="game-btn-mines" id="minesBtn" onclick="openMinesModal()">
-        <span style="font-size:20px;">💣</span> <span id="minesDisplay">3</span> MINES
-      </button>
-      <button class="game-btn-cashout" id="cashoutBtn" onclick="cashout()" disabled>
-        <span style="font-size:20px;">💰</span> CASHOUT
-      </button>
-      <button class="game-btn-reset" id="resetBtn" onclick="resetGame()">
-        <span style="font-size:20px;">🔄</span> RESET
-      </button>
+    <!-- Game Play Area Card (Scrollable) -->
+    <div class="game-play-card">
+      <div class="balance-section">
+        <div class="balance-item">
+          <div class="balance-label">Balance</div>
+          <div class="balance-value">Rs <span id="balance">0</span></div>
+        </div>
+        <div class="balance-item">
+          <div class="balance-label">Current Win</div>
+          <div class="balance-value">Rs <span id="win">0</span></div>
+        </div>
+      </div>
+
+      <div class="grid" id="gameGrid"></div>
+
+      <!-- 4 COLORFUL ACTION BUTTONS -->
+      <div class="game-action-buttons-new">
+        <button class="game-btn-bet" id="betBtn" onclick="openBetModal()">
+          <span style="font-size:20px;">💵</span> BET <span id="betDisplay">0</span>
+        </button>
+        <button class="game-btn-mines" id="minesBtn" onclick="openMinesModal()">
+          <span style="font-size:20px;">💣</span> <span id="minesDisplay">3</span> MINES
+        </button>
+        <button class="game-btn-cashout" id="cashoutBtn" onclick="cashout()" disabled>
+          <span style="font-size:20px;">💰</span> CASHOUT
+        </button>
+        <button class="game-btn-reset" id="resetBtn" onclick="resetGame()">
+          <span style="font-size:20px;">🔄</span> RESET
+        </button>
+      </div>
     </div>
   </div>
 </div>
@@ -5789,9 +5835,10 @@ async function handleLogin(){
     gameState.userPhone = phone;
     gameState.balance = userData ? (userData.balance || 0) : 0;
     
-    document.getElementById('displayName').textContent = gameState.userName;
+    const _dn = document.getElementById('displayName'); if(_dn) _dn.textContent = gameState.userName;
+    document.getElementById('dashDisplayName').textContent = gameState.userName;
     document.getElementById('loginScreen').classList.add('hidden');
-    document.getElementById('gameScreen').classList.remove('hidden');
+    document.getElementById('dashboardScreen').classList.remove('hidden');
     
     // Reset scroll position to top on login
     const gameScreen = document.getElementById('gameScreen');
@@ -6019,6 +6066,9 @@ async function resetGame(){
 
 function updateDisplay(){
   document.getElementById('balance').textContent      = gameState.balance;
+  document.getElementById('balanceTopBar') && (document.getElementById('balanceTopBar').textContent = gameState.balance);
+  const db = document.getElementById('dashBalance');
+  if(db) db.textContent = gameState.balance;
   document.getElementById('win').textContent          = gameState.currentWin;
   document.getElementById('betDisplay').textContent   = gameState.currentBet;
   document.getElementById('minesDisplay').textContent = gameState.minesCount;
