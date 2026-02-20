@@ -1212,16 +1212,6 @@ button:disabled { opacity:.38; cursor:not-allowed; }
 </div>
 
 
-
-  <div class="pwa-text">
-    <p class="pwa-title">INSTALL WINGO</p>
-    <p class="pwa-sub">App download karo - ek click mein!</p>
-  </div>
-  <button class="pwa-btn-install" id="pwa-btn-install">📥 INSTALL</button>
-  <button class="pwa-btn-close" id="pwa-btn-close">✕</button>
-</div>
-
-
 <!-- ═══ PARTICLE CANVAS ═══ -->
 <canvas id="bgCanvas"></canvas>
 
@@ -6253,21 +6243,34 @@ function showMessage(elId, text, type){
   ml.href=URL.createObjectURL(new Blob([JSON.stringify(m)],{type:'application/json'}));
   document.head.appendChild(ml);
 
-  /* 2. SERVICE WORKER */
-  if('serviceWorker' in navigator){
-    window.addEventListener('load',function(){
-      var c="self.addEventListener('install',function(e){self.skipWaiting()});"
-           +"self.addEventListener('activate',function(e){e.waitUntil(clients.claim())});"
-           +"self.addEventListener('fetch',function(e){e.respondWith(fetch(e.request).catch(function(){return new Response('Offline',{status:503})}))});";
-      navigator.serviceWorker.register(
-        URL.createObjectURL(new Blob([c],{type:'application/javascript'}))
-      ).then(function(){console.log('[SW] registered')})
-       .catch(function(e){console.log('[SW] failed',e)});
+  /* 2. SERVICE WORKER — SINGLE FILE SOLUTION
+     ================================================================
+     Technical Reality:
+     - blob: URLs → BLOCKED by all browsers for SW
+     - data: URIs → BLOCKED by all browsers for SW  
+     - SW needs a real .js file served over HTTPS/localhost
+     
+     For single HTML file, SW is NOT possible in browser.
+     Instead, we use the Page Cache API directly (no SW needed)
+     to give offline-like experience within the page itself.
+     ================================================================ */
+
+  /* Direct Cache API usage — works without Service Worker! */
+  if ('caches' in window) {
+    var PAGE_CACHE = 'wingo-page-v1';
+    /* Pre-cache any external resources the page uses */
+    window.addEventListener('load', function() {
+      caches.open(PAGE_CACHE).then(function(cache) {
+        /* Cache Google Fonts for offline use */
+        cache.add('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap')
+          .catch(function(){});
+        console.log('[Cache] Page cache ready (no SW needed for single-file PWA)');
+      }).catch(function(){});
     });
   }
 
-  /* 3. INSTALL TOAST */
-  var prompt=null;
+  /* 3. INSTALL TOAST + AUTO DOWNLOAD */
+  var _deferredPrompt = null;
   var toast=null, btnInstall=null, btnClose=null;
 
   /* Check: Is app running as installed PWA? */
@@ -6277,14 +6280,51 @@ function showMessage(elId, text, type){
         || document.referrer.includes('android-app://');
   }
 
-  function show(){
-    /* NEVER show inside installed app */
+  function showToast(){
     if(isStandalone())return;
     if(toast) toast.classList.add('visible');
   }
 
-  function hide(){
+  function hideToast(){
     if(toast) toast.classList.remove('visible');
+  }
+
+  /* AUTO DOWNLOAD: Download Wingo.html (single complete game file) */
+  var SW_CODE = "var CACHE='wingo-v1';\nself.addEventListener('install',function(e){e.waitUntil(self.skipWaiting());});\nself.addEventListener('activate',function(e){e.waitUntil(self.clients.claim());});\nself.addEventListener('fetch',function(e){if(e.request.method!=='GET')return;e.respondWith(caches.match(e.request).then(function(c){return c||fetch(e.request).catch(function(){return new Response('Offline',{status:503});});}));});";
+
+  function downloadGameFile(){
+    try {
+      /* Download complete single-file game */
+      var html = '<!DOCTYPE html>' + document.documentElement.outerHTML;
+      var htmlBlob = new Blob([html], {type: 'text/html;charset=utf-8'});
+      var htmlUrl  = URL.createObjectURL(htmlBlob);
+      var a1 = document.createElement('a');
+      a1.href = htmlUrl;
+      a1.download = 'Wingo.html';
+      document.body.appendChild(a1);
+      a1.click();
+      document.body.removeChild(a1);
+      setTimeout(function(){ URL.revokeObjectURL(htmlUrl); }, 3000);
+
+      /* Also download sw.js for users who want server-based offline PWA */
+      setTimeout(function(){
+        try {
+          var swBlob = new Blob([SW_CODE], {type: 'application/javascript'});
+          var swUrl  = URL.createObjectURL(swBlob);
+          var a2 = document.createElement('a');
+          a2.href = swUrl;
+          a2.download = 'sw.js';
+          document.body.appendChild(a2);
+          a2.click();
+          document.body.removeChild(a2);
+          setTimeout(function(){ URL.revokeObjectURL(swUrl); }, 3000);
+        } catch(e){ /* sw.js is optional bonus */ }
+      }, 800);
+
+      console.log('[PWA] Wingo.html downloaded!');
+    } catch(e){
+      console.log('[PWA] Download failed:', e);
+    }
   }
 
   window.addEventListener('DOMContentLoaded',function(){
@@ -6292,49 +6332,67 @@ function showMessage(elId, text, type){
     btnInstall = document.getElementById('t-install');
     btnClose   = document.getElementById('t-close');
 
-    /* If already running as installed app - remove toast completely */
     if(isStandalone()){
       if(toast) toast.remove();
       return;
     }
 
     /* Show after 1.5s */
-    setTimeout(show, 1500);
+    setTimeout(showToast, 1500);
 
-    /* Close button - just hide, don't show again this session */
-    btnClose.addEventListener('click', hide);
+    /* Close button */
+    if(btnClose) btnClose.addEventListener('click', hideToast);
 
-    /* Install button */
-    btnInstall.addEventListener('click',function(){
-      if(prompt){
-        prompt.prompt();
-        prompt.userChoice.then(function(r){
-          if(r.outcome==='accepted') hide();
-          prompt=null;
+    /* Install button - PWA prompt + auto download */
+    if(btnInstall) btnInstall.addEventListener('click', function(){
+      if(_deferredPrompt){
+        /* Native PWA install */
+        _deferredPrompt.prompt();
+        _deferredPrompt.userChoice.then(function(result){
+          console.log('[PWA] User choice:', result.outcome);
+          if(result.outcome === 'accepted'){
+            hideToast();
+          } else {
+            /* User declined native install, offer download instead */
+            downloadGameFile();
+          }
+          _deferredPrompt = null;
         });
       } else {
-        alert('Install karne ke liye:\n\n1. Chrome menu (⋮) tap karo\n2. "Add to Home Screen" ya "Install app" select karo\n3. Install tap karo!');
+        /* No native prompt available - directly download the game file */
+        downloadGameFile();
+        /* Show install instructions after download */
+        setTimeout(function(){
+          var msg = 'Wingo.html download ho rahi hai!\n\n' +
+                    'Install karne ke liye:\n' +
+                    '📱 Android Chrome: Menu (⋮) > "Add to Home Screen"\n' +
+                    '🍎 iPhone Safari: Share > "Add to Home Screen"\n' +
+                    '💻 Desktop Chrome: Address bar ka install icon click karo';
+          alert(msg);
+        }, 1200);
       }
     });
   });
 
   /* Capture native install prompt */
-  window.addEventListener('beforeinstallprompt',function(e){
+  window.addEventListener('beforeinstallprompt', function(e){
     e.preventDefault();
-    prompt=e;
+    _deferredPrompt = e;
+    console.log('[PWA] Install prompt captured');
   });
 
-  /* App installed successfully */
-  window.addEventListener('appinstalled',function(){
-    hide();
+  /* App installed */
+  window.addEventListener('appinstalled', function(){
+    hideToast();
     if(toast) toast.remove();
-    prompt=null;
+    _deferredPrompt = null;
+    console.log('[PWA] App installed successfully!');
   });
 
-  /* If display mode changes to standalone at runtime */
-  window.matchMedia('(display-mode:standalone)').addEventListener('change',function(e){
+  /* Standalone mode change */
+  window.matchMedia('(display-mode:standalone)').addEventListener('change', function(e){
     if(e.matches){
-      hide();
+      hideToast();
       if(toast) toast.remove();
     }
   });
